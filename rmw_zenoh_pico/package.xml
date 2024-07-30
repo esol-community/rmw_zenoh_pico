@@ -1,10 +1,10 @@
 <?xml version="1.0"?>
 <?xml-model href="http://download.ros.org/schema/package_format3.xsd" schematypens="http://www.w3.org/2001/XMLSchema"?>
 <package format="3">
-  <name>rmw_microxrcedds</name>
-  <version>5.0.1</version>
-  <description>Implement the micro-ROS interface using eProsima Micro XRCE-DDS.</description>
-  <maintainer email="borjaouterelo@eprosima.com">Borja Outerelo</maintainer>
+  <name>rmw_zenoh_pico</name>
+  <version>0.0.0</version>
+  <description>Implement the micro-ROS interface using ZettaScale Zenoh Pico.</description>
+  <maintainer email="v-yamazaki8668@esol.co.jp">Katsumi Yamazaki</maintainer>
   <license>Apache License 2.0</license>
   <author>Borja Outerelo</author>
 

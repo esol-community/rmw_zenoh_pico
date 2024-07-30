@@ -1,4 +1,3 @@
-# Copyright 2019 Proyectos y Sistemas de Mantenimiento SL (eProsima).
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
 # you may not use this file except in compliance with the License.
@@ -15,8 +14,8 @@
 cmake_minimum_required(VERSION 3.5)
 cmake_policy(SET CMP0057 NEW)
 
-set(PACKAGE_VERSION "1.0.0")
-project(rmw_microxrcedds
+set(PACKAGE_VERSION "0.0.1")
+project(rmw_zenoh_pico
   VERSION
     ${PACKAGE_VERSION}
   LANGUAGES

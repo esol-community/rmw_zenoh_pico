@@ -206,6 +206,19 @@ rmw_init(
   }
 #endif  // UCLIENT_PROFILE_MULTITHREAD
 
+  {
+      const char *keyexpr = "demo/example/**";
+      const char *mode = "client";
+      char *clocator = NULL;
+      char *llocator = NULL;
+
+      z_owned_config_t config = z_config_default();
+      zp_config_insert(z_config_loan(&config), Z_CONFIG_MODE_KEY, z_string_make(mode));
+      if (clocator != NULL) {
+          zp_config_insert(z_config_loan(&config), Z_CONFIG_CONNECT_KEY, z_string_make(clocator));
+      }
+  }
+
   rmw_uxrce_init_session_memory(&session_memory, custom_sessions, RMW_UXRCE_MAX_SESSIONS);
   rmw_uxrce_init_static_input_buffer_memory(
     &static_buffer_memory, custom_static_buffers,
