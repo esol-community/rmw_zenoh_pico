@@ -33,6 +33,8 @@
 #include "./rmw_microros_internal/rmw_graph.h"
 #endif  // RMW_UXRCE_GRAPH
 
+#include <zenoh-pico.h>
+
 extern rmw_uxrce_transport_params_t rmw_uxrce_transport_default_params;
 
 rmw_ret_t

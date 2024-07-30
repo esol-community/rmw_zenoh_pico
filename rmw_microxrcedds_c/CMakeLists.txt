@@ -32,6 +32,20 @@ find_package(microcdr REQUIRED)
 
 find_package(rmw REQUIRED)
 
+find_package(zenohpico REQUIRED)
+
+find_path(zenohpico_INCLUDE_DIR
+  NAMES         zenoh-pico.h
+  PATH_SUFFIXES include
+  PATHS         ${zenohpico_DIR}/../../
+)
+
+find_library(zenohpico_LIBRARY
+  NAME          zenohpico
+  PATH_SUFFIXES lib
+  PATHS         ${zenohpico_DIR}/..
+)
+
 # Build options
 option(BUILD_DOCUMENTATION "Use doxygen to create product documentation" OFF)
 option(RMW_UXRCE_GRAPH "Allows to perform graph-related operations to the user" OFF)
@@ -254,6 +268,7 @@ endif()
 target_link_libraries(${PROJECT_NAME}
   microcdr
   microxrcedds_client
+  ${zenohpico_LIBRARY}
   $<$<BOOL:${RMW_UXRCE_GRAPH}>:micro_ros_msgs_lib>
 )
 
@@ -293,7 +308,8 @@ target_include_directories(${PROJECT_NAME}
     $<BUILD_INTERFACE:${PROJECT_SOURCE_DIR}/include>
     $<BUILD_INTERFACE:${PROJECT_BINARY_DIR}/include>
   PRIVATE
-  $<BUILD_INTERFACE:${PROJECT_SOURCE_DIR}/src>
+    $<BUILD_INTERFACE:${PROJECT_SOURCE_DIR}/src>
+    $<BUILD_INTERFACE:${zenohpico_INCLUDE_DIR}>
 )
 
 set_target_properties(${PROJECT_NAME} PROPERTIES
