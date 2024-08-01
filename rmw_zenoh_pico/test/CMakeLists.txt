@@ -25,7 +25,6 @@ macro(rmw_test TEST_NAME TEST_SOURCE)
 
   target_link_libraries(${TEST_NAME}
     microcdr
-    microxrcedds_client
     rmw_microxrcedds)
 
   include_directories(SYSTEM ${PROJECT_SOURCE_DIR}/../src)

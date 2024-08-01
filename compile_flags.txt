@@ -27,7 +27,6 @@
 -I/home/katsumi/Product/zenoh/microros/install/example_interfaces/include
 -I/home/katsumi/Product/zenoh/microros/install/std_srvs/include
 -I/home/katsumi/Product/zenoh/microros/install/geometry_msgs/include
--I/home/katsumi/Product/zenoh/microros/install/microxrcedds_client/include
 -I/home/katsumi/Product/zenoh/microros/install/rosidl_typesupport_microxrcedds_cpp/include
 -I/home/katsumi/Product/zenoh/microros/install/rmw_zenoh_pico/include
 -I/home/katsumi/Product/zenoh/microros/install/actionlib_msgs/include

@@ -13,10 +13,7 @@
 // limitations under the License.
 
 #include <rmw/rmw.h>
-#include <rmw_microxrcedds_c/rmw_c_macros.h>
-
-#include "./rmw_microros_internal/types.h"
-#include "./rmw_microros_internal/error_handling_internal.h"
+#include <rmw_zenoh_pico/rmw_c_macros.h>
 
 rmw_ret_t
 rmw_get_gid_for_publisher(
@@ -29,19 +26,5 @@ rmw_get_gid_for_publisher(
     publisher->implementation_identifier,
     RMW_RET_INCORRECT_RMW_IMPLEMENTATION);
 
-  rmw_uxrce_publisher_t * custom_publisher = (rmw_uxrce_publisher_t *)publisher->data;
-
-  if (sizeof(uxrObjectId) > RMW_GID_STORAGE_SIZE) {
-    RMW_UROS_TRACE_MESSAGE("Not enough memory for impl ids")
-    return RMW_RET_ERROR;
-  }
-
-  memset(gid->data, 0, RMW_GID_STORAGE_SIZE);
-  memcpy(
-    gid->data,
-    &custom_publisher->publisher_id,
-    sizeof(uxrObjectId));
-
-
-  return RMW_RET_OK;
+  return RMW_RET_ERROR;
 }

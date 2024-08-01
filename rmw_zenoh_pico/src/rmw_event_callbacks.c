@@ -13,6 +13,7 @@
 // limitations under the License.
 
 #include <rmw/rmw.h>
+
 #include "./rmw_microros_internal/error_handling_internal.h"
 
 rmw_ret_t

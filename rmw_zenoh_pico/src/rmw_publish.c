@@ -12,21 +12,10 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
+#include <rmw/ret_types.h>
 #include <rmw/rmw.h>
-#include <rmw_microros/rmw_microros.h>
-#include <uxr/client/profile/multithread/multithread.h>
 
-#include "./rmw_microros_internal/types.h"
-#include "./rmw_microros_internal/utils.h"
 #include "./rmw_microros_internal/error_handling_internal.h"
-
-bool flush_session(
-  uxrSession * session,
-  void * args)
-{
-  rmw_uxrce_publisher_t * custom_publisher = (rmw_uxrce_publisher_t *)args;
-  return uxr_run_session_until_confirm_delivery(session, custom_publisher->session_timeout);
-}
 
 rmw_ret_t
 rmw_publish(
@@ -42,52 +31,12 @@ rmw_publish(
   } else if (!ros_message) {
     RMW_UROS_TRACE_MESSAGE("ros_message pointer is null")
     ret = RMW_RET_ERROR;
-  } else if (!is_uxrce_rmw_identifier_valid(publisher->implementation_identifier)) {
-    RMW_UROS_TRACE_MESSAGE("publisher handle not from this implementation")
     ret = RMW_RET_ERROR;
   } else if (!publisher->data) {
     RMW_UROS_TRACE_MESSAGE("publisher imp is null");
     ret = RMW_RET_ERROR;
   } else {
-    rmw_uxrce_publisher_t * custom_publisher = (rmw_uxrce_publisher_t *)publisher->data;
-    const message_type_support_callbacks_t * functions = custom_publisher->type_support_callbacks;
-    uint32_t topic_length = functions->get_serialized_size(ros_message);
-
-    if (custom_publisher->cs_cb_size) {
-      custom_publisher->cs_cb_size(&topic_length);
-    }
-
-    ucdrBuffer mb;
     bool written = false;
-    if (uxr_prepare_output_stream(
-        &custom_publisher->owner_node->context->session,
-        custom_publisher->stream_id, custom_publisher->datawriter_id, &mb,
-        topic_length) ||
-      uxr_prepare_output_stream_fragmented(
-        &custom_publisher->owner_node->context->session,
-        custom_publisher->stream_id, custom_publisher->datawriter_id, &mb,
-        topic_length, flush_session, custom_publisher))
-    {
-      written = functions->cdr_serialize(ros_message, &mb);
-      if (custom_publisher->cs_cb_serialization) {
-        custom_publisher->cs_cb_serialization(&mb);
-      }
-
-      UXR_UNLOCK_STREAM_ID(
-        &custom_publisher->owner_node->context->session,
-        custom_publisher->stream_id);
-
-      if (UXR_BEST_EFFORT_STREAM == custom_publisher->stream_id.type) {
-        uxr_flash_output_streams(&custom_publisher->owner_node->context->session);
-      } else {
-        written &= uxr_run_session_until_confirm_delivery(
-          &custom_publisher->owner_node->context->session, custom_publisher->session_timeout);
-      }
-    }
-    if (!written) {
-      RMW_UROS_TRACE_MESSAGE("error publishing message")
-      ret = RMW_RET_ERROR;
-    }
   }
   return ret;
 }

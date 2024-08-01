@@ -13,10 +13,9 @@
 // limitations under the License.
 
 #include "./rmw_microros_internal/identifiers.h"
-#include "./rmw_microros_internal/utils.h"
 
 const char *
 rmw_get_implementation_identifier()
 {
-  return eprosima_microxrcedds_identifier;
+  return zenoh_pico_identifier;
 }
