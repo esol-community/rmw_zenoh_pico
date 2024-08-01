@@ -15,8 +15,7 @@
 #include <rmw/rmw.h>
 #include <rmw/error_handling.h>
 
-#include <rmw_microxrcedds_c/rmw_c_macros.h>
-#include "./rmw_microros_internal/error_handling_internal.h"
+#include <rmw_zenoh_pico/rmw_c_macros.h>
 
 rmw_ret_t
 rmw_compare_gids_equal(

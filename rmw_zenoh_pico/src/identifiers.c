@@ -14,5 +14,5 @@
 
 #include <rmw_microros_internal/identifiers.h>
 
-const char * const eprosima_microxrcedds_identifier = "rmw_microxrcedds";
-const char * const eprosima_microxrcedds_serialization_format = "cdr";
+const char * const zenoh_pico_identifier = "rmw_zenoh_pico";
+const char * const zenoh_pico_serialization_format = "cdr";

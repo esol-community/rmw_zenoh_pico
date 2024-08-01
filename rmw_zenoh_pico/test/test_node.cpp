@@ -15,7 +15,7 @@
 #include <rmw/rmw.h>
 #include <rmw/validate_namespace.h>
 #include <rmw/validate_node_name.h>
-#include <rmw_microxrcedds_c/config.h>
+#include <rmw_zenoh_pico/config.h>
 
 #include <vector>
 #include <memory>

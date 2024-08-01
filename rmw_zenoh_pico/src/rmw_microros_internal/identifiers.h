@@ -15,7 +15,7 @@
 #ifndef RMW_MICROROS_INTERNAL__IDENTIFIERS_H_
 #define RMW_MICROROS_INTERNAL__IDENTIFIERS_H_
 
-extern const char * const eprosima_microxrcedds_identifier;
-extern const char * const eprosima_microxrcedds_serialization_format;
+extern const char * const zenoh_pico_identifier;
+extern const char * const zenoh_pico_serialization_format;
 
 #endif  // RMW_MICROROS_INTERNAL__IDENTIFIERS_H_

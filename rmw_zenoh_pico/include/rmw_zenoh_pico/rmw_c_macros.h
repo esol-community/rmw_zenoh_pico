@@ -1,4 +1,4 @@
-// Copyright 2018 Proyectos y Sistemas de Mantenimiento SL (eProsima).
+// Copyright 2019 Proyectos y Sistemas de Mantenimiento SL (eProsima).
 //
 // Licensed under the Apache License, Version 2.0 (the "License");
 // you may not use this file except in compliance with the License.
@@ -12,16 +12,18 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-#ifndef RMW_MICROROS_INTERNAL__RMW_PUBLISHER_H_
-#define RMW_MICROROS_INTERNAL__RMW_PUBLISHER_H_
+#ifndef RMW_MICROXRCEDDS_C__RMW_C_MACROS_H_
+#define RMW_MICROXRCEDDS_C__RMW_C_MACROS_H_
 
-#include <rmw/types.h>
-#include <rosidl_runtime_c/message_type_support_struct.h>
+#include <rmw/error_handling.h>
+#include <rmw_microros_internal/identifiers.h>
 
-rmw_publisher_t * create_publisher(
-  const rmw_node_t * node,
-  const rosidl_message_type_support_t * type_support,
-  const char * topic_name,
-  const rmw_qos_profile_t * qos_policies);
+#define RMW_CHECK_TYPE_IDENTIFIERS_MATCH(identifier, ret_on_failure) \
+  { \
+    if (NULL != identifier && strcmp(identifier, zenoh_pico_identifier) != 0) { \
+      RMW_SET_ERROR_MSG("Implementation identifiers does not match"); \
+      return ret_on_failure; \
+    } \
+  }
 
-#endif  // RMW_MICROROS_INTERNAL__RMW_PUBLISHER_H_
+#endif  // RMW_MICROXRCEDDS_C__RMW_C_MACROS_H_

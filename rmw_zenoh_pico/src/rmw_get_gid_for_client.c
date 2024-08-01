@@ -13,10 +13,8 @@
 // limitations under the License.
 
 #include <rmw/rmw.h>
-#include <rmw_microxrcedds_c/rmw_c_macros.h>
-
-#include "./rmw_microros_internal/types.h"
-#include "./rmw_microros_internal/error_handling_internal.h"
+#include <rmw/ret_types.h>
+#include <rmw_zenoh_pico/rmw_c_macros.h>
 
 rmw_ret_t
 rmw_get_gid_for_client(
@@ -29,18 +27,5 @@ rmw_get_gid_for_client(
     client->implementation_identifier,
     RMW_RET_INCORRECT_RMW_IMPLEMENTATION);
 
-  rmw_uxrce_client_t * custom_client = (rmw_uxrce_client_t *)client->data;
-
-  if (sizeof(uxrObjectId) > RMW_GID_STORAGE_SIZE) {
-    RMW_UROS_TRACE_MESSAGE("Not enough memory for impl ids")
-    return RMW_RET_ERROR;
-  }
-
-  memset(gid->data, 0, RMW_GID_STORAGE_SIZE);
-  memcpy(
-    gid->data,
-    &custom_client->client_id,
-    sizeof(uxrObjectId));
-
-  return RMW_RET_OK;
+  return RMW_RET_ERROR;
 }

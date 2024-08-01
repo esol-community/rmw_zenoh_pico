@@ -13,10 +13,9 @@
 // limitations under the License.
 
 #include "./rmw_microros_internal/identifiers.h"
-#include "./rmw_microros_internal/utils.h"
 
 const char *
 rmw_get_serialization_format()
 {
-  return eprosima_microxrcedds_serialization_format;
+  return zenoh_pico_serialization_format;
 }

@@ -3,7 +3,7 @@
 <package format="3">
   <name>rmw_zenoh_pico</name>
   <version>0.0.0</version>
-  <description>Implement the micro-ROS interface using ZettaScale Zenoh Pico.</description>
+  <description>Implement the micro-ROS interface using Zenoh Pico by ZettaScale.</description>
   <maintainer email="v-yamazaki8668@esol.co.jp">Katsumi Yamazaki</maintainer>
   <license>Apache License 2.0</license>
   <author>Borja Outerelo</author>
@@ -15,7 +15,6 @@
 
   <depend>microcdr</depend>
   <depend>rosidl_runtime_c</depend>
-  <depend>microxrcedds_client</depend>
   <depend>rcutils</depend>
   <depend>rmw</depend>
   <depend>rosidl_typesupport_microxrcedds_c</depend>

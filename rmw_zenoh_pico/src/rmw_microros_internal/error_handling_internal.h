@@ -20,7 +20,7 @@
 #define RMW_MICROROS_INTERNAL__ERROR_HANDLING_INTERNAL_H_
 
 #include <rmw/error_handling.h>
-#include <rmw_microxrcedds_c/config.h>
+#include <rmw_zenoh_pico/config.h>
 #include <rmw_microros/error_handling.h>
 
 #if defined(__cplusplus)

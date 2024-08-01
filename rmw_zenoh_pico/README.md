@@ -1,4 +1,4 @@
-# `rmw_zenoh_pico
+# rmw_zenoh_pico
 
-T.D.B`
+T.D.B
 
