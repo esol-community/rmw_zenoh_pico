@@ -17,14 +17,40 @@
 
 #include <rmw/error_handling.h>
 
-#include <rmw_zenoh_pico/identifiers.h>
+#include <rmw_zenoh_pico/rmw_zenoh_pico_identifiers.h>
 
+//
+// for identifier data utilities
+//
 #define RMW_CHECK_TYPE_IDENTIFIERS_MATCH(identifier, ret_on_failure) \
   { \
     if (NULL != identifier && strcmp(identifier, zenoh_pico_identifier) != 0) { \
       RMW_SET_ERROR_MSG("Implementation identifiers does not match"); \
       return ret_on_failure; \
     } \
+  }
+
+//
+// rmw_zenoh_pico private data Generater utilities
+//
+#define ZenohPicoGenerateData(d, t)		\
+  {						\
+    if ((d) == NULL) {				\
+      (d) = (t *)z_malloc(sizeof(t));		\
+      if ((d) != NULL) {			\
+	memset((d), 0, sizeof(t));		\
+	(d)->alloc_ = true;			\
+      }						\
+    }						\
+  }						\
+
+#define ZenohPicoDestroyData(d)			\
+  {						\
+    if((d) != NULL) {				\
+      if((d)->alloc_ == true) {			\
+	z_free((d));				\
+      }						\
+    }						\
   }
 
 #endif  // RMW_ZENOH_PICO_MACROS_H_

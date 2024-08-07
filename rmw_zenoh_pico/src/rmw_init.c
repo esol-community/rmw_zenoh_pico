@@ -12,19 +12,14 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-
 #include <rmw/allocators.h>
 #include <rmw/rmw.h>
 
-#include <string.h>
-#include <zenoh-pico.h>
-
-#include <rmw_zenoh_pico/config.h>
 #include <rmw_zenoh_pico/rmw_zenoh_pico.h>
 
-static rmw_ret_t rmw_zenoh_pico_init_option(rmw_zenoh_pico_transport_params_t *params)
+static rmw_ret_t rmw_zenoh_pico_init_option(ZenohPicoTransportParams *params)
 {
-  params->mode = RMW_ZENOH_PICO_TRANSPORT_MODE;
+  params->mode_ = RMW_ZENOH_PICO_TRANSPORT_MODE;
 
 #if defined(RMW_ZENOH_PICO_TRANSPORT_SERIAL)
   if(strlen(RMW_ZENOH_PICO_SERIAL_DEVICE) > sizeof(params->serial_device)){
@@ -41,12 +36,12 @@ static rmw_ret_t rmw_zenoh_pico_init_option(rmw_zenoh_pico_transport_params_t *p
 
 #if defined (RMW_ZENOH_PICO_TRANSPORT_UNICAST)
   snprintf(buf, sizeof(buf), "tcp/%s:%s", RMW_ZENOH_PICO_CONNECT, RMW_ZENOH_PICO_CONNECT_PORT);
-  if(strlen(buf) >= sizeof(params->connect_addr) -1) {
+  if(strlen(buf) >= sizeof(params->connect_addr_) -1) {
     RMW_UROS_TRACE_MESSAGE("default ip configuration overflow")
       return RMW_RET_INVALID_ARGUMENT;
   }
-  memset(params->connect_addr, 0, sizeof(params->connect_addr));
-  strcpy(params->connect_addr, buf);
+  memset(params->connect_addr_, 0, sizeof(params->connect_addr_));
+  strcpy(params->connect_addr_, buf);
 
 #elif defined (RMW_ZENOH_PICO_TRANSPORT_MCAST)
   snprintf(buf, sizeof(buf), "udp/%s:%s", RMW_ZENOH_PICO_LOCATOR, RMW_ZENOH_PICO_LOCATOR_PORT);
@@ -62,12 +57,12 @@ static rmw_ret_t rmw_zenoh_pico_init_option(rmw_zenoh_pico_transport_params_t *p
   if(strcmp(RMW_ZENOH_PICO_LISTEN_PORT,"-1") != 0){
     memset(buf, 0, sizeof(buf));
     snprintf(buf, sizeof(buf), "tcp/%s:%s", RMW_ZENOH_PICO_LISTEN, RMW_ZENOH_PICO_LISTEN_PORT);
-    if(strlen(buf) >= sizeof(params->listen_addr) -1) {
+    if(strlen(buf) >= sizeof(params->listen_addr_) -1) {
       RMW_UROS_TRACE_MESSAGE("default ip configuration overflow")
 	return RMW_RET_INVALID_ARGUMENT;
     }
-    memset(params->listen_addr, 0, sizeof(params->listen_addr));
-    strcpy(params->listen_addr, buf);
+    memset(params->listen_addr_, 0, sizeof(params->listen_addr_));
+    strcpy(params->listen_addr_, buf);
   }
 
 #endif
@@ -100,15 +95,15 @@ rmw_init_options_init(
   init_options->localhost_only		  = RMW_LOCALHOST_ONLY_DEFAULT;
 
   // This can be call before rmw_init()
-  rmw_zenoh_pico_transport_params_t *params = zp_malloc(sizeof(rmw_zenoh_pico_transport_params_t));
+  ZenohPicoTransportParams *params = zenoh_pico_generate_param(NULL);
 
-  if (!params) {
+  if (params == NULL) {
     RMW_UROS_TRACE_MESSAGE("Not available memory node")
       return RMW_RET_ERROR;
   }
-  memset((char *)params, 0, sizeof(rmw_zenoh_pico_transport_params_t));
 
   if((ret = rmw_zenoh_pico_init_option(params)) != RMW_RET_OK){
+    zenoh_pico_destroy_param(params);
     return ret;
   }
 
@@ -133,15 +128,23 @@ rmw_init_options_copy(
     RMW_UROS_TRACE_MESSAGE("expected zero-initialized dst")
       return RMW_RET_INVALID_ARGUMENT;
   }
+
   memcpy(dst, src, sizeof(rmw_init_options_t));
 
-  unsigned char *dst_contex = zp_malloc(sizeof(rmw_zenoh_pico_transport_params_t));
-  unsigned char *src_contex = (unsigned char *)src->impl;
-
-  if(src_contex != NULL){
-    memcpy(dst_contex, src_contex, sizeof(rmw_zenoh_pico_transport_params_t));
-    dst->impl = (rmw_init_options_impl_t *)dst_contex;
+  ZenohPicoTransportParams *src_contex = (ZenohPicoTransportParams *)src->impl;
+  if(src_contex == NULL){
+    RMW_UROS_TRACE_MESSAGE("source context is zero");
+    return RMW_RET_INVALID_ARGUMENT;
   }
+
+  ZenohPicoTransportParams *dst_contex = zenoh_pico_generate_param(NULL);
+  if(dst_contex == NULL){
+    RMW_UROS_TRACE_MESSAGE("falid new allocation option area");
+    return RMW_RET_ERROR;
+  }
+
+  zenoh_pico_clone_param(dst_contex, src_contex);
+  dst->impl = (rmw_init_options_impl_t *)dst_contex;
 
   return RMW_RET_OK;
 }
@@ -159,16 +162,16 @@ rmw_init_options_fini(
     RMW_RET_INCORRECT_RMW_IMPLEMENTATION);
 
   if(init_options->impl != NULL){
-    z_free(init_options->impl);
+    zenoh_pico_destroy_param((ZenohPicoTransportParams*)init_options->impl);
   }
 
   return RMW_RET_OK;
 }
 
 static rmw_ret_t
-rmw_zenoh_pico_set_unicast_config(rmw_zenoh_pico_transport_params_t *params, z_owned_config_t *config)
+rmw_zenoh_pico_set_unicast_config(ZenohPicoTransportParams *params, z_owned_config_t *config)
 {
-  const char *mode = params->mode;
+  const char *mode = params->mode_;
 
   if(zp_config_insert(z_config_loan(config),
 		      Z_CONFIG_MODE_KEY,
@@ -177,19 +180,19 @@ rmw_zenoh_pico_set_unicast_config(rmw_zenoh_pico_transport_params_t *params, z_o
     return RMW_RET_ERROR;
   }
 
-  if(strlen(params->connect_addr) > 0){
+  if(strlen(params->connect_addr_) > 0){
     if(zp_config_insert(z_config_loan(config),
 			Z_CONFIG_CONNECT_KEY,
-			z_string_make(params->connect_addr)) < 0){
+			z_string_make(params->connect_addr_)) < 0){
       RMW_SET_ERROR_MSG("connect address param setting error.");
       return RMW_RET_ERROR;
     }
   }
 
-  if(strlen(params->listen_addr) > 0){
+  if(strlen(params->listen_addr_) > 0){
     if(zp_config_insert(z_config_loan(config),
 			Z_CONFIG_LISTEN_KEY,
-			z_string_make(params->listen_addr)) < 0){
+			z_string_make(params->listen_addr_)) < 0){
       RMW_SET_ERROR_MSG("listen address param setting error.");
       return RMW_RET_ERROR;
     }
@@ -199,14 +202,14 @@ rmw_zenoh_pico_set_unicast_config(rmw_zenoh_pico_transport_params_t *params, z_o
 }
 
 static rmw_ret_t
-rmw_zenoh_pico_set_mcast_config(rmw_zenoh_pico_transport_params_t *params, z_owned_config_t *config)
+rmw_zenoh_pico_set_mcast_config(ZenohPicoTransportParams *params, z_owned_config_t *config)
 {
   RMW_SET_ERROR_MSG("not support multicast transport, yet.");
   return RMW_RET_ERROR;
 }
 
 static rmw_ret_t
-rmw_zenoh_pico_set_serial_config(rmw_zenoh_pico_transport_params_t *params, z_owned_config_t *config)
+rmw_zenoh_pico_set_serial_config(ZenohPicoTransportParams *params, z_owned_config_t *config)
 {
   RMW_SET_ERROR_MSG("not support serial transport, yet.");
   return RMW_RET_ERROR;
@@ -245,12 +248,12 @@ rmw_init(
     RMW_DEFAULT_DOMAIN_ID != options->domain_id ? options->domain_id : 0u;
 
   // setting zenoh-pico configuration
-  rmw_zenoh_pico_transport_params_t *params = (rmw_zenoh_pico_transport_params_t *)options->impl;
+  ZenohPicoTransportParams *params = (ZenohPicoTransportParams *)options->impl;
   z_owned_config_t config = z_config_default();
 
   {
     rmw_ret_t ret = RMW_RET_OK;
-    const char *mode = params->mode;
+    const char *mode = params->mode_;
 
     if(strncmp(mode, "unicast", sizeof("unicast"))) {
       ret = rmw_zenoh_pico_set_unicast_config(params, &config);
@@ -275,13 +278,18 @@ rmw_init(
 
   if (zp_start_read_task(z_loan(s), NULL) < 0 || zp_start_lease_task(z_loan(s), NULL) < 0) {
     RMW_SET_ERROR_MSG("Unable to start read and lease tasks");
+    z_drop(z_config_move(&config));
     z_close(z_session_move(&s));
     return RMW_RET_ERROR;
   }
 
-  rmw_zenoh_pico_session_t *session = z_malloc(sizeof(rmw_zenoh_pico_session_t));
-  session->session = s;
-  session->config  = config;
+  ZenohPicoSession *session = zenoh_pico_generate_session(NULL, z_move(config), z_move(s));
+  if(session == NULL){
+    RMW_SET_ERROR_MSG("falid generate session data");
+    z_drop(z_config_move(&config));
+    z_close(z_session_move(&s));
+    return RMW_RET_ERROR;
+  }
 
   context->impl = (rmw_context_impl_t *)session;
 
@@ -299,19 +307,19 @@ rmw_shutdown(
     context->implementation_identifier,
     RMW_RET_INCORRECT_RMW_IMPLEMENTATION);
 
-  rmw_zenoh_pico_session_t *session = (rmw_zenoh_pico_session_t *)context->impl;
+  ZenohPicoSession *session = (ZenohPicoSession *)context->impl;
 
   // stop background zenoh task
-  z_owned_session_t s = session->session;
-  zp_stop_read_task(z_session_loan(&s));
-  zp_stop_lease_task(z_session_loan(&s));
+  z_owned_session_t *s = z_move(session->z_session_);
+  zp_stop_read_task(z_session_loan(s));
+  zp_stop_lease_task(z_session_loan(s));
 
-  z_close(z_session_move(&s));
+  z_close(z_session_move(s));
 
   // free context area
   rmw_ret_t ret = rmw_context_fini(context);
 
-  if (RMW_RET_OK == ret) {
+  if (ret == RMW_RET_OK) {
     *context = rmw_get_zero_initialized_context();
   }
 
@@ -326,7 +334,7 @@ rmw_context_fini(
   rmw_ret_t ret = RMW_RET_OK;
 
   if(context->impl != NULL){
-    z_free(context->impl);
+    zenoh_pico_destroy_session((ZenohPicoSession *)context->impl);
     context->impl = NULL;
   }
 

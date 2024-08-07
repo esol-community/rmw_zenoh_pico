@@ -12,7 +12,7 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-#include <rmw_zenoh_pico/identifiers.h>
+#include <rmw_zenoh_pico/rmw_zenoh_pico_identifiers.h>
 
 const char * const zenoh_pico_identifier = "rmw_zenoh_pico";
 const char * const zenoh_pico_serialization_format = "cdr";
