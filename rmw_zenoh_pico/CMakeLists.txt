@@ -108,7 +108,12 @@ if(BUILD_TESTING)
 endif()
 
 set(SRCS
-  src/identifiers.c
+  src/zenoh_pico/zenoh_pico_entity.c
+  src/zenoh_pico/zenoh_pico_identifiers.c
+  src/zenoh_pico/zenoh_pico_node.c
+  src/zenoh_pico/zenoh_pico_topic.c
+  src/zenoh_pico/zenoh_pico_param.c
+  src/zenoh_pico/zenoh_pico_session.c
   src/rmw_client.c
   src/rmw_compare_gids_equal.c
   src/rmw_count.c

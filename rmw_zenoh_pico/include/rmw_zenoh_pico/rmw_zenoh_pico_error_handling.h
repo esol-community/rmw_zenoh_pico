@@ -16,8 +16,8 @@
  * @file
  */
 
-#ifndef RMW_MICROROS_INTERNAL__ERROR_HANDLING_INTERNAL_H_
-#define RMW_MICROROS_INTERNAL__ERROR_HANDLING_INTERNAL_H_
+#ifndef RMW_ZENOH_ERROR_HANDLING_H_
+#define RMW_ZENNH_ERROR_HANDLING_H_
 
 #include <rmw/error_handling.h>
 #include <rmw_zenoh_pico/config.h>
@@ -53,4 +53,4 @@ extern rmw_uros_error_handling error_callback;
 }
 #endif  // if defined(__cplusplus)
 
-#endif  // RMW_MICROROS_INTERNAL__ERROR_HANDLING_INTERNAL_H_
+#endif  // RMW_ZENOH_ERROR_HANDLING_H_
