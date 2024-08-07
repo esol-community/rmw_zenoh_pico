@@ -26,6 +26,7 @@ rmw_create_node(
   const char * namespace_)
 {
   (void)context;
+  printf("rmw_create_node() : check 1\n");
 
   rmw_node_t * rmw_node = NULL;
   if (!name || strlen(name) == 0) {
@@ -40,6 +41,8 @@ rmw_create_node(
 rmw_ret_t rmw_destroy_node(
   rmw_node_t * node)
 {
+  printf("rmw_destroy_node() : check 1\n");
+
   rmw_ret_t ret = RMW_RET_OK;
   if (!node) {
     RMW_UROS_TRACE_MESSAGE("node handle is null")
