@@ -24,7 +24,7 @@ extern "C"
 #define MAX_INET_DEVICE      50
 #define MAX_SERIAL_DEVICE    50
 
-  struct rmw_zenoh_pico_transport_params_s
+  typedef struct rmw_zenoh_pico_transport_params_s
   {
     const char *mode;
 
@@ -39,16 +39,9 @@ extern "C"
 #elif defined (RMW_ZENOH_PICO_TRANSPORT_SERIAL)
     char serial_device[MAX_SERIAL_DEVICE];
 #endif
-  };
-  typedef struct rmw_zenoh_pico_transport_params_s rmw_zenoh_pico_transport_params_t;
+  } rmw_zenoh_pico_transport_params_t;
 
-  struct rmw_context_impl_s
-  {
-    rmw_zenoh_pico_transport_params_t transport_param;
-  };
-  typedef struct rmw_context_impl_s rmw_context_impl_t;
-
-  struct rmw_zenoh_pico_session_s
+  typedef struct rmw_zenoh_pico_session_s
   {
     // configuration data array
     z_owned_config_t config;
@@ -56,8 +49,7 @@ extern "C"
     // An owned session.
     z_owned_session_t session;
 
-  };
-  typedef struct rmw_zenoh_pico_session_s rmw_zenoh_pico_session_t;
+  } rmw_zenoh_pico_session_t;
 
 #if defined(__cplusplus)
 }
