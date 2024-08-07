@@ -15,12 +15,10 @@
 #include <rmw/rmw.h>
 #include <rmw/sanity_checks.h>
 
-#include <rmw_zenoh_pico/config.h>
-#include <rmw_zenoh_pico/rmw_c_macros.h>
-
 #include <rcutils/types/string_array.h>
 
-#include "./rmw_microros_internal/error_handling_internal.h"
+#include <rmw_zenoh_pico/config.h>
+#include <rmw_zenoh_pico/rmw_zenoh_pico.h>
 
 rmw_ret_t
 rmw_get_node_names(

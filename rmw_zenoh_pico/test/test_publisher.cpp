@@ -20,7 +20,6 @@
 #include <rmw_zenoh_pico/config.h>
 
 #include <rosidl_runtime_c/string.h>
-#include <rmw_microros/rmw_microros.h>
 
 #include <vector>
 #include <memory>
