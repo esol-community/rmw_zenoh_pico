@@ -19,7 +19,7 @@
 
 #include "./rmw_base_test.hpp"
 #include "./test_utils.hpp"
-#include "./rmw_microros_internal/types.h"
+#include <rmw_zenoh_pico/rmw_zeonh_pico.h>
 
 /*
  * Testing client construction and destruction.

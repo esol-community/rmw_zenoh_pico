@@ -13,7 +13,8 @@
 // limitations under the License.
 
 #include <rmw/rmw.h>
-#include <rmw_zenoh_pico/rmw_c_macros.h>
+
+#include <rmw_zenoh_pico/rmw_zenoh_pico.h>
 
 rmw_ret_t
 rmw_send_request(

@@ -12,18 +12,15 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-#include "rmw/ret_types.h"
-#include "zenoh-pico/system/platform-common.h"
-#include <rmw_microros_internal/types.h>
-#include <rmw_microros_internal/error_handling_internal.h>
 
-#include <rmw_zenoh_pico/rmw_c_macros.h>
-#include <rmw_zenoh_pico/config.h>
-#include <rmw/rmw.h>
 #include <rmw/allocators.h>
+#include <rmw/rmw.h>
 
 #include <string.h>
 #include <zenoh-pico.h>
+
+#include <rmw_zenoh_pico/config.h>
+#include <rmw_zenoh_pico/rmw_zenoh_pico.h>
 
 static rmw_ret_t rmw_zenoh_pico_init_option(rmw_zenoh_pico_transport_params_t *params)
 {
@@ -283,14 +280,10 @@ rmw_init(
   }
 
   rmw_zenoh_pico_session_t *session = z_malloc(sizeof(rmw_zenoh_pico_session_t));
-  session->zid = s;
-  session->config = config;
+  session->session = s;
+  session->config  = config;
 
   context->impl = (rmw_context_impl_t *)session;
-
-  while (1) {
-    sleep(1);
-  }
 
   return RMW_RET_OK;
 }
@@ -309,7 +302,7 @@ rmw_shutdown(
   rmw_zenoh_pico_session_t *session = (rmw_zenoh_pico_session_t *)context->impl;
 
   // stop background zenoh task
-  z_owned_session_t s = session->zid;
+  z_owned_session_t s = session->session;
   zp_stop_read_task(z_session_loan(&s));
   zp_stop_lease_task(z_session_loan(&s));
 

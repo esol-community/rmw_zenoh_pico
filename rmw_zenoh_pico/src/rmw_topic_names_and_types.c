@@ -16,12 +16,10 @@
 #include <rmw/names_and_types.h>
 
 #include <rmw_zenoh_pico/config.h>
-#include <rmw_zenoh_pico/rmw_c_macros.h>
-
-#include "./rmw_microros_internal/error_handling_internal.h"
+#include <rmw_zenoh_pico/rmw_zenoh_pico.h>
 
 #ifdef RMW_UXRCE_GRAPH
-#include "./rmw_microros_internal/rmw_graph.h"
+#include <rmw_zenoh_pico/rmw_graph.h>
 #endif  // RMW_UXRCE_GRAPH
 
 rmw_ret_t
