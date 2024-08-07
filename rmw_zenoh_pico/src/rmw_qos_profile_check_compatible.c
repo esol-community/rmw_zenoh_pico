@@ -15,7 +15,7 @@
 #include <rmw/rmw.h>
 #include <rmw/types.h>
 #include <rmw/qos_profiles.h>
-#include "./rmw_microros_internal/error_handling_internal.h"
+#include <rmw_zenoh_pico/rmw_zenoh_pico.h>
 
 rmw_ret_t
 rmw_qos_profile_check_compatible(

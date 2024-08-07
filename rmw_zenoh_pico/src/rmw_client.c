@@ -22,7 +22,7 @@
 
 #include <rmw/rmw.h>
 #include <rmw/allocators.h>
-#include "./rmw_microros_internal/error_handling_internal.h"
+#include <rmw_zenoh_pico/rmw_zenoh_pico.h>
 
 rmw_client_t *
 rmw_create_client(

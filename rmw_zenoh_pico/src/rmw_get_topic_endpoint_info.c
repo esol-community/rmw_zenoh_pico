@@ -16,13 +16,12 @@
 #include <rmw/sanity_checks.h>
 
 #include <rmw_zenoh_pico/config.h>
-#include <rmw_zenoh_pico/rmw_c_macros.h>
 #include <rcutils/types/string_array.h>
 
 #include <rmw/get_topic_endpoint_info.h>
 #include <rmw/types.h>
 
-#include "./rmw_microros_internal/error_handling_internal.h"
+#include <rmw_zenoh_pico/rmw_zenoh_pico.h>
 
 rmw_ret_t
 rmw_get_publishers_info_by_topic(

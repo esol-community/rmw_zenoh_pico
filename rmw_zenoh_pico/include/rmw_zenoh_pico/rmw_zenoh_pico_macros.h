@@ -12,11 +12,12 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-#ifndef RMW_MICROXRCEDDS_C__RMW_C_MACROS_H_
-#define RMW_MICROXRCEDDS_C__RMW_C_MACROS_H_
+#ifndef RMW_ZENOH_PICO_MACROS_H_
+#define RMW_ZENOH_PICO_MACROS_H_
 
 #include <rmw/error_handling.h>
-#include <rmw_microros_internal/identifiers.h>
+
+#include <rmw_zenoh_pico/identifiers.h>
 
 #define RMW_CHECK_TYPE_IDENTIFIERS_MATCH(identifier, ret_on_failure) \
   { \
@@ -26,4 +27,4 @@
     } \
   }
 
-#endif  // RMW_MICROXRCEDDS_C__RMW_C_MACROS_H_
+#endif  // RMW_ZENOH_PICO_MACROS_H_

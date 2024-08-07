@@ -15,7 +15,7 @@
 #include <rmw/rmw.h>
 #include <rmw/names_and_types.h>
 
-#include "./rmw_microros_internal/error_handling_internal.h"
+#include <rmw_zenoh_pico/rmw_zenoh_pico.h>
 
 rmw_ret_t
 rmw_trigger_guard_condition(

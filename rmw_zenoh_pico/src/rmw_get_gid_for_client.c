@@ -14,7 +14,8 @@
 
 #include <rmw/rmw.h>
 #include <rmw/ret_types.h>
-#include <rmw_zenoh_pico/rmw_c_macros.h>
+
+#include <rmw_zenoh_pico/rmw_zenoh_pico.h>
 
 rmw_ret_t
 rmw_get_gid_for_client(

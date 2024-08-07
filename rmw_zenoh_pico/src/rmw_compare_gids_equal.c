@@ -15,7 +15,7 @@
 #include <rmw/rmw.h>
 #include <rmw/error_handling.h>
 
-#include <rmw_zenoh_pico/rmw_c_macros.h>
+#include <rmw_zenoh_pico/rmw_zenoh_pico.h>
 
 rmw_ret_t
 rmw_compare_gids_equal(

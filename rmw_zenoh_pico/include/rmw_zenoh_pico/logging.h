@@ -1,29 +1,14 @@
-#ifndef RMW_INIT_H
-#define RMW_INIT_H
+#ifndef LOGGING_H
+#define LOGGING_H
 
-#include <stdio.h>
 #include <stddef.h>
 #include <unistd.h>
 
+#include <rmw/rmw.h>
+#include <rmw/ret_types.h>
+#include <rmw/init_options.h>
+
 #include <zenoh-pico.h>
-
-#include <rmw_microros/rmw_microros.h>
-
-
-struct rmw_context_impl_s
-{
-  rmw_zenoh_pico_transport_params_t transport_param;
-};
-typedef struct rmw_context_impl_s rmw_context_impl_t;
-
-struct rmw_zenoh_pico_session_s
-{
-  z_owned_config_t config;
-  z_owned_session_t zid;
-};
-typedef struct rmw_zenoh_pico_session_s rmw_zenoh_pico_session_t;
-
-// ----------------------
 
 // Timestamp function
 static inline void __z_log_prefix(const char *prefix, const char *func_name) {
@@ -82,4 +67,5 @@ static inline void __z_log_prefix(const char *prefix, const char *func_name) {
     } while (false)
 
 #endif /* ZENOH_DEBUG */
-#endif /* RMW_INIT_H*/
+
+#endif

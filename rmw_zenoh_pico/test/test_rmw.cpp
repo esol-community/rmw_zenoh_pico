@@ -17,7 +17,6 @@
 #include <rmw/rmw.h>
 #include <rmw/init_options.h>
 #include <rcutils/allocator.h>
-#include <rmw_microros/rmw_microros.h>
 
 #include <ctime>
 

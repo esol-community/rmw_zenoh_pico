@@ -12,7 +12,7 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-#include "./rmw_microros_internal/identifiers.h"
+#include <rmw_zenoh_pico/identifiers.h>
 
 const char *
 rmw_get_implementation_identifier()
