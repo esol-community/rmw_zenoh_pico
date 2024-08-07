@@ -30,32 +30,27 @@ extern "C"
 {
 #endif  // if defined(__cplusplus)
 
-#ifdef RMW_UXRCE_TRANSPORT_IPV4
-  #define MAX_IP_LEN         16
-#elif defined(RMW_UXRCE_TRANSPORT_IPV6)
-  #define MAX_IP_LEN         39
-#endif  // ifdef RMW_UXRCE_TRANSPORT_IPV4
-#define MAX_PORT_LEN         5
+#define MAX_INET_DEVICE      50
 #define MAX_SERIAL_DEVICE    50
 
-typedef struct rmw_zenoh_pico_transport_params_t
+struct rmw_zenoh_pico_transport_params_s
 {
-#if defined(RMW_ZENOH_PICO_TRANSPORT_SERIAL)
+  const char *mode;
+
+#if defined(RMW_ZENOH_PICO_TRANSPORT_UNICAST)
+  char connect_addr[MAX_INET_DEVICE];
+  char listen_addr[MAX_INET_DEVICE];
+
+#elif defined (RMW_ZENOH_PICO_TRANSPORT_MCAST)
+  char locator_addr[MAX_INET_DEVICE];
+  char listen_addr[MAX_INET_DEVICE];
+
+#elif defined (RMW_ZENOH_PICO_TRANSPORT_SERIAL)
   char serial_device[MAX_SERIAL_DEVICE];
-#elif defined(RMW_ZENOH_PICO_TRANSPORT_TCP)
-  char session_address[MAX_IP_LEN];
-  char session_port[MAX_PORT_LEN];
-  bool enable_mcast;
-#elif defined(RMW_RMW_ZENOH_PICO_TRANSPORT_CUSTOM)
-  bool framing;
-  void * args;
-  open_custom_func open_cb;
-  close_custom_func close_cb;
-  write_custom_func write_cb;
-  read_custom_func read_cb;
-#endif  // if defined(RMW_RMW_ZENOH_PICO_TRANSPORT_SERIAL)
-  uint32_t client_key;
-} rmw_zenoh_pico_transport_params_t;
+#endif
+};
+
+typedef struct rmw_zenoh_pico_transport_params_s rmw_zenoh_pico_transport_params_t;
 
 #if defined(__cplusplus)
 }
