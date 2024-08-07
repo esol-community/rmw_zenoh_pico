@@ -44,49 +44,52 @@ find_library(zenohpico_LIBRARY
 )
 
 # Build options
-option(BUILD_DOCUMENTATION		"Use doxygen to create product documentation" OFF)
-option(RMW_UROS_ERROR_HANDLING		"Provides error handling callback functionality to user-space" OFF)
+option(BUILD_DOCUMENTATION			"Use doxygen to create product documentation" OFF)
+option(RMW_UROS_ERROR_HANDLING			"Provides error handling callback functionality to user-space" OFF)
 
 # --- RMW CONFIGURATION ---
-set(RMW_ZENOH_PICO_TRANSPORT			"unicast" CACHE STRING "Sets zenoh pico transport to use. (unicast | serial)")
-set(RMW_ZENOH_PICO_IPV			"ipv4" CACHE STRING "Sets IP version to use. (ipv4 | ipv6)")
+set(RMW_ZENOH_PICO_TRANSPORT			"unicast"      CACHE STRING "Sets zenoh pico transport to use. (unicast | serial)")
 
-set(RMW_ZENOH_PICO_MAX_HISTORY		"8" CACHE STRING "This value sets the number of history slots available for RMW subscriptions, requests and replies")
+set(RMW_ZENOH_PICO_TRANSPORT_MODE		"client"       CACHE STRING "zenoh transport connect mode")
+set(RMW_ZENOH_PICO_CONNECT			"127.0.0.1"    CACHE STRING "Sets the scout address.")
+set(RMW_ZENOH_PICO_CONNECT_PORT			"7447"         CACHE STRING "Sets the scout port.")
+set(RMW_ZENOH_PICO_LISTEN			"127.0.0.1"    CACHE STRING "Sets the listen address.")
+set(RMW_ZENOH_PICO_LISTEN_PORT			"-1"           CACHE STRING "Sets the listen port.")
+
+set(RMW_ZENOH_PICO_LOCATOR			"224.0.0.224"  CACHE STRING "Sets the scout address by mcast.")
+set(RMW_ZENOH_PICO_LOCATOR_PORT			"7446"         CACHE STRING "Sets the scout port by mcast.")
+
+set(RMW_ZENOH_PICO_SERIAL_DEVICE                "/dev/ttyAMA0" CACHE STRING "Sets the agent serial port.")
+
+set(RMW_ZENOH_PICO_MAX_HISTORY			"8" CACHE STRING "This value sets the number of history slots available for RMW subscriptions, requests and replies")
+
+set(RMW_ZENOH_PICO_MAX_SESSIONS                 "1" CACHE STRING "This value sets the maximum number of zenoh-pico sessions.")
 set(RMW_ZENOH_PICO_MAX_NODES			"4" CACHE STRING "This value sets the maximum number of nodes.")
 set(RMW_ZENOH_PICO_MAX_PUBLISHERS		"4" CACHE STRING "This value sets the maximum number of publishers for an application.")
 set(RMW_ZENOH_PICO_MAX_SUBSCRIPTIONS		"4" CACHE STRING "This value sets the maximum number of subscriptions for an application.")
-set(RMW_ZENOH_PICO_MAX_SERVICES		"4" CACHE STRING "This value sets the maximum number of services for an application.")
-set(RMW_ZENOH_PICO_MAX_CLIENTS		"4" CACHE STRING "This value sets the maximum number of clients for an application.")
+set(RMW_ZENOH_PICO_MAX_SERVICES			"4" CACHE STRING "This value sets the maximum number of services for an application.")
+set(RMW_ZENOH_PICO_MAX_CLIENTS			"4" CACHE STRING "This value sets the maximum number of clients for an application.")
 set(RMW_ZENOH_PICO_MAX_WAIT_SETS		"4" CACHE STRING "This value sets the maximum number of wait sets for an application.")
-set(RMW_ZENOH_PICO_MAX_GUARD_CONDITION	"4" CACHE STRING "This value sets the maximum number of guard conditions for an application.")
-set(RMW_ZENOH_PICO_MAX_TOPICS		"-1" CACHE STRING
-					"This value sets the maximum number of topics for an application. If set to -1 RMW_ZENOH_PICO_MAX_TOPICS = RMW_ZENOH_PICO_MAX_PUBLISHERS + RMW_ZENOH_PICO_MAX_SUBSCRIPTIONS + RMW_ZENOH_PICO_MAX_NODES.")
-set(RMW_ZENOH_PICO_NODE_NAME_MAX_LENGTH	"60" CACHE STRING "This value sets the maximum number of characters for a node name.")
+set(RMW_ZENOH_PICO_MAX_GUARD_CONDITION		"4" CACHE STRING "This value sets the maximum number of guard conditions for an application.")
+set(RMW_ZENOH_PICO_MAX_TOPICS			"-1" CACHE STRING
+						"This value sets the maximum number of topics for an application. If set to -1 RMW_ZENOH_PICO_MAX_TOPICS = RMW_ZENOH_PICO_MAX_PUBLISHERS + RMW_ZENOH_PICO_MAX_SUBSCRIPTIONS + RMW_ZENOH_PICO_MAX_NODES.")
+set(RMW_ZENOH_PICO_NODE_NAME_MAX_LENGTH		"60" CACHE STRING "This value sets the maximum number of characters for a node name.")
 set(RMW_ZENOH_PICO_TOPIC_NAME_MAX_LENGTH	"60" CACHE STRING "This value sets the maximum number of characters for a topic name.")
-set(RMW_ZENOH_PICO_TYPE_NAME_MAX_LENGTH	"100" CACHE STRING "This value sets the maximum number of characters for a type name.")
+set(RMW_ZENOH_PICO_TYPE_NAME_MAX_LENGTH		"100" CACHE STRING "This value sets the maximum number of characters for a type name.")
 
-set(RMW_ZENOH_PICO_C_STANDARD		"99" CACHE STRING  "Version of the C language used to build the library")
+set(RMW_ZENOH_PICO_C_STANDARD			"99" CACHE STRING  "Version of the C language used to build the library")
 
 # Transport handle define macros.
 set(RMW_ZENOH_PICO_TRANSPORT_SERIAL  OFF)
 set(RMW_ZENOH_PICO_TRANSPORT_UNICAST OFF)
-set(RMW_ZENOH_PICO_TRANSPORT_IPV4    OFF)
-set(RMW_ZENOH_PICO_TRANSPORT_IPV6    OFF)
+set(RMW_ZENOH_PICO_TRANSPORT_MULTICAST OFF)
 
 if(${RMW_ZENOH_PICO_TRANSPORT} STREQUAL "serial")
   set(RMW_ZENOH_PICO_TRANSPORT_SERIAL ON)
-  set(RMW_ZENOH_PICO_DEFAULT_SERIAL_DEVICE "/dev/ttyAMA0" CACHE STRING "Sets the agent serial port.")
-
 elseif(${RMW_ZENOH_PICO_TRANSPORT} STREQUAL "unicast")
   set(RMW_ZENOH_PICO_TRANSPORT_UNICAST ON)
-  if(${RMW_ZENOH_PICO_IPV} STREQUAL "ipv4")
-    set(RMW_ZENOH_PICO_TRANSPORT_IPV4 ON)
-    set(RMW_ZENOH_PICO_DEFAULT_TCP_IP "127.0.0.1" CACHE STRING "Sets the agent IP address.")
-  elseif(${RMW_ZENOH_PICO_IPV} STREQUAL "ipv6")
-    set(RMW_ZENOH_PICO_TRANSPORT_IPV6 ON)
-    set(RMW_ZENOH_PICO_DEFAULT_TCP_IP "::1" CACHE STRING "Sets the agent IP address.")
-  endif()
-  set(RMW_ZENOH_PICO_DEFAULT_TCP_PORT "7447" CACHE STRING "Sets the agent IP port.")
+elseif(${RMW_ZENOH_PICO_TRANSPORT} STREQUAL "mcast")
+  set(RMW_ZENOH_PICO_TRANSPORT_MULTICAST ON)
 else()
   message(FATAL_ERROR "Transport not supported. Use \"unicast\", \"serial\"")
 endif()
