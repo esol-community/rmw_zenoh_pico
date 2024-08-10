@@ -108,7 +108,9 @@ if(BUILD_TESTING)
 endif()
 
 set(SRCS
-  src/zenoh_pico/zenoh_pico_entity.c
+  src/zenoh_pico/liveliness/zenoh_pico_nodeInfo.c
+  src/zenoh_pico/liveliness/zenoh_pico_entity.c
+
   src/zenoh_pico/zenoh_pico_identifiers.c
   src/zenoh_pico/zenoh_pico_node.c
   src/zenoh_pico/zenoh_pico_topic.c
