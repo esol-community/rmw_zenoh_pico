@@ -283,7 +283,10 @@ rmw_init(
     return RMW_RET_ERROR;
   }
 
-  ZenohPicoSession *session = zenoh_pico_generate_session(NULL, z_move(config), z_move(s));
+  ZenohPicoSession *session = zenoh_pico_generate_session(NULL,
+							  z_move(config),
+							  z_move(s),
+							  options->enclave);
   if(session == NULL){
     RMW_SET_ERROR_MSG("falid generate session data");
     z_drop(z_config_move(&config));
