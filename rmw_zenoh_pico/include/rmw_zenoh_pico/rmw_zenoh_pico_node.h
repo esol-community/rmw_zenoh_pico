@@ -16,7 +16,7 @@ extern "C"
 
   typedef struct _ZenohPicoNodeInfo
   {
-    bool alloc_;
+    bool is_alloc_;
 
     _z_string_t domain_id_;
     _z_string_t ns_;
