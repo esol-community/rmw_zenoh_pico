@@ -1,7 +1,12 @@
 #ifndef RMW_ZENOH_PICO_NODE_H
 #define RMW_ZENOH_PICO_NODE_H
 
+#include <rmw/rmw.h>
 #include <zenoh-pico.h>
+
+#include <rmw_zenoh_pico/liveliness/rmw_zenoh_pico_nodeInfo.h>
+#include <rmw_zenoh_pico/liveliness/rmw_zenoh_pico_entity.h>
+
 #include <zenoh-pico/collections/string.h>
 
 #if defined(__cplusplus)
