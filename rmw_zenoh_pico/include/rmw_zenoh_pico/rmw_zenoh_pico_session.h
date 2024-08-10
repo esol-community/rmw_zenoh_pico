@@ -12,6 +12,9 @@ extern "C"
   {
     bool alloc_;
 
+    // Enclave, name used to find security artifacts in a sros2 keystore
+    z_string_t z_enclave_;
+
     // configuration data array
     z_owned_config_t z_config_;
 
@@ -21,8 +24,9 @@ extern "C"
   } ZenohPicoSession;
 
   extern ZenohPicoSession *zenoh_pico_generate_session(ZenohPicoSession *session,
-					    z_owned_config_t *z_config,
-					    z_owned_session_t *z_session);
+						       z_owned_config_t *z_config,
+						       z_owned_session_t *z_session,
+						       const char *enclave);
 
   extern bool zenoh_pico_destroy_session(ZenohPicoSession *session);
 
