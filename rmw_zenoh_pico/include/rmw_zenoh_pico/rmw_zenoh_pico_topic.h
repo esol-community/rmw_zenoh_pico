@@ -10,7 +10,7 @@ extern "C"
 
   typedef struct ZenohPicoTopicInfo_s
   {
-    bool alloc_;
+    bool is_alloc_;
 
     _z_string_t name_;
     _z_string_t type_;

@@ -39,7 +39,7 @@
       (d) = (t *)z_malloc(sizeof(t));		\
       if ((d) != NULL) {			\
 	memset((d), 0, sizeof(t));		\
-	(d)->alloc_ = true;			\
+	(d)->is_alloc_ = true;			\
       }						\
     }						\
   }						\
@@ -47,7 +47,7 @@
 #define ZenohPicoDestroyData(d)			\
   {						\
     if((d) != NULL) {				\
-      if((d)->alloc_ == true) {			\
+      if((d)->is_alloc_ == true) {		\
 	z_free((d));				\
       }						\
     }						\

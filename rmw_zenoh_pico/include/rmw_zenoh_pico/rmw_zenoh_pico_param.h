@@ -15,7 +15,7 @@ extern "C"
 
   typedef struct _ZenohPicoTransportParams
   {
-    bool alloc_;
+    bool is_alloc_;
     const char *mode_;
 
 #if defined(RMW_ZENOH_PICO_TRANSPORT_UNICAST)
