@@ -10,7 +10,7 @@ extern "C"
 
   typedef struct _ZenohPicoSession
   {
-    bool alloc_;
+    bool is_alloc_;
 
     // Enclave, name used to find security artifacts in a sros2 keystore
     z_string_t z_enclave_;
