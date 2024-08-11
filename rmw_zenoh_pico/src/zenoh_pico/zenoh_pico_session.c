@@ -32,8 +32,7 @@ bool zenoh_pico_destroy_session(ZenohPicoSession *session)
   z_drop(z_move(session->z_config_));
   z_drop(z_move(session->z_session_));
 
-  if(session->z_enclave_.len != 0)
-    _z_string_clear(&session->z_enclave_);
+  Z_STRING_FREE(session->z_enclave_);
 
   ZenohPicoDestroyData(session);
 
