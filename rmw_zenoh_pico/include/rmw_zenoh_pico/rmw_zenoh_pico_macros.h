@@ -56,7 +56,7 @@
 //
 // zenoh-pico macro
 //
-#define PRINTF_Z_STRING(_z_str, tag)		\
+#define Z_STRING_PRINTF(_z_str, tag)		\
   {						\
     if(_z_str.len == 0)				\
       printf(#tag " = []\n");			\
@@ -64,11 +64,16 @@
       printf(#tag "= [%s]\n", _z_str.val);	\
   }						\
 
+#define Z_STRING_VAL(s)    (s.val)
+#define Z_STRING_LEN(s)    (s.len)
 #define Z_STRING_ENABLE(s) (s.val != NULL)
+
 #define Z_STRING_FREE(s)			\
   {						\
   if(!Z_STRING_ENABLE(s))			\
     _z_string_clear(&s);			\
   }						\
+
+#define Z_DECLARATION_FREE(s) (_z_declaration_clear(&s))
 
 #endif  // RMW_ZENOH_PICO_MACROS_H_

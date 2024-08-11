@@ -2,69 +2,138 @@
 #include <stdio.h>
 #include <string.h>
 
+#include <rmw/allocators.h>
+#include <rmw/rmw.h>
+
+#include "rmw_zenoh_pico/rmw_zenoh_pico_logging.h"
 #include "rmw_zenoh_pico/rmw_zenoh_pico_macros.h"
 #include "rmw_zenoh_pico/rmw_zenoh_pico_node.h"
+#include "zenoh-pico/api/macros.h"
+#include "zenoh-pico/api/primitives.h"
 
-#include "zenoh-pico/collections/string.h"
-
-const _z_string_t *node_domain(ZenohPicoNodeInfo_t *node)	{ return &node->domain_id_; }
-const _z_string_t *node_namespace(ZenohPicoNodeInfo_t *node)	{ return &node->ns_; }
-const _z_string_t *node_name(ZenohPicoNodeInfo_t *node)		{ return &node->name_; }
-const _z_string_t *node_enclave(ZenohPicoNodeInfo_t *node)	{ return &node->enclave_; }
-
-ZenohPicoNodeInfo_t * zenoh_pico_generate_node(ZenohPicoNodeInfo_t *node,
-				    const char *domain_id,
-				    const char *ns,
-				    const char *name,
-				    const char *enclave)
+ZenohPicoNodeData * zenoh_pico_generate_node_data(ZenohPicoNodeData *node_data,
+						  ZenohPicoSession *session,
+						  ZenohPicoEntity *entity)
 {
-  ZenohPicoGenerateData(node, ZenohPicoNodeInfo_t);
-
-  if(node == NULL)
+  if((session == NULL) || (entity == NULL))
     return NULL;
 
-  node->domain_id_	= (domain_id == NULL) ? _z_string_make("") : _z_string_make(domain_id);
-  node->ns_		= (ns == NULL)        ? _z_string_make("") : _z_string_make(ns);
-  node->name_		= (name == NULL)      ? _z_string_make("") : _z_string_make(name);
-  node->enclave_	= (enclave == NULL)   ? _z_string_make("") : _z_string_make(enclave);
+  ZenohPicoGenerateData(node_data, ZenohPicoNodeData);
+  if(node_data == NULL)
+    return NULL;
 
-  return node;
+  node_data->session_ = session;
+  node_data->entity_ = entity;
+
+  // generate key from entity data
+  {
+    char _buf[128];
+    int ret = generate_liveliness(entity, _buf, sizeof(_buf));
+    if(ret >= (int)(sizeof(_buf) -1))
+      return NULL;
+
+    node_data->key_ =  z_string_make(_buf);
+  }
+
+  return node_data;
 }
 
-static void _zenoh_pico_clear_node_member(ZenohPicoNodeInfo_t *node)
+bool zenoh_pico_destroy_node_data(ZenohPicoNodeData *node_data)
 {
-  if (node->domain_id_.len != 0) _z_string_clear(&node->domain_id_);
-  if (node->ns_.len != 0)	 _z_string_clear(&node->ns_);
-  if (node->name_.len != 0)	 _z_string_clear(&node->name_);
-  if (node->enclave_.len != 0)	 _z_string_clear(&node->enclave_);
-}
+  _Z_DEBUG("%s : start (%p)", __func__, node_data);
 
-bool zenoh_pico_destroy_node(ZenohPicoNodeInfo_t *node)
-{
-  _zenoh_pico_clear_node_member(node);
+  Z_STRING_FREE(node_data->key_);
 
-  ZenohPicoDestroyData(node);
+  if (z_check(node_data->keyexpr_)) {
+      ZenohPicoSession *session = node_data->session_;
+      z_undeclare_keyexpr(z_loan(session->z_session_), &node_data->keyexpr_);
+  }
+
+  // delete entitiy
+  if(node_data->entity_ != NULL){
+    zenoh_pico_destroy_entitiy(node_data->entity_);
+    node_data->entity_ = NULL;
+  }
+
+  ZenohPicoDestroyData(node_data);
 
   return true;
 }
 
-void zenoh_pico_clone_node(ZenohPicoNodeInfo_t *dst, ZenohPicoNodeInfo_t *src)
+void zenoh_pico_debug_node_data(ZenohPicoNodeData *node_data)
 {
-  _zenoh_pico_clear_node_member(dst);
+  printf("--------- node data ----------\n");
+  printf("is_alloc = %d\n", node_data->is_alloc_);
 
-  _z_string_copy(&dst->domain_id_, &src->domain_id_);
-  _z_string_copy(&dst->ns_, &src->ns_);
-  _z_string_copy(&dst->name_, &src->name_);
-  _z_string_copy(&dst->enclave_, &src->enclave_);
+  Z_STRING_PRINTF(node_data->key_, keyexpr);
+
+  z_keyexpr_t *value = node_data->keyexpr_._value;
+  if(value != NULL){
+    printf("z_keyexpr id = %d\n", value->_id);
+    printf("z_keyexpr mapping = %x\n", value->_mapping._val);
+    printf("z_keyexpr suffix = %s\n", value->_suffix);
+  } else {
+    printf("value is zero\n");
+  }
+
+  // debug entity member
+  zenoh_pico_debug_entitiy(node_data->entity_);
 }
 
-void zenoh_pico_debug_node(ZenohPicoNodeInfo_t *node)
+rmw_node_t * rmw_node_generate(rmw_context_t *context, ZenohPicoNodeData *node_data)
 {
-  printf("node info ...\n");
-  printf("\tdomain_id     = %s\n", node->domain_id_.val);
-  printf("\tnamespace     = %s\n", node->ns_.val);
-  printf("\tname          = %s\n", node->name_.val);
-  printf("\tenclave_      = %s\n", node->enclave_.val);
+
+  if(node_data->entity_->node_info_ == NULL)
+    return NULL;
+
+  ZenohPicoNodeInfo_t *node_info = node_data->entity_->node_info_;
+
+  rmw_node_t * node = z_malloc(sizeof(rmw_node_t));
+  if(node == NULL)
+    return NULL;
+
+  memset(node, 0, sizeof(rmw_node_t));
+
+  node->name				= node_info->name_.val;
+  node->namespace_			= node_info->ns_.val;
+  node->data				= (void *)node_data;
+  node->implementation_identifier	= rmw_get_implementation_identifier();
+  node->context				= context;
+
+  return node;
+}
+
+rmw_ret_t rmw_node_destroy(rmw_node_t * node)
+{
+  _Z_DEBUG("%s : start(%p)", __func__, node);
+
+  if(node != NULL){
+    ZenohPicoNodeData *node_data = (ZenohPicoNodeData *)node->data;
+    if(node_data != NULL){
+      zenoh_pico_destroy_node_data(node_data);
+      node_data = NULL;
+    }
+
+    z_free(node);
+  }
+
+  return RMW_RET_OK;
 }
 
 //-----------------------------
+
+bool declaration_node_data(ZenohPicoNodeData *node_data)
+{
+  ZenohPicoSession *session = node_data->session_;
+  const char *keyexpr = Z_STRING_VAL(node_data->key_);
+
+  _Z_DEBUG("Declaring key expression '%s'...\n", keyexpr);
+  node_data->keyexpr_ = z_declare_keyexpr(z_loan(session->z_session_), z_keyexpr(keyexpr));
+  if (!z_check(node_data->keyexpr_)) {
+    return false;
+  }
+
+  zenoh_pico_debug_node_data(node_data);
+
+  return true;
+}

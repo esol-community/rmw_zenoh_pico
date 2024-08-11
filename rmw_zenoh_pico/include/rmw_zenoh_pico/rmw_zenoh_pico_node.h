@@ -6,6 +6,9 @@
 
 #include <rmw_zenoh_pico/liveliness/rmw_zenoh_pico_nodeInfo.h>
 #include <rmw_zenoh_pico/liveliness/rmw_zenoh_pico_entity.h>
+#include <rmw_zenoh_pico/liveliness/rmw_zenoh_pico_liveliness.h>
+
+#include <rmw_zenoh_pico/rmw_zenoh_pico_session.h>
 
 #include <zenoh-pico/collections/string.h>
 
@@ -14,30 +17,34 @@ extern "C"
 {
 #endif  // if defined(__cplusplus)
 
-  typedef struct _ZenohPicoNodeInfo
+  typedef struct _ZenohPicoNodeData
   {
     bool is_alloc_;
 
-    _z_string_t domain_id_;
-    _z_string_t ns_;
-    _z_string_t name_;
-    _z_string_t enclave_;
-  } ZenohPicoNodeInfo_t;
+    // Liveliness key for the node.
+    _z_string_t key_;
+    z_owned_keyexpr_t keyexpr_;
 
-  extern const _z_string_t *node_domain(ZenohPicoNodeInfo_t *node);
-  extern const _z_string_t *node_namespace(ZenohPicoNodeInfo_t *node);
-  extern const _z_string_t *node_name(ZenohPicoNodeInfo_t *node);
-  extern const _z_string_t *node_enclave(ZenohPicoNodeInfo_t *node);
+    // this node session
+    ZenohPicoSession *session_;
 
-  extern ZenohPicoNodeInfo_t *zenoh_pico_generate_node(ZenohPicoNodeInfo_t *node,
-					    const char *domain_id,
-					    const char *ns,
-					    const char *name,
-					    const char *enclave);
-  extern bool zenoh_pico_destroy_node(ZenohPicoNodeInfo_t *node);
+    // this node entity
+    ZenohPicoEntity *entity_;
 
-  extern void zenoh_pico_clone_node(ZenohPicoNodeInfo_t *dst, ZenohPicoNodeInfo_t *src);
-  extern void zenoh_pico_debug_node(ZenohPicoNodeInfo_t *node);
+  } ZenohPicoNodeData;
+
+  extern ZenohPicoNodeData * zenoh_pico_generate_node_data(ZenohPicoNodeData *node_data,
+							   ZenohPicoSession *session,
+							   ZenohPicoEntity *entity);
+  extern bool zenoh_pico_destroy_node_data(ZenohPicoNodeData *node_data);
+  extern void zenoh_pico_debug_node_data(ZenohPicoNodeData *node_data);
+
+  extern rmw_node_t * rmw_node_generate(rmw_context_t *context, ZenohPicoNodeData *node_data);
+  extern rmw_ret_t rmw_node_destroy(rmw_node_t * node);
+
+  // --------------------------
+
+  extern bool declaration_node_data(ZenohPicoNodeData *node_data);
 
 #if defined(__cplusplus)
 }

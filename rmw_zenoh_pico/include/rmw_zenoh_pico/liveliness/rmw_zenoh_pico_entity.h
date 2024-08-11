@@ -7,7 +7,7 @@
 #include <zenoh-pico.h>
 
 #include "rmw_zenoh_pico/liveliness/rmw_zenoh_pico_nodeInfo.h"
-#include "rmw_zenoh_pico/rmw_zenoh_pico_topic.h"
+#include "rmw_zenoh_pico/liveliness/rmw_zenoh_pico_topicInfo.h"
 
 #if defined(__cplusplus)
 extern "C"
@@ -28,8 +28,8 @@ extern "C"
     bool is_alloc_;
 
     _z_string_t zid_;
-    _z_string_t id_;
-    _z_string_t nid_;
+    size_t id_;
+    size_t nid_;
 
     ZenohPicoEntityType type_;
 
@@ -38,29 +38,26 @@ extern "C"
 
   } ZenohPicoEntity;
 
-  // getter entry
-  extern const _z_string_t *entity_zid(ZenohPicoEntity *entity);
-  extern const _z_string_t *entity_nid(ZenohPicoEntity *entity);
-  extern const _z_string_t *entity_id(ZenohPicoEntity *entity);
+  extern const char *get_zid(ZenohPicoEntity *entity);
+  extern size_t get_nid(ZenohPicoEntity *entity);
+  extern size_t get_id(ZenohPicoEntity *entity);
+  extern ZenohPicoEntityType get_type(ZenohPicoEntity *entity);
 
-  extern ZenohPicoEntityType entity_type(ZenohPicoEntity *entity);
+  extern size_t get_node_domain(ZenohPicoEntity *entity);
+  extern const char *get_node_enclave(ZenohPicoEntity *entity);
+  extern const char *get_node_namespace(ZenohPicoEntity *entity);
+  extern const char *get_node_name(ZenohPicoEntity *entity);
 
-  extern bool entity_enable_node(ZenohPicoEntity *entity);
-  extern const _z_string_t *entity_node_domain(ZenohPicoEntity *entity);
-  extern const _z_string_t *entity_node_namespace(ZenohPicoEntity *entity);
-  extern const _z_string_t *entity_node_name(ZenohPicoEntity *entity);
-  extern const _z_string_t *entity_node_enclave(ZenohPicoEntity *entity);
-
-  extern bool entity_enable_topic(ZenohPicoEntity *entity);
-  extern const _z_string_t *entity_topic_name(ZenohPicoEntity *entity);
-  extern const _z_string_t *entity_topic_type(ZenohPicoEntity *entity);
-  extern const _z_string_t *entity_topic_typehash(ZenohPicoEntity *entity);
+  extern const char *get_topic_name(ZenohPicoEntity *entity);
+  extern const char *get_topic_type(ZenohPicoEntity *entity);
+  extern const char *get_topic_hash(ZenohPicoEntity *entity);
+  extern const char *get_topic_qos(ZenohPicoEntity *entity);
 
   // functions
   extern ZenohPicoEntity * zenoh_pico_generate_entitiy(ZenohPicoEntity *entity,
 						       z_id_t zid,
-						       const char *id,
-						       const char *nid,
+						       size_t id,
+						       size_t nid,
 						       ZenohPicoEntityType type,
 						       ZenohPicoNodeInfo_t *node_info,
 						       ZenohPicoTopicInfo_t *topic_info);
@@ -71,6 +68,7 @@ extern "C"
   extern void zenoh_pico_debug_entitiy(ZenohPicoEntity *entity);
 
 // -------------------------------------------------
+
   extern size_t zenoh_pico_get_next_entity_id(void);
 
 #if defined(__cplusplus)

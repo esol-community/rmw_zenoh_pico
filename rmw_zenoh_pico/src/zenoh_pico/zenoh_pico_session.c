@@ -6,7 +6,6 @@
 
 #include "zenoh-pico/api/macros.h"
 #include "zenoh-pico/api/primitives.h"
-#include "zenoh-pico/collections/string.h"
 
 ZenohPicoSession *zenoh_pico_generate_session(ZenohPicoSession *session,
 					      z_owned_config_t *z_config,
@@ -23,6 +22,9 @@ ZenohPicoSession *zenoh_pico_generate_session(ZenohPicoSession *session,
 
   if(enclave != NULL)
     session->z_enclave_ = z_string_make(enclave);
+
+  session->graph_guard_condition.implementation_identifier = zenoh_pico_identifier;
+  session->graph_guard_condition.data = NULL;
 
   return session;
 }
