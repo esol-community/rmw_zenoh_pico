@@ -1,6 +1,7 @@
 #ifndef RMW_ZENOH_PICO_SESSION_H
 #define RMW_ZENOH_PICO_SESSION_H
 
+#include <rmw/rmw.h>
 #include <zenoh-pico.h>
 
 #if defined(__cplusplus)
@@ -20,6 +21,9 @@ extern "C"
 
     // An owned session.
     z_owned_session_t z_session_;
+
+    // graph infomation
+    rmw_guard_condition_t graph_guard_condition;
 
   } ZenohPicoSession;
 

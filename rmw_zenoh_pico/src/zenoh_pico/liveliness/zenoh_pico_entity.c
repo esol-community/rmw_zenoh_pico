@@ -1,40 +1,29 @@
 
-#include "rmw_zenoh_pico/liveliness/rmw_zenoh_pico_nodeInfo.h"
 #include "rmw_zenoh_pico/rmw_zenoh_pico_macros.h"
-#include "rmw_zenoh_pico/rmw_zenoh_pico_topic.h"
 
+#include "rmw_zenoh_pico/liveliness/rmw_zenoh_pico_nodeInfo.h"
+#include "rmw_zenoh_pico/liveliness/rmw_zenoh_pico_topicInfo.h"
 #include "rmw_zenoh_pico/liveliness/rmw_zenoh_pico_entity.h"
 
-const _z_string_t *entity_zid(ZenohPicoEntity *entity)		{ return &entity->zid_; }
-const _z_string_t *entity_nid(ZenohPicoEntity *entity)		{ return &entity->nid_; }
-ZenohPicoEntityType entity_type(ZenohPicoEntity *entity)	{ return entity->type_; }
+const char *get_zid(ZenohPicoEntity *entity)	        { return Z_STRING_VAL(entity->zid_); }
+size_t get_nid(ZenohPicoEntity *entity)		        { return entity->nid_; }
+size_t get_id(ZenohPicoEntity *entity)		        { return entity->id_; }
+ZenohPicoEntityType get_type(ZenohPicoEntity *entity)   { return entity->type_; }
 
-const _z_string_t *entity_node_domain(ZenohPicoEntity *entity) {
-  return node_domain(entity->node_info_);
-}
-const _z_string_t *entity_node_namespace(ZenohPicoEntity *entity) {
-  return node_namespace(entity->node_info_);
-}
-const _z_string_t *entity_node_name(ZenohPicoEntity *entity) {
-  return node_name(entity->node_info_);
-}
-const _z_string_t *entity_node_enclave(ZenohPicoEntity *entity) {
-  return node_enclave(entity->node_info_);
-}
-const _z_string_t *entity_topic_name(ZenohPicoEntity *entity)	{
-  return topic_name(entity->topic_info_);
-}
-const _z_string_t *entity_topic_type(ZenohPicoEntity *entity)	{
-  return topic_type(entity->topic_info_);
-}
-const _z_string_t *entity_topic_typehash(ZenohPicoEntity *entity) {
-  return topic_typehash(entity->topic_info_);
-}
+size_t get_node_domain(ZenohPicoEntity *entity)         { return node_domain_id(entity->node_info_); }
+const char *get_node_enclave(ZenohPicoEntity *entity)	{ return node_enclave(entity->node_info_); }
+const char *get_node_namespace(ZenohPicoEntity *entity)	{ return node_namespace(entity->node_info_); }
+const char *get_node_name(ZenohPicoEntity *entity)	{ return node_name(entity->node_info_); }
+
+const char *get_topic_name(ZenohPicoEntity *entity)     { return topic_name(entity->topic_info_); }
+const char *get_topic_type(ZenohPicoEntity *entity)     { return topic_type(entity->topic_info_); }
+const char *get_topic_hash(ZenohPicoEntity *entity)     { return topic_hash(entity->topic_info_); }
+const char *get_topic_qos(ZenohPicoEntity *entity)      { return topic_qos(entity->topic_info_); }
 
 ZenohPicoEntity * zenoh_pico_generate_entitiy(ZenohPicoEntity *entity,
 					      z_id_t zid,
-					      const char *id,
-					      const char *nid,
+					      size_t id,
+					      size_t nid,
 					      ZenohPicoEntityType type,
 					      ZenohPicoNodeInfo_t *node_info,
 					      ZenohPicoTopicInfo_t *topic_info)
@@ -56,9 +45,10 @@ ZenohPicoEntity * zenoh_pico_generate_entitiy(ZenohPicoEntity *entity,
     entity->zid_ = _z_string_make("");
   }
 
-  entity->id_		= (nid != NULL) ? _z_string_make("") : _z_string_make(id);
-  entity->nid_		= (nid != NULL) ? _z_string_make("") : _z_string_make(nid);
+  entity->id_		= id;
+  entity->nid_		= nid;
   entity->type_		= type;
+
   entity->node_info_	= node_info;
   entity->topic_info_	= topic_info;
 
@@ -68,8 +58,6 @@ ZenohPicoEntity * zenoh_pico_generate_entitiy(ZenohPicoEntity *entity,
 static void _zenoh_pico_clear_entitiy_menber(ZenohPicoEntity *entity)
 {
   Z_STRING_FREE(entity->zid_);
-  Z_STRING_FREE(entity->id_);
-  Z_STRING_FREE(entity->nid_);
 }
 
 void zenoh_pico_destroy_entitiy(ZenohPicoEntity *entity)
@@ -82,7 +70,7 @@ void zenoh_pico_destroy_entitiy(ZenohPicoEntity *entity)
   }
 
   if(entity->topic_info_ != NULL){
-    zenoh_pico_destroy_topic(entity->topic_info_);
+    zenoh_pico_destroy_topic_info(entity->topic_info_);
     entity->topic_info_ = NULL;
   }
 
@@ -92,30 +80,27 @@ void zenoh_pico_destroy_entitiy(ZenohPicoEntity *entity)
 void zenoh_pico_clone_entitiy(ZenohPicoEntity *dst, ZenohPicoEntity *src)
 {
   _z_string_copy(&dst->zid_, &src->zid_);
-  _z_string_copy(&dst->id_, &src->id_);
-  _z_string_copy(&dst->nid_, &src->nid_);
-
-  dst->type_ = src->type_;
+  dst->id_	= src->id_;
+  dst->nid_	= src->nid_;
+  dst->type_	= src->type_;
 
   if(src->node_info_ != NULL)
     zenoh_pico_clone_node_info(dst->node_info_, src->node_info_);
 
   if(src->topic_info_ != NULL)
-    zenoh_pico_clone_topic(dst->topic_info_, src->topic_info_);
+    zenoh_pico_clone_topic_info(dst->topic_info_, src->topic_info_);
 
   return;
 }
-
-
 
 void zenoh_pico_debug_entitiy(ZenohPicoEntity *entity)
 {
   printf("--------- entity data ----------\n");
   printf("is_alloc = %d\n", entity->is_alloc_);
 
-  PRINTF_Z_STRING(entity->zid_, zid);
-  PRINTF_Z_STRING(entity->id_, id);
-  PRINTF_Z_STRING(entity->nid_, nid);
+  Z_STRING_PRINTF(entity->zid_, zid);
+  printf("id  = %ld\n", entity->id_);
+  printf("nid = %ld\n", entity->nid_);
 
   const char *_type_name = "unknown type";
   switch(entity->type_){
@@ -135,7 +120,7 @@ void zenoh_pico_debug_entitiy(ZenohPicoEntity *entity)
 
   // debug topic_info
   if(entity->topic_info_ != NULL)
-    zenoh_pico_debug_topic(entity->topic_info_);
+    zenoh_pico_debug_topic_info(entity->topic_info_);
   else
     printf("not found topic info\n");
 

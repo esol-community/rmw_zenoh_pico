@@ -15,20 +15,20 @@ extern "C"
   {
     bool is_alloc_;
 
-    _z_string_t domain_id_;
+    size_t      domain_id_;
     _z_string_t ns_;
     _z_string_t name_;
     _z_string_t enclave_;
 
   } ZenohPicoNodeInfo_t;
 
-  extern const _z_string_t *node_domain(ZenohPicoNodeInfo_t *node);
-  extern const _z_string_t *node_namespace(ZenohPicoNodeInfo_t *node);
-  extern const _z_string_t *node_name(ZenohPicoNodeInfo_t *node);
-  extern const _z_string_t *node_enclave(ZenohPicoNodeInfo_t *node);
+  extern size_t node_domain_id(ZenohPicoNodeInfo_t *node);
+  extern const char *node_enclave(ZenohPicoNodeInfo_t *node);
+  extern const char *node_namespace(ZenohPicoNodeInfo_t *node);
+  extern const char *node_name(ZenohPicoNodeInfo_t *node);
 
   extern ZenohPicoNodeInfo_t *zenoh_pico_generate_node_info(ZenohPicoNodeInfo_t *node,
-							    const char *domain_id,
+							    size_t domain_id,
 							    const char *ns,
 							    const char *name,
 							    const char *enclave);
