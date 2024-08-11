@@ -53,4 +53,22 @@
     }						\
   }
 
+//
+// zenoh-pico macro
+//
+#define PRINTF_Z_STRING(_z_str, tag)		\
+  {						\
+    if(_z_str.len == 0)				\
+      printf(#tag " = []\n");			\
+    else					\
+      printf(#tag "= [%s]\n", _z_str.val);	\
+  }						\
+
+#define Z_STRING_ENABLE(s) (s.val != NULL)
+#define Z_STRING_FREE(s)			\
+  {						\
+  if(!Z_STRING_ENABLE(s))			\
+    _z_string_clear(&s);			\
+  }						\
+
 #endif  // RMW_ZENOH_PICO_MACROS_H_

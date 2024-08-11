@@ -36,9 +36,9 @@ ZenohPicoTopicInfo_t *zenoh_pico_generate_topic(ZenohPicoTopicInfo_t *topic,
 
 static void _zenoh_pico_clear_topic_member(ZenohPicoTopicInfo_t *topic)
 {
-  if (topic->name_.len != 0)	 _z_string_clear(&topic->name_);
-  if (topic->type_.len != 0)	 _z_string_clear(&topic->type_);
-  if (topic->typehash_.len != 0) _z_string_clear(&topic->typehash_);
+  Z_STRING_FREE(topic->name_);
+  Z_STRING_FREE(topic->type_);
+  Z_STRING_FREE(topic->typehash_);
 }
 
 bool zenoh_pico_destroy_topic(ZenohPicoTopicInfo_t *topic)
