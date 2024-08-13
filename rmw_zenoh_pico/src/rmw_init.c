@@ -269,30 +269,16 @@ rmw_init(
       return ret;
   }
 
-  _Z_INFO("Opening session...");
-  z_owned_session_t s = z_open(z_config_move(&config));
-  if (!z_session_check(&s)) {
-    RMW_SET_ERROR_MSG("Error setting up zenoh session");
-    return RMW_RET_ERROR;
-  }
-
-  if (zp_start_read_task(z_loan(s), NULL) < 0 || zp_start_lease_task(z_loan(s), NULL) < 0) {
-    RMW_SET_ERROR_MSG("Unable to start read and lease tasks");
-    z_drop(z_config_move(&config));
-    z_close(z_session_move(&s));
-    return RMW_RET_ERROR;
-  }
-
   ZenohPicoSession *session = zenoh_pico_generate_session(NULL,
 							  z_move(config),
-							  z_move(s),
 							  options->enclave);
   if(session == NULL){
     RMW_SET_ERROR_MSG("falid generate session data");
     z_drop(z_config_move(&config));
-    z_close(z_session_move(&s));
     return RMW_RET_ERROR;
   }
+
+  session_connect(session);
 
   context->impl = (rmw_context_impl_t *)session;
 
@@ -313,7 +299,7 @@ rmw_shutdown(
   ZenohPicoSession *session = (ZenohPicoSession *)context->impl;
 
   // stop background zenoh task
-  z_owned_session_t *s = z_move(session->z_session_);
+  z_owned_session_t *s = z_move(session->session_);
   zp_stop_read_task(z_session_loan(s));
   zp_stop_lease_task(z_session_loan(s));
 

@@ -57,7 +57,7 @@ rmw_create_node(
 					    context->actual_domain_id,
 					    namespace_,
 					    name,
-					    session->z_enclave_.val);
+					    session->enclave_.val);
   if(node_info == NULL){
     return NULL;
   }
@@ -68,7 +68,7 @@ rmw_create_node(
   // when this node_info is destroy, this entity is destroy.
   size_t _entity_id = zenoh_pico_get_next_entity_id();
   ZenohPicoEntity *entity = zenoh_pico_generate_entitiy(NULL,
-							z_info_zid(z_loan(session->z_session_)),
+							z_info_zid(z_loan(session->session_)),
 							_entity_id,
 							_entity_id,
 							Node,
