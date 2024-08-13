@@ -46,7 +46,7 @@ bool zenoh_pico_destroy_node_data(ZenohPicoNodeData *node_data)
 
   if (z_check(node_data->keyexpr_)) {
       ZenohPicoSession *session = node_data->session_;
-      z_undeclare_keyexpr(z_loan(session->z_session_), &node_data->keyexpr_);
+      z_undeclare_keyexpr(z_loan(session->session_), &node_data->keyexpr_);
   }
 
   // delete entitiy
@@ -128,7 +128,7 @@ bool declaration_node_data(ZenohPicoNodeData *node_data)
   const char *keyexpr = Z_STRING_VAL(node_data->key_);
 
   _Z_DEBUG("Declaring key expression '%s'...\n", keyexpr);
-  node_data->keyexpr_ = z_declare_keyexpr(z_loan(session->z_session_), z_keyexpr(keyexpr));
+  node_data->keyexpr_ = z_declare_keyexpr(z_loan(session->session_), z_keyexpr(keyexpr));
   if (!z_check(node_data->keyexpr_)) {
     return false;
   }
