@@ -1,6 +1,7 @@
 #include <stdio.h>
 #include <string.h>
 
+#include "rmw/ret_types.h"
 #include "rmw_zenoh_pico/rmw_zenoh_pico_macros.h"
 #include "rmw_zenoh_pico/rmw_zenoh_pico_session.h"
 #include <rmw_zenoh_pico/rmw_zenoh_pico.h>
@@ -51,7 +52,9 @@ bool zenoh_pico_clone_session(ZenohPicoSession *dst, ZenohPicoSession *src)
   return true;
 }
 
-bool session_connect(ZenohPicoSession *session)
+// --------------------
+
+rmw_ret_t session_connect(ZenohPicoSession *session)
 {
   z_owned_config_t *config = &session->config_;
 
@@ -70,4 +73,5 @@ bool session_connect(ZenohPicoSession *session)
     return RMW_RET_ERROR;
   }
 
+  return RMW_RET_OK;
 }

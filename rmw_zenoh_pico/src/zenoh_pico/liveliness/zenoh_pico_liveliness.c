@@ -5,6 +5,7 @@
 #include "rmw_zenoh_pico/rmw_zenoh_pico_macros.h"
 #include "rmw_zenoh_pico/liveliness/rmw_zenoh_pico_entity.h"
 #include "rmw_zenoh_pico/liveliness/rmw_zenoh_pico_liveliness.h"
+#include "zenoh-pico/api/primitives.h"
 #include "zenoh-pico/collections/string.h"
 
 #include <rmw_zenoh_pico/rmw_zenoh_pico.h>
@@ -110,13 +111,13 @@ static bool add_delimiter(char **buf, int *left)
 
 #define APPEND_DELIMITER(b, s)  add_delimiter(b, s)
 
-size_t generate_liveliness(ZenohPicoEntity *entity, char *buf, size_t size)
+z_string_t generate_liveliness(ZenohPicoEntity *entity)
 {
-  int left_size = size;
+  char buf[RMW_ZENOH_PICO_MAX_LINENESS_LEN];
+  int left_size = sizeof(buf);
   char *buf_ptr = buf;
-  int ret = 0;
 
-  memset(buf, 0, size);
+  memset(buf, 0, sizeof(buf));
 
   // generate part of node
   if(entity->node_info_ != NULL) {
@@ -177,10 +178,7 @@ size_t generate_liveliness(ZenohPicoEntity *entity, char *buf, size_t size)
     }
   }
 
-  if(left_size < 0)
-    return -1;
-
-  return ret;
+  return z_string_make(buf);
 }
 
 z_string_t conv_domain(size_t domain){
@@ -200,6 +198,7 @@ static const uint8_t INVALID_NIBBLE	= 0xff;
 
 z_string_t convert_hash(const rosidl_type_hash_t * type_hash)
 {
+  printf("type_hash = %p\n", type_hash);
   char _hash_data[RIHS01_STRING_LEN +1];
 
   memset(_hash_data, 0, sizeof(_hash_data));
