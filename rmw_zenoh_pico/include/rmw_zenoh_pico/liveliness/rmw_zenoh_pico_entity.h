@@ -25,7 +25,7 @@ extern "C"
 
   typedef struct _ZenohPicoEntity
   {
-    bool is_alloc_;
+    int ref_;
 
     _z_string_t zid_;
     size_t id_;
@@ -61,10 +61,7 @@ extern "C"
 						       ZenohPicoEntityType type,
 						       ZenohPicoNodeInfo_t *node_info,
 						       ZenohPicoTopicInfo_t *topic_info);
-
   extern void zenoh_pico_destroy_entitiy(ZenohPicoEntity *entity);
-
-  extern void zenoh_pico_clone_entitiy(ZenohPicoEntity *dst, ZenohPicoEntity *src);
   extern void zenoh_pico_debug_entitiy(ZenohPicoEntity *entity);
 
 // -------------------------------------------------

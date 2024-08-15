@@ -17,14 +17,13 @@ static void _zenoh_pico_clear_node_info_member(ZenohPicoNodeInfo_t *node)
   Z_STRING_FREE(node->enclave_);
 }
 
-ZenohPicoNodeInfo_t * zenoh_pico_generate_node_info(ZenohPicoNodeInfo_t *node,
-						    z_string_t *domain,
+ZenohPicoNodeInfo_t * zenoh_pico_generate_node_info(z_string_t *domain,
 						    z_string_t *ns,
 						    z_string_t *name,
 						    z_string_t *enclave)
 {
+  ZenohPicoNodeInfo_t *node = NULL;
   ZenohPicoGenerateData(node, ZenohPicoNodeInfo_t);
-
   if(node == NULL)
     return NULL;
 
@@ -38,6 +37,21 @@ ZenohPicoNodeInfo_t * zenoh_pico_generate_node_info(ZenohPicoNodeInfo_t *node,
   return node;
 }
 
+ZenohPicoNodeInfo_t *zenoh_pico_clone_node_info(ZenohPicoNodeInfo_t *src)
+{
+  ZenohPicoNodeInfo_t *node = NULL;
+  ZenohPicoGenerateData(node, ZenohPicoNodeInfo_t);
+  if(node == NULL)
+    return NULL;
+
+  _z_string_copy(&node->domain_, &src->domain_);
+  _z_string_copy(&node->ns_, &src->ns_);
+  _z_string_copy(&node->name_, &src->name_);
+  _z_string_copy(&node->enclave_, &src->enclave_);
+
+  return node;
+}
+
 bool zenoh_pico_destroy_node_info(ZenohPicoNodeInfo_t *node)
 {
   _zenoh_pico_clear_node_info_member(node);
@@ -47,15 +61,6 @@ bool zenoh_pico_destroy_node_info(ZenohPicoNodeInfo_t *node)
   return true;
 }
 
-void zenoh_pico_clone_node_info(ZenohPicoNodeInfo_t *dst, ZenohPicoNodeInfo_t *src)
-{
-  _zenoh_pico_clear_node_info_member(dst);
-
-  _z_string_copy(&dst->domain_, &src->domain_);
-  _z_string_copy(&dst->ns_, &src->ns_);
-  _z_string_copy(&dst->name_, &src->name_);
-  _z_string_copy(&dst->enclave_, &src->enclave_);
-}
 
 void zenoh_pico_debug_node_info(ZenohPicoNodeInfo_t *node)
 {

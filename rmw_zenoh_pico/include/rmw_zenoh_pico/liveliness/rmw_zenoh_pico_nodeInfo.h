@@ -13,7 +13,7 @@ extern "C"
 
   typedef struct _ZenohPicoNodeInfo
   {
-    bool is_alloc_;
+    int ref_;
 
     z_string_t domain_;
     z_string_t ns_;
@@ -27,15 +27,13 @@ extern "C"
   extern const char *node_namespace(ZenohPicoNodeInfo_t *node);
   extern const char *node_name(ZenohPicoNodeInfo_t *node);
 
-  extern ZenohPicoNodeInfo_t *zenoh_pico_generate_node_info(ZenohPicoNodeInfo_t *node,
-							    z_string_t *domain,
+  extern ZenohPicoNodeInfo_t *zenoh_pico_generate_node_info(z_string_t *domain,
 							    z_string_t *ns,
 							    z_string_t *name,
 							    z_string_t *enclave);
-
+  extern ZenohPicoNodeInfo_t *zenoh_pico_clone_node_info(ZenohPicoNodeInfo_t *node_info);
   extern bool zenoh_pico_destroy_node_info(ZenohPicoNodeInfo_t *node);
 
-  extern void zenoh_pico_clone_node_info(ZenohPicoNodeInfo_t *dst, ZenohPicoNodeInfo_t *src);
   extern void zenoh_pico_debug_node_info(ZenohPicoNodeInfo_t *node);
 
 #if defined(__cplusplus)

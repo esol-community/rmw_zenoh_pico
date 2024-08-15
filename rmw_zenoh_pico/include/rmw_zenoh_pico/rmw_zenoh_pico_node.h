@@ -19,11 +19,14 @@ extern "C"
 
   typedef struct _ZenohPicoNodeData
   {
-    bool is_alloc_;
+    uint ref_;
+
+    size_t id_;
 
     // Liveliness key for the node.
-    _z_string_t key_;
-    z_owned_keyexpr_t keyexpr_;
+    _z_string_t token_key_;
+
+    z_owned_keyexpr_t token_;
 
     // this node session
     ZenohPicoSession *session_;
@@ -33,18 +36,18 @@ extern "C"
 
   } ZenohPicoNodeData;
 
-  extern ZenohPicoNodeData * zenoh_pico_generate_node_data(ZenohPicoNodeData *node_data,
+  extern ZenohPicoNodeData * zenoh_pico_generate_node_data(size_t node_id,
 							   ZenohPicoSession *session,
 							   ZenohPicoEntity *entity);
+
+  extern ZenohPicoNodeData *zenoh_pico_loan_node_data(ZenohPicoNodeData *node_data);
   extern bool zenoh_pico_destroy_node_data(ZenohPicoNodeData *node_data);
   extern void zenoh_pico_debug_node_data(ZenohPicoNodeData *node_data);
-
-  extern rmw_node_t * rmw_node_generate(rmw_context_t *context, ZenohPicoNodeData *node_data);
-  extern rmw_ret_t rmw_node_destroy(rmw_node_t * node);
 
   // --------------------------
 
   extern bool declaration_node_data(ZenohPicoNodeData *node_data);
+  extern bool undeclaration_node_data(ZenohPicoNodeData *node_data);
 
 #if defined(__cplusplus)
 }

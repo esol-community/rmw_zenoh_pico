@@ -15,6 +15,7 @@
 
 #include "rmw/ret_types.h"
 #include "rmw_zenoh_pico/liveliness/rmw_zenoh_pico_entity.h"
+#include "rmw_zenoh_pico/rmw_zenoh_pico_session.h"
 #include "zenoh-pico/api/primitives.h"
 #include "zenoh-pico/collections/string.h"
 
@@ -25,6 +26,46 @@
 #include <zenoh-pico.h>
 #include <rmw_zenoh_pico/rmw_zenoh_pico.h>
 
+static rmw_node_t *rmw_node_generate(rmw_context_t *context, ZenohPicoNodeData *node_data)
+{
+  _Z_DEBUG("%s : start()", __func__);
+  if(node_data->entity_->node_info_ == NULL)
+    return NULL;
+
+  ZenohPicoNodeInfo_t *node_info = node_data->entity_->node_info_;
+
+  rmw_node_t * node = z_malloc(sizeof(rmw_node_t));
+  if(node == NULL)
+    return NULL;
+
+  memset(node, 0, sizeof(rmw_node_t));
+
+  node->name				= node_info->name_.val;
+  node->namespace_			= node_info->ns_.val;
+  node->data				= (void *)node_data;
+  node->implementation_identifier	= rmw_get_implementation_identifier();
+  node->context				= context;
+
+  return node;
+}
+
+static rmw_ret_t rmw_node_destroy(rmw_node_t * node)
+{
+  _Z_DEBUG("%s : start()", __func__);
+
+  if(node != NULL){
+    ZenohPicoNodeData *node_data = (ZenohPicoNodeData *)node->data;
+    if(node_data != NULL){
+      zenoh_pico_destroy_node_data(node_data);
+      node_data = NULL;
+    }
+
+    z_free(node);
+  }
+
+  return RMW_RET_OK;
+}
+
 rmw_node_t *
 rmw_create_node(
   rmw_context_t * context,
@@ -32,8 +73,6 @@ rmw_create_node(
   const char * namespace_)
 {
   _Z_DEBUG("%s : start(name = [%s], namespace = [%s])", __func__, name, namespace_);
-
-  (void)context;
 
   RMW_CHECK_ARGUMENT_FOR_NULL(context, NULL);
   RMW_CHECK_ARGUMENT_FOR_NULL(name, NULL);
@@ -60,8 +99,7 @@ rmw_create_node(
   z_string_t _name = _z_string_make(name);
   z_string_t _enclave = _z_string_make(session->enclave_.val);
 
-  node_info = zenoh_pico_generate_node_info(NULL,
-					    &_domain,
+  node_info = zenoh_pico_generate_node_info(&_domain,
 					    &_ns,
 					    &_name,
 					    &_enclave);
@@ -84,10 +122,9 @@ rmw_create_node(
   }
 
   // generate private node data
-  // ATTENTION:
-  // this ownership of entity move to new node_data.
-  // when this node_data is destroy, this entity is destroy.
-  ZenohPicoNodeData *node_data = zenoh_pico_generate_node_data(NULL, session, entity);
+  ZenohPicoNodeData *node_data = zenoh_pico_generate_node_data(_entity_id,
+							       session,
+							       entity);
   if(node_data == NULL){
     zenoh_pico_destroy_entitiy(entity);
     return NULL;

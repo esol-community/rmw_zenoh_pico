@@ -55,14 +55,14 @@ ZenohPicoEntity * zenoh_pico_generate_entitiy(ZenohPicoEntity *entity,
   return entity;
 }
 
-static void _zenoh_pico_clear_entitiy_menber(ZenohPicoEntity *entity)
+static void _zenoh_pico_clear_entitiy_member(ZenohPicoEntity *entity)
 {
   Z_STRING_FREE(entity->zid_);
 }
 
 void zenoh_pico_destroy_entitiy(ZenohPicoEntity *entity)
 {
-  _zenoh_pico_clear_entitiy_menber(entity);
+  _zenoh_pico_clear_entitiy_member(entity);
 
   if(entity->node_info_ != NULL){
     zenoh_pico_destroy_node_info(entity->node_info_);
@@ -77,26 +77,10 @@ void zenoh_pico_destroy_entitiy(ZenohPicoEntity *entity)
   ZenohPicoDestroyData(entity);
 }
 
-void zenoh_pico_clone_entitiy(ZenohPicoEntity *dst, ZenohPicoEntity *src)
-{
-  _z_string_copy(&dst->zid_, &src->zid_);
-  dst->id_	= src->id_;
-  dst->nid_	= src->nid_;
-  dst->type_	= src->type_;
-
-  if(src->node_info_ != NULL)
-    zenoh_pico_clone_node_info(dst->node_info_, src->node_info_);
-
-  if(src->topic_info_ != NULL)
-    zenoh_pico_clone_topic_info(dst->topic_info_, src->topic_info_);
-
-  return;
-}
-
 void zenoh_pico_debug_entitiy(ZenohPicoEntity *entity)
 {
   printf("--------- entity data ----------\n");
-  printf("is_alloc = %d\n", entity->is_alloc_);
+  printf("ref = %d\n", entity->ref_);
 
   Z_STRING_PRINTF(entity->zid_, zid);
   printf("id  = %ld\n", entity->id_);

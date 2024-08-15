@@ -11,7 +11,7 @@ extern "C"
 
   typedef struct _ZenohPicoSession
   {
-    bool is_alloc_;
+    uint ref_;
 
     // Enclave, name used to find security artifacts in a sros2 keystore
     z_string_t enclave_;
@@ -36,7 +36,8 @@ extern "C"
   extern bool zenoh_pico_clone_session(ZenohPicoSession *dst, ZenohPicoSession *src);
 
   // --------------------------
-  extern bool session_connect(ZenohPicoSession *session);
+
+  extern rmw_ret_t session_connect(ZenohPicoSession *session);
 
 #if defined(__cplusplus)
 }

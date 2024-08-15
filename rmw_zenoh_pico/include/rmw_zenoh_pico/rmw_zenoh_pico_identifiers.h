@@ -18,4 +18,6 @@
 extern const char * const zenoh_pico_identifier;
 extern const char * const zenoh_pico_serialization_format;
 
+extern const char * const rosidl_typesupport_rmw_zenoh_identifier;
+
 #endif  // RMW_MICROROS_INTERNAL__IDENTIFIERS_H_

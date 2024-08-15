@@ -11,42 +11,49 @@
 #include "zenoh-pico/api/macros.h"
 #include "zenoh-pico/api/primitives.h"
 
-ZenohPicoNodeData * zenoh_pico_generate_node_data(ZenohPicoNodeData *node_data,
+ZenohPicoNodeData * zenoh_pico_generate_node_data(size_t node_id,
 						  ZenohPicoSession *session,
 						  ZenohPicoEntity *entity)
 {
+  _Z_DEBUG("%s : start", __func__);
+
   if((session == NULL) || (entity == NULL))
     return NULL;
 
+  ZenohPicoNodeData *node_data = NULL;
   ZenohPicoGenerateData(node_data, ZenohPicoNodeData);
   if(node_data == NULL)
     return NULL;
 
-  node_data->session_ = session;
-  node_data->entity_ = entity;
+  node_data->session_	= session;
+  node_data->entity_	= entity;
+  node_data->id_	= node_id;
 
   // generate key from entity data
-  {
-    char _buf[128];
-    int ret = generate_liveliness(entity, _buf, sizeof(_buf));
-    if(ret >= (int)(sizeof(_buf) -1))
-      return NULL;
+  node_data->token_key_ = generate_liveliness(entity);
 
-    node_data->key_ =  z_string_make(_buf);
-  }
+  return node_data;
+}
+
+ZenohPicoNodeData *zenoh_pico_loan_node_data(ZenohPicoNodeData *node_data)
+{
+  // ATTENTION :
+  // I have not implemented smart pointer, yet.
 
   return node_data;
 }
 
 bool zenoh_pico_destroy_node_data(ZenohPicoNodeData *node_data)
 {
-  _Z_DEBUG("%s : start (%p)", __func__, node_data);
+  _Z_DEBUG("%s : start", __func__);
 
-  Z_STRING_FREE(node_data->key_);
+  (void)undeclaration_node_data(node_data);
 
-  if (z_check(node_data->keyexpr_)) {
+  Z_STRING_FREE(node_data->token_key_);
+
+  if (z_check(node_data->token_)) {
       ZenohPicoSession *session = node_data->session_;
-      z_undeclare_keyexpr(z_loan(session->session_), &node_data->keyexpr_);
+      z_undeclare_keyexpr(z_loan(session->session_), &node_data->token_);
   }
 
   // delete entitiy
@@ -63,11 +70,11 @@ bool zenoh_pico_destroy_node_data(ZenohPicoNodeData *node_data)
 void zenoh_pico_debug_node_data(ZenohPicoNodeData *node_data)
 {
   printf("--------- node data ----------\n");
-  printf("is_alloc = %d\n", node_data->is_alloc_);
+  printf("ref = %d\n", node_data->ref_);
 
-  Z_STRING_PRINTF(node_data->key_, keyexpr);
+  Z_STRING_PRINTF(node_data->token_key_, token_key);
 
-  z_keyexpr_t *value = node_data->keyexpr_._value;
+  z_keyexpr_t *value = node_data->token_._value;
   if(value != NULL){
     printf("z_keyexpr id = %d\n", value->_id);
     printf("z_keyexpr mapping = %x\n", value->_mapping._val);
@@ -80,60 +87,31 @@ void zenoh_pico_debug_node_data(ZenohPicoNodeData *node_data)
   zenoh_pico_debug_entitiy(node_data->entity_);
 }
 
-rmw_node_t * rmw_node_generate(rmw_context_t *context, ZenohPicoNodeData *node_data)
-{
-
-  if(node_data->entity_->node_info_ == NULL)
-    return NULL;
-
-  ZenohPicoNodeInfo_t *node_info = node_data->entity_->node_info_;
-
-  rmw_node_t * node = z_malloc(sizeof(rmw_node_t));
-  if(node == NULL)
-    return NULL;
-
-  memset(node, 0, sizeof(rmw_node_t));
-
-  node->name				= node_info->name_.val;
-  node->namespace_			= node_info->ns_.val;
-  node->data				= (void *)node_data;
-  node->implementation_identifier	= rmw_get_implementation_identifier();
-  node->context				= context;
-
-  return node;
-}
-
-rmw_ret_t rmw_node_destroy(rmw_node_t * node)
-{
-  _Z_DEBUG("%s : start(%p)", __func__, node);
-
-  if(node != NULL){
-    ZenohPicoNodeData *node_data = (ZenohPicoNodeData *)node->data;
-    if(node_data != NULL){
-      zenoh_pico_destroy_node_data(node_data);
-      node_data = NULL;
-    }
-
-    z_free(node);
-  }
-
-  return RMW_RET_OK;
-}
-
 //-----------------------------
 
 bool declaration_node_data(ZenohPicoNodeData *node_data)
 {
   ZenohPicoSession *session = node_data->session_;
-  const char *keyexpr = Z_STRING_VAL(node_data->key_);
+  const char *keyexpr = Z_STRING_VAL(node_data->token_key_);
 
-  _Z_DEBUG("Declaring key expression '%s'...", keyexpr);
-  node_data->keyexpr_ = z_declare_keyexpr(z_loan(session->session_), z_keyexpr(keyexpr));
-  if (!z_check(node_data->keyexpr_)) {
+  _Z_DEBUG("Declaring node key expression '%s'...", keyexpr);
+  node_data->token_ = z_declare_keyexpr(z_loan(session->session_), z_keyexpr(keyexpr));
+  if (!z_check(node_data->token_)) {
     return false;
   }
 
   zenoh_pico_debug_node_data(node_data);
+
+  return true;
+}
+
+bool undeclaration_node_data(ZenohPicoNodeData *node_data)
+{
+  ZenohPicoSession *session = node_data->session_;
+
+  if (z_check(node_data->token_)) {
+    z_undeclare_keyexpr(z_loan(session->session_), &node_data->token_);
+  }
 
   return true;
 }

@@ -278,11 +278,9 @@ rmw_init(
     return RMW_RET_ERROR;
   }
 
-  session_connect(session);
-
   context->impl = (rmw_context_impl_t *)session;
 
-  return RMW_RET_OK;
+  return session_connect(session);
 }
 
 rmw_ret_t

@@ -61,8 +61,11 @@ set(RMW_ZENOH_PICO_LOCATOR_PORT			"7446"         CACHE STRING "Sets the scout po
 
 set(RMW_ZENOH_PICO_SERIAL_DEVICE                "/dev/ttyAMA0" CACHE STRING "Sets the agent serial port.")
 
-set(RMW_ZENOH_PICO_MAX_HISTORY			"8" CACHE STRING "This value sets the number of history slots available for RMW subscriptions, requests and replies")
+set(RMW_ZENOH_PICO_MAX_LINENESS_LEN             "256"          CACHE STRING "This value sets the number of max liveliness resource length")
 
+# -------------
+
+set(RMW_ZENOH_PICO_MAX_HISTORY			"8" CACHE STRING "This value sets the number of history slots available for RMW subscriptions, requests and replies")
 set(RMW_ZENOH_PICO_MAX_SESSIONS                 "1" CACHE STRING "This value sets the maximum number of zenoh-pico sessions.")
 set(RMW_ZENOH_PICO_MAX_NODES			"4" CACHE STRING "This value sets the maximum number of nodes.")
 set(RMW_ZENOH_PICO_MAX_PUBLISHERS		"4" CACHE STRING "This value sets the maximum number of publishers for an application.")
@@ -117,6 +120,8 @@ set(SRCS
   src/zenoh_pico/zenoh_pico_node.c
   src/zenoh_pico/zenoh_pico_param.c
   src/zenoh_pico/zenoh_pico_session.c
+  src/zenoh_pico/zenoh_pico_subscription.c
+
   src/rmw_client.c
   src/rmw_compare_gids_equal.c
   src/rmw_count.c

@@ -9,7 +9,10 @@
 #include <rmw/allocators.h>
 #include <rmw/error_handling.h>
 
-extern size_t generate_liveliness(ZenohPicoEntity *entity, char *buf, size_t size);
+#include <rosidl_runtime_c/message_type_support_struct.h>
+#include <rosidl_typesupport_microxrcedds_c/message_type_support.h>
+
+extern z_string_t generate_liveliness(ZenohPicoEntity *entity);
 
 extern z_string_t conv_domain(size_t domain);
 extern z_string_t convert_hash(const rosidl_type_hash_t * type_hash);
