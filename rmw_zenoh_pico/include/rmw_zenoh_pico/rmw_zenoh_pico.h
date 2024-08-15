@@ -33,6 +33,6 @@
 #include <rmw_zenoh_pico/rmw_zenoh_pico_session.h>
 
 #include <rmw_zenoh_pico/rmw_zenoh_pico_node.h>
-
+#include <rmw_zenoh_pico/rmw_zenoh_pico_subscription.h>
 
 #endif

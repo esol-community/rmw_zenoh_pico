@@ -39,7 +39,7 @@
       (d) = (t *)z_malloc(sizeof(t));		\
       if ((d) != NULL) {			\
 	memset((d), 0, sizeof(t));		\
-	(d)->is_alloc_ = true;			\
+	(d)->ref_ = 1;				\
       }						\
     }						\
   }						\
@@ -47,11 +47,17 @@
 #define ZenohPicoDestroyData(d)			\
   {						\
     if((d) != NULL) {				\
-      if((d)->is_alloc_ == true) {		\
+      (d)->ref_ -= 1;				\
+      if((d)->ref_ == 0) {			\
 	z_free((d));				\
       }						\
     }						\
   }
+
+#define ZenohPicoLoanData(d)			\
+  {						\
+      (d)->ref_ += 1;				\
+  }						\
 
 //
 // zenoh-pico macro
