@@ -16,10 +16,12 @@
 #include "rmw/ret_types.h"
 #include "rmw_zenoh_pico/liveliness/rmw_zenoh_pico_entity.h"
 #include "zenoh-pico/api/primitives.h"
+#include "zenoh-pico/collections/string.h"
 
 #include <rmw/allocators.h>
 #include <rmw/rmw.h>
 
+#include <string.h>
 #include <zenoh-pico.h>
 #include <rmw_zenoh_pico/rmw_zenoh_pico.h>
 
@@ -53,19 +55,21 @@ rmw_create_node(
 
   // generate private node info data
   ZenohPicoNodeInfo_t *node_info;
+  z_string_t _domain = conv_domain(context->actual_domain_id);
+  z_string_t _ns = _z_string_make(namespace_);
+  z_string_t _name = _z_string_make(name);
+  z_string_t _enclave = _z_string_make(session->enclave_.val);
+
   node_info = zenoh_pico_generate_node_info(NULL,
-					    context->actual_domain_id,
-					    namespace_,
-					    name,
-					    session->enclave_.val);
+					    &_domain,
+					    &_ns,
+					    &_name,
+					    &_enclave);
   if(node_info == NULL){
     return NULL;
   }
 
   // generate entity data
-  // ATTENTION:
-  // this ownership of node_info move to new entity.
-  // when this node_info is destroy, this entity is destroy.
   size_t _entity_id = zenoh_pico_get_next_entity_id();
   ZenohPicoEntity *entity = zenoh_pico_generate_entitiy(NULL,
 							z_info_zid(z_loan(session->session_)),

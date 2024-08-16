@@ -4,6 +4,10 @@
 
 #include "rmw_zenoh_pico/rmw_zenoh_pico_macros.h"
 #include "rmw_zenoh_pico/liveliness/rmw_zenoh_pico_entity.h"
+#include "rmw_zenoh_pico/liveliness/rmw_zenoh_pico_liveliness.h"
+#include "zenoh-pico/collections/string.h"
+
+#include <rmw_zenoh_pico/rmw_zenoh_pico.h>
 
 static const char ADMIN_SPACE[] = "@ros2_lv";
 static const char NODE_STR[] = "NN";
@@ -177,4 +181,85 @@ size_t generate_liveliness(ZenohPicoEntity *entity, char *buf, size_t size)
     return -1;
 
   return ret;
+}
+
+z_string_t conv_domain(size_t domain){
+  char _domain[16];
+
+  memset(_domain, 0, sizeof(_domain));
+  snprintf(_domain, sizeof(_domain), "%ld", domain);
+
+  return _z_string_make(_domain);
+}
+
+static const char RIHS01_PREFIX[]	= "RIHS01_";
+static const size_t RIHS_VERSION_IDX	= 4;
+static const size_t RIHS_PREFIX_LEN	= 7;
+static const size_t RIHS01_STRING_LEN	= 71;  // RIHS_PREFIX_LEN + (ROSIDL_TYPE_HASH_SIZE * 2);
+static const uint8_t INVALID_NIBBLE	= 0xff;
+
+z_string_t convert_hash(const rosidl_type_hash_t * type_hash)
+{
+  char _hash_data[RIHS01_STRING_LEN +1];
+
+  memset(_hash_data, 0, sizeof(_hash_data));
+  memcpy(_hash_data, RIHS01_PREFIX, RIHS_PREFIX_LEN);
+  uint8_t nibble = 0;
+  char * dest = NULL;
+  for (size_t i = 0; i < ROSIDL_TYPE_HASH_SIZE; i++) {
+    // Translate byte into two hex characters
+    dest = _hash_data + RIHS_PREFIX_LEN + (i * 2);
+    // First character is top half of byte
+    nibble = (type_hash->value[i] >> 4) & 0x0f;
+    if (nibble < 0xa) {
+      dest[0] = '0' + nibble;
+    } else {
+      dest[0] = 'a' + (nibble - 0xa);
+    }
+    // Second character is bottom half of byte
+    nibble = (type_hash->value[i] >> 0) & 0x0f;
+    if (nibble < 0xa) {
+      dest[1] = '0' + nibble;
+    } else {
+      dest[1] = 'a' + (nibble - 0xa);
+    }
+  }
+
+  return _z_string_make(_hash_data);
+}
+
+z_string_t convert_message_type(const message_type_support_callbacks_t *callbacks)
+{
+  char _type_name[64];
+  if(callbacks->message_name_ != NULL)
+    snprintf(_type_name, sizeof(_type_name), "%s::dds_::%s_",
+	     callbacks->message_namespace_,
+	     callbacks->message_name_);
+  else
+    snprintf(_type_name, sizeof(_type_name), "dds_::%s_",
+	     callbacks->message_name_);
+
+  return _z_string_make(_type_name);
+}
+
+z_string_t qos_to_keyexpr(rmw_qos_profile_t *qos)
+{
+  char qos_data[64];
+
+  memset(qos_data, 0, sizeof(qos_data));
+  snprintf(qos_data, sizeof(qos_data),
+	   "%d%c%d%c%d%c%ld%c%ld%c%ld%c%ld%c%ld%c%d%c%ld%c%ld",
+	   qos->reliability, QOS_DELIMITER,
+	   qos->durability,  QOS_DELIMITER,
+	   qos->history, QOS_COMPONENT_DELIMITER,
+	   qos->depth, QOS_DELIMITER,
+	   qos->deadline.sec, QOS_COMPONENT_DELIMITER,
+	   qos->deadline.nsec, QOS_DELIMITER,
+	   qos->lifespan.sec, QOS_COMPONENT_DELIMITER,
+	   qos->lifespan.nsec, QOS_DELIMITER,
+	   qos->liveliness, QOS_COMPONENT_DELIMITER,
+	   qos->liveliness_lease_duration.sec, QOS_COMPONENT_DELIMITER,
+	   qos->liveliness_lease_duration.nsec);
+
+  return _z_string_make(qos_data);
 }
