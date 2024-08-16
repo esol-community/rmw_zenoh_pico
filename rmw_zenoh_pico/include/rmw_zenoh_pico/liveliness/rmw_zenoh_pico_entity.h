@@ -43,7 +43,7 @@ extern "C"
   extern size_t get_id(ZenohPicoEntity *entity);
   extern ZenohPicoEntityType get_type(ZenohPicoEntity *entity);
 
-  extern size_t get_node_domain(ZenohPicoEntity *entity);
+  extern const char *get_node_domain(ZenohPicoEntity *entity);
   extern const char *get_node_enclave(ZenohPicoEntity *entity);
   extern const char *get_node_namespace(ZenohPicoEntity *entity);
   extern const char *get_node_name(ZenohPicoEntity *entity);
