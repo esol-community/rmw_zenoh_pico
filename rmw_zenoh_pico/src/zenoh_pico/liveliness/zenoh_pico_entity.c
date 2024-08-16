@@ -10,10 +10,10 @@ size_t get_nid(ZenohPicoEntity *entity)		        { return entity->nid_; }
 size_t get_id(ZenohPicoEntity *entity)		        { return entity->id_; }
 ZenohPicoEntityType get_type(ZenohPicoEntity *entity)   { return entity->type_; }
 
-size_t get_node_domain(ZenohPicoEntity *entity)         { return node_domain_id(entity->node_info_); }
-const char *get_node_enclave(ZenohPicoEntity *entity)	{ return node_enclave(entity->node_info_); }
+const char *get_node_domain(ZenohPicoEntity *entity)    { return node_domain(entity->node_info_); }
 const char *get_node_namespace(ZenohPicoEntity *entity)	{ return node_namespace(entity->node_info_); }
 const char *get_node_name(ZenohPicoEntity *entity)	{ return node_name(entity->node_info_); }
+const char *get_node_enclave(ZenohPicoEntity *entity)	{ return node_enclave(entity->node_info_); }
 
 const char *get_topic_name(ZenohPicoEntity *entity)     { return topic_name(entity->topic_info_); }
 const char *get_topic_type(ZenohPicoEntity *entity)     { return topic_type(entity->topic_info_); }
