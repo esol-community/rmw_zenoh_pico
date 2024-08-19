@@ -116,7 +116,8 @@ set(SRCS
   src/liveliness/zenoh_pico_liveliness.c
   src/liveliness/zenoh_pico_nodeInfo.c
 
-  src/zenoh_pico_identifiers.c
+  src/utilities/z_condvar_wait_time.c
+  src/utilities/zenoh_pico_identifiers.c
 
   src/rmw_client.c
   src/rmw_compare_gids_equal.c
