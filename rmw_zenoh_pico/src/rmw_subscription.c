@@ -46,7 +46,7 @@ static rmw_subscription_t *rmw_subscription_generate(rmw_context_t *context,
     "failed to allocate memory for the subscription",
     return NULL);
 
-  rmw_subscription->implementation_identifier	= zenoh_pico_identifier;
+  rmw_subscription->implementation_identifier	= rmw_get_implementation_identifier();
   rmw_subscription->topic_name			= Z_STRING_VAL(sub_data->entity_->topic_info_->name_);
   rmw_subscription->options			= *options;
   rmw_subscription->can_loan_messages		= false;
