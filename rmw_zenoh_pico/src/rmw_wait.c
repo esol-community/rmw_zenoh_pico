@@ -17,6 +17,8 @@
 #include <rmw/rmw.h>
 #include <rmw/time.h>
 
+#include <rmw_zenoh_pico/rmw_zenoh_pico.h>
+
 rmw_ret_t
 rmw_wait(
   rmw_subscriptions_t * subscriptions,
@@ -27,6 +29,7 @@ rmw_wait(
   rmw_wait_set_t * wait_set,
   const rmw_time_t * wait_timeout)
 {
+  _Z_DEBUG("%s : start", __func__);
   (void)events;
   (void)wait_set;
 
