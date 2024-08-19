@@ -87,7 +87,7 @@ rmw_init_options_init(
   }
 
   init_options->instance_id		  = 0;
-  init_options->implementation_identifier = zenoh_pico_identifier;
+  init_options->implementation_identifier = rmw_get_implementation_identifier();
   init_options->allocator		  = allocator;
   init_options->enclave                   = (char *)NULL;
   init_options->domain_id		  = 0;
@@ -242,7 +242,7 @@ rmw_init(
   }
 
   context->instance_id = options->instance_id;
-  context->implementation_identifier = zenoh_pico_identifier;
+  context->implementation_identifier = rmw_get_implementation_identifier();
   // No custom handling of RMW_DEFAULT_DOMAIN_ID. Simply use a reasonable domain id.
   context->actual_domain_id =
     RMW_DEFAULT_DOMAIN_ID != options->domain_id ? options->domain_id : 0u;
