@@ -121,6 +121,7 @@ set(SRCS
   src/zenoh_pico/zenoh_pico_param.c
   src/zenoh_pico/zenoh_pico_session.c
   src/zenoh_pico/zenoh_pico_subscription.c
+  src/zenoh_pico/zenoh_pico_wait.c
 
   src/rmw_client.c
   src/rmw_compare_gids_equal.c
