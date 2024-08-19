@@ -31,19 +31,19 @@ ZenohPicoWaitSetData * zenoh_pico_generate_wait_set_data(rmw_context_t * context
   if(wait_data == NULL)
     return NULL;
 
-  z_mutex_init(&wait_data->condition_mutex);
-  z_condvar_init(&wait_data->condition_variable);
-  wait_data->triggered = false;
+  z_mutex_init(&wait_data->condition_mutex_);
+  z_condvar_init(&wait_data->condition_variable_);
+  wait_data->triggered_ = false;
 
-  wait_data->context = context;
+  wait_data->context_ = context;
 
   return wait_data;
 }
 
 bool zenoh_pico_destroy_wait_set_data(ZenohPicoWaitSetData *wait_data)
 {
-  z_mutex_free(&wait_data->condition_mutex);
-  z_condvar_free(&wait_data->condition_variable);
+  z_mutex_free(&wait_data->condition_mutex_);
+  z_condvar_free(&wait_data->condition_variable_);
 
   ZenohPicoDestroyData(wait_data);
 
