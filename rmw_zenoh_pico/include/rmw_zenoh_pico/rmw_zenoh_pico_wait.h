@@ -9,7 +9,7 @@ extern "C"
 {
 #endif  // if defined(__cplusplus)
 
-  typedef struct _ZenohPicoWaitData {
+  typedef struct _ZenohPicoWaitSetData {
     uint ref_;
 
     z_condvar_t condition_variable;
@@ -18,10 +18,10 @@ extern "C"
     bool triggered;
     rmw_context_t * context;
 
-  } ZenohPicoWaitData;
+  } ZenohPicoWaitSetData;
 
-  extern ZenohPicoWaitData * zenoh_pico_generate_wait_data(rmw_context_t * context);
-  extern bool zenoh_pico_destroy_wait_data(ZenohPicoWaitData *wait_data);
+  extern ZenohPicoWaitSetData * zenoh_pico_generate_wait_data(rmw_context_t * context);
+  extern bool zenoh_pico_destroy_wait_data(ZenohPicoWaitSetData *wait_data);
 
 #if defined(__cplusplus)
 }
