@@ -15,20 +15,57 @@
 #include <rmw/rmw.h>
 #include <rmw/allocators.h>
 
+#include "zenoh-pico/system/platform-common.h"
+#include "zenoh-pico.h"
+#include "zenoh-pico/system/platform/unix.h"
+
+#include <rmw_zenoh_pico/rmw_zenoh_pico.h>
+
 rmw_wait_set_t *
 rmw_create_wait_set(
   rmw_context_t * context,
   size_t max_conditions)
 {
-  (void)context;
-  (void)max_conditions;
+  _Z_DEBUG("%s : start", __func__);
 
-  return NULL;
+  RCUTILS_CHECK_ARGUMENT_FOR_NULL(context, NULL);
+  RMW_CHECK_TYPE_IDENTIFIERS_MATCH(
+    context->implementation_identifier,
+    NULL);
+
+  rmw_wait_set_t *wait_set = z_malloc(sizeof(rmw_wait_set_t));
+  RMW_CHECK_FOR_NULL_WITH_MSG(
+    wait_set,
+    "failed to allocate wait set",
+    NULL);
+  wait_set->implementation_identifier = rmw_get_implementation_identifier();
+
+  ZenohPicoWaitSetData *wait_set_data = zenoh_pico_generate_wait_data(context);
+  if(wait_set_data == NULL)
+    return NULL;
+
+  wait_set->data = (void *)wait_set_data;
+
+  return wait_set;
 }
 
 rmw_ret_t
 rmw_destroy_wait_set(
   rmw_wait_set_t * wait_set)
 {
-  return RMW_RET_ERROR;
+  _Z_DEBUG("%s : start", __func__);
+
+  RMW_CHECK_ARGUMENT_FOR_NULL(wait_set, RMW_RET_INVALID_ARGUMENT);
+  RMW_CHECK_ARGUMENT_FOR_NULL(wait_set->data, RMW_RET_INVALID_ARGUMENT);
+
+  RMW_CHECK_TYPE_IDENTIFIERS_MATCH(
+    wait_set->implementation_identifier,
+    RMW_RET_INCORRECT_RMW_IMPLEMENTATION);
+
+  ZenohPicoWaitSetData *wait_data = (ZenohPicoWaitSetData *)wait_set->data;
+  zenoh_pico_destroy_wait_data(wait_data);
+
+  z_free(wait_set);
+
+  return RMW_RET_OK;
 }
