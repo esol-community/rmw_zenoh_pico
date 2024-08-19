@@ -17,17 +17,66 @@
 
 #include <rmw_zenoh_pico/rmw_zenoh_pico.h>
 
+void condition_trigger(ZenohPicoGuardConditionData *condition_data)
+{
+  z_mutex_lock(&condition_data->internal_mutex_);
+  condition_data->triggered_ = true;
+
+  if(condition_data->wait_set_data_ != NULL){
+    ZenohPicoWaitSetData * wait_set_data = condition_data->wait_set_data_;
+    wait_condition_lock(wait_set_data);
+    wait_set_data->triggered_ = true;
+    wait_condition_unlock(wait_set_data);
+  }
+
+  z_mutex_unlock(&condition_data->internal_mutex_);
+}
+
+bool condition_check_and_attach(ZenohPicoGuardConditionData *condition_data,
+				ZenohPicoWaitSetData * wait_set_data)
+{
+  z_mutex_lock(&condition_data->internal_mutex_);
+
+  if(condition_data->triggered_) {
+    z_mutex_unlock(&condition_data->internal_mutex_);
+    return true;
+  }
+
+  if(wait_set_data != NULL){
+    condition_data->wait_set_data_ = wait_set_data;
+  }
+
+  z_mutex_unlock(&condition_data->internal_mutex_);
+
+  return false;
+}
+
+bool condition_detach(ZenohPicoGuardConditionData *condition_data)
+{
+  bool value;
+  z_mutex_lock(&condition_data->internal_mutex_);
+
+  value = condition_data->triggered_;
+  condition_data->wait_set_data_ = NULL;
+
+  z_mutex_unlock(&condition_data->internal_mutex_);
+
+  return value;
+}
+
 rmw_ret_t
 rmw_trigger_guard_condition(
   const rmw_guard_condition_t * guard_condition)
 {
-  rmw_ret_t ret = RMW_RET_OK;
-  if (!guard_condition) {
-    RMW_UROS_TRACE_MESSAGE("guard condition pointer is null")
-    ret = RMW_RET_ERROR;
-    ret = RMW_RET_ERROR;
-  } else {
-  }
+  RMW_CHECK_ARGUMENT_FOR_NULL(guard_condition, RMW_RET_INVALID_ARGUMENT);
+  RMW_CHECK_TYPE_IDENTIFIERS_MATCH(
+    guard_condition->implementation_identifier,
+    return RMW_RET_INCORRECT_RMW_IMPLEMENTATION);
 
-  return ret;
+  ZenohPicoGuardConditionData *condition_data = (ZenohPicoGuardConditionData *)guard_condition->data;
+  RMW_CHECK_ARGUMENT_FOR_NULL(condition_data, RMW_RET_INVALID_ARGUMENT);
+
+  condition_trigger(condition_data);
+
+  return RMW_RET_OK;
 }

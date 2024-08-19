@@ -12,16 +12,22 @@ extern "C"
   typedef struct _ZenohPicoWaitSetData {
     uint ref_;
 
-    z_condvar_t condition_variable;
-    z_mutex_t condition_mutex;
+    z_condvar_t condition_variable_;
+    z_mutex_t condition_mutex_;
 
-    bool triggered;
-    rmw_context_t * context;
+    bool triggered_;
+    rmw_context_t * context_;
 
   } ZenohPicoWaitSetData;
 
   extern ZenohPicoWaitSetData * zenoh_pico_generate_wait_data(rmw_context_t * context);
   extern bool zenoh_pico_destroy_wait_data(ZenohPicoWaitSetData *wait_data);
+
+  // -----------
+
+  extern void wait_condition_lock(ZenohPicoWaitSetData * wait_set_data);
+  extern void wait_condition_unlock(ZenohPicoWaitSetData * wait_set_data);
+  extern void wait_condition_signal(ZenohPicoWaitSetData * wait_set_data);
 
 #if defined(__cplusplus)
 }
