@@ -111,17 +111,12 @@ if(BUILD_TESTING)
 endif()
 
 set(SRCS
-  src/zenoh_pico/liveliness/zenoh_pico_topicInfo.c
-  src/zenoh_pico/liveliness/zenoh_pico_entity.c
-  src/zenoh_pico/liveliness/zenoh_pico_liveliness.c
-  src/zenoh_pico/liveliness/zenoh_pico_nodeInfo.c
+  src/liveliness/zenoh_pico_topicInfo.c
+  src/liveliness/zenoh_pico_entity.c
+  src/liveliness/zenoh_pico_liveliness.c
+  src/liveliness/zenoh_pico_nodeInfo.c
 
-  src/zenoh_pico/zenoh_pico_identifiers.c
-  src/zenoh_pico/zenoh_pico_node.c
-  src/zenoh_pico/zenoh_pico_param.c
-  src/zenoh_pico/zenoh_pico_session.c
-  src/zenoh_pico/zenoh_pico_subscription.c
-  src/zenoh_pico/zenoh_pico_wait.c
+  src/zenoh_pico_identifiers.c
 
   src/rmw_client.c
   src/rmw_compare_gids_equal.c

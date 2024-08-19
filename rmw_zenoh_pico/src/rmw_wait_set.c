@@ -21,6 +21,37 @@
 
 #include <rmw_zenoh_pico/rmw_zenoh_pico.h>
 
+//-----------------------------
+
+ZenohPicoWaitSetData * zenoh_pico_generate_wait_set_data(rmw_context_t * context)
+{
+
+  ZenohPicoWaitSetData *wait_data = NULL;
+  ZenohPicoGenerateData(wait_data, ZenohPicoWaitSetData);
+  if(wait_data == NULL)
+    return NULL;
+
+  z_mutex_init(&wait_data->condition_mutex);
+  z_condvar_init(&wait_data->condition_variable);
+  wait_data->triggered = false;
+
+  wait_data->context = context;
+
+  return wait_data;
+}
+
+bool zenoh_pico_destroy_wait_set_data(ZenohPicoWaitSetData *wait_data)
+{
+  z_mutex_free(&wait_data->condition_mutex);
+  z_condvar_free(&wait_data->condition_variable);
+
+  ZenohPicoDestroyData(wait_data);
+
+  return true;
+}
+
+//-----------------------------
+
 rmw_wait_set_t *
 rmw_create_wait_set(
   rmw_context_t * context,
@@ -40,7 +71,7 @@ rmw_create_wait_set(
     NULL);
   wait_set->implementation_identifier = rmw_get_implementation_identifier();
 
-  ZenohPicoWaitSetData *wait_set_data = zenoh_pico_generate_wait_data(context);
+  ZenohPicoWaitSetData *wait_set_data = zenoh_pico_generate_wait_set_data(context);
   if(wait_set_data == NULL)
     return NULL;
 
@@ -63,7 +94,7 @@ rmw_destroy_wait_set(
     RMW_RET_INCORRECT_RMW_IMPLEMENTATION);
 
   ZenohPicoWaitSetData *wait_data = (ZenohPicoWaitSetData *)wait_set->data;
-  zenoh_pico_destroy_wait_data(wait_data);
+  zenoh_pico_destroy_wait_set_data(wait_data);
 
   z_free(wait_set);
 
