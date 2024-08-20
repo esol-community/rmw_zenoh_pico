@@ -62,7 +62,7 @@ ZenohPicoSession *zenoh_pico_generate_session(ZenohPicoSession *session,
   if(enclave != NULL)
     session->enclave_ = z_string_make(enclave);
 
-  session->graph_guard_condition.implementation_identifier = zenoh_pico_identifier;
+  session->graph_guard_condition.implementation_identifier = rmw_get_implementation_identifier();
   session->graph_guard_condition.data = NULL;
 
   return session;

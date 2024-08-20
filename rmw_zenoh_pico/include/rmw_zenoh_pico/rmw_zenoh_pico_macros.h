@@ -17,14 +17,12 @@
 
 #include <rmw/error_handling.h>
 
-#include <rmw_zenoh_pico/rmw_zenoh_pico_identifiers.h>
-
 //
 // for identifier data utilities
 //
 #define RMW_CHECK_TYPE_IDENTIFIERS_MATCH(identifier, ret_on_failure) \
   { \
-    if (NULL != identifier && strcmp(identifier, zenoh_pico_identifier) != 0) { \
+    if (NULL != identifier && strcmp(identifier, rmw_get_implementation_identifier()) != 0) { \
       RMW_SET_ERROR_MSG("Implementation identifiers does not match"); \
       ret_on_failure; \
     } \

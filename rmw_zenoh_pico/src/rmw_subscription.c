@@ -36,7 +36,7 @@
 
 #include <rmw_zenoh_pico/rmw_zenoh_pico.h>
 
-#define RMW_ZENOH_PICO_TYPESUPPORT_C rosidl_typesupport_rmw_zenoh_identifier
+#define RMW_ZENOH_PICO_TYPESUPPORT_C rmw_zenoh_pico_typesupport_c()
 
 //-----------------------------
 
