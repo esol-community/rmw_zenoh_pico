@@ -12,10 +12,24 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-#include <rmw_zenoh_pico/rmw_zenoh_pico_identifiers.h>
+const char * const zenoh_pico_identifier = "rmw_zenoh_pico";
+const char * const zenoh_pico_serialization_format = "cdr";
+const char * const rosidl_typesupport_rmw_zenoh_identifier = "rosidl_typesupport_fastrtps_c";
 
 const char *
-rmw_get_implementation_identifier()
+rmw_get_implementation_identifier(void)
 {
   return zenoh_pico_identifier;
+}
+
+const char *
+rmw_get_serialization_format(void)
+{
+  return zenoh_pico_serialization_format;
+}
+
+const char *
+rmw_zenoh_pico_typesupport_c(void)
+{
+  return rosidl_typesupport_rmw_zenoh_identifier;
 }
