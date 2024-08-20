@@ -62,7 +62,7 @@ rmw_create_wait_set(
   RCUTILS_CHECK_ARGUMENT_FOR_NULL(context, NULL);
   RMW_CHECK_TYPE_IDENTIFIERS_MATCH(
     context->implementation_identifier,
-    NULL);
+    return NULL);
 
   rmw_wait_set_t *wait_set = z_malloc(sizeof(rmw_wait_set_t));
   RMW_CHECK_FOR_NULL_WITH_MSG(
@@ -91,7 +91,7 @@ rmw_destroy_wait_set(
 
   RMW_CHECK_TYPE_IDENTIFIERS_MATCH(
     wait_set->implementation_identifier,
-    RMW_RET_INCORRECT_RMW_IMPLEMENTATION);
+    return RMW_RET_INCORRECT_RMW_IMPLEMENTATION);
 
   ZenohPicoWaitSetData *wait_data = (ZenohPicoWaitSetData *)wait_set->data;
   zenoh_pico_destroy_wait_set_data(wait_data);
