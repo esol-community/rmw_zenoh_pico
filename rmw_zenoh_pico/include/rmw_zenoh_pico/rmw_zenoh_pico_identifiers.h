@@ -15,9 +15,6 @@
 #ifndef RMW_MICROROS_INTERNAL__IDENTIFIERS_H_
 #define RMW_MICROROS_INTERNAL__IDENTIFIERS_H_
 
-extern const char * const zenoh_pico_identifier;
-extern const char * const zenoh_pico_serialization_format;
-
-extern const char * const rosidl_typesupport_rmw_zenoh_identifier;
+extern const char *rmw_zenoh_pico_typesupport_c(void);
 
 #endif  // RMW_MICROROS_INTERNAL__IDENTIFIERS_H_
