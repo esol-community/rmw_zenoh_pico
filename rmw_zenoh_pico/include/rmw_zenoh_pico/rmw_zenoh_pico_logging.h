@@ -12,12 +12,12 @@
 
 // Timestamp function
 static inline void __z_log_prefix(const char *prefix, const char *func_name) {
-    char time_stamp[64];
+  char time_stamp[64];
 
-    z_time_t tv = z_time_now();
-    snprintf(time_stamp, sizeof(time_stamp), "%ld.%09ld", tv.tv_sec, tv.tv_usec);
+  z_time_t tv = z_time_now();
+  snprintf(time_stamp, sizeof(time_stamp), "%ld.%09ld", tv.tv_sec, tv.tv_usec);
 
-    printf("[%s] [%s] [%s]:",  prefix, time_stamp, func_name);
+  printf("[%s] [%s] [%s]:",  prefix, time_stamp, func_name);
 }
 
 // Logging values
@@ -37,35 +37,71 @@ static inline void __z_log_prefix(const char *prefix, const char *func_name) {
 #define _Z_INFO(...) (void)(0)
 #define _Z_ERROR(...) (void)(0)
 
+#define RMW_ZENOH_LOG_DEBUG_NAMED (void)(0)
+#define RMW_ZENOH_LOG_INFO_NAMED (void)(0)
+#define RMW_ZENOH_LOG_ERROR_NAMED (void)(0)
+
 #else  // ZENOH_DEBUG != 0 || defined(Z_BUILD_DEBUG)
 
-#define _Z_DEBUG(...)                          \
-    do {                                       \
-        if (ZENOH_DEBUG >= _Z_LOG_LVL_DEBUG) { \
-            _Z_LOG_PREFIX(DEBUG);              \
-            printf(__VA_ARGS__);               \
-            printf("\r\n");                    \
-        }                                      \
-    } while (false)
+#define _Z_DEBUG(...)				\
+  do {						\
+    if (ZENOH_DEBUG >= _Z_LOG_LVL_DEBUG) {	\
+      _Z_LOG_PREFIX(DEBUG);			\
+      printf(__VA_ARGS__);			\
+      printf("\r\n");				\
+    }						\
+  } while (false)
 
-#define _Z_INFO(...)                          \
-    do {                                      \
-        if (ZENOH_DEBUG >= _Z_LOG_LVL_INFO) { \
-            _Z_LOG_PREFIX(INFO);              \
-            printf(__VA_ARGS__);              \
-            printf("\r\n");                   \
-        }                                     \
-    } while (false)
+#define _Z_INFO(...)				\
+  do {						\
+    if (ZENOH_DEBUG >= _Z_LOG_LVL_INFO) {	\
+      _Z_LOG_PREFIX(INFO);			\
+      printf(__VA_ARGS__);			\
+      printf("\r\n");				\
+    }						\
+  } while (false)
 
-#define _Z_ERROR(...)                          \
-    do {                                       \
-        if (ZENOH_DEBUG >= _Z_LOG_LVL_ERROR) { \
-            _Z_LOG_PREFIX(ERROR);              \
-            printf(__VA_ARGS__);               \
-            printf("\r\n");                    \
-        }                                      \
-    } while (false)
+#define _Z_ERROR(...)				\
+  do {						\
+    if (ZENOH_DEBUG >= _Z_LOG_LVL_ERROR) {	\
+      _Z_LOG_PREFIX(ERROR);			\
+      printf(__VA_ARGS__);			\
+      printf("\r\n");				\
+    }						\
+  } while (false)
+
+#define RMW_ZENOH_LOG_DEBUG_NAMED(tag, ...)	\
+  do {						\
+    if (ZENOH_DEBUG >= _Z_LOG_LVL_ERROR) {	\
+      _Z_LOG_PREFIX(DEBUG);			\
+      printf("%s : ", tag);			\
+      printf(__VA_ARGS__);			\
+      printf("\r\n");				\
+    }						\
+  } while (false)
+
+#define RMW_ZENOH_LOG_INFO_NAMED(tag, ...)	\
+  do {						\
+    if (ZENOH_DEBUG >= _Z_LOG_LVL_ERROR) {	\
+      _Z_LOG_PREFIX(INFO);			\
+      printf("%s : ", tag);			\
+      printf(__VA_ARGS__);			\
+      printf("\r\n");				\
+    }						\
+  } while (false)
+
+#define RMW_ZENOH_LOG_ERROR_NAMED(tag, ...)	\
+  do {						\
+    if (ZENOH_DEBUG >= _Z_LOG_LVL_ERROR) {	\
+      _Z_LOG_PREFIX(ERROR);			\
+      printf("%s : ", tag);			\
+      printf(__VA_ARGS__);			\
+      printf("\r\n");				\
+    }						\
+  } while (false)
 
 #endif /* ZENOH_DEBUG */
+
+
 
 #endif

@@ -194,9 +194,13 @@ void sub_data_handler(const z_sample_t *sample, void *ctx) {
 
   ZenohPicoSubData *sub_data = (ZenohPicoSubData *)ctx;
   if (sub_data == NULL) {
-    _Z_ERROR(
-      "%s: Unable to obtain rmw_subscription_data_t from data for subscription for %s",
-      __func__,keystr._value);
+    RMW_ZENOH_LOG_ERROR_NAMED(
+      "rmw_zenoh_cpp",
+      "Unable to obtain rmw_subscription_data_t from data for "
+      "subscription for %s",
+      z_loan(keystr)
+      );
+
     return;
   }
 
@@ -205,7 +209,9 @@ void sub_data_handler(const z_sample_t *sample, void *ctx) {
     // We failed to get the GID from the attachment.  While this isn't fatal,
     // it is unusual and so we should report it.
     memset(pub_gid, 0, RMW_GID_STORAGE_SIZE);
-    _Z_ERROR("Unable to obtain publisher GID from the attachment.");
+    RMW_ZENOH_LOG_ERROR_NAMED(
+      "rmw_zenoh_cpp",
+      "Unable to obtain publisher GID from the attachment.");
   }
 
   int64_t sequence_number = get_int64_from_attachment(&sample->attachment, "sequence_number");
@@ -213,7 +219,8 @@ void sub_data_handler(const z_sample_t *sample, void *ctx) {
     // We failed to get the sequence number from the attachment.  While this
     // isn't fatal, it is unusual and so we should report it.
     sequence_number = 0;
-    _Z_ERROR("Unable to obtain sequence number from the attachment.");
+    RMW_ZENOH_LOG_ERROR_NAMED(
+      "rmw_zenoh_cpp", "Unable to obtain sequence number from the attachment.");
   }
 
   int64_t source_timestamp = get_int64_from_attachment(&sample->attachment, "source_timestamp");
@@ -221,7 +228,8 @@ void sub_data_handler(const z_sample_t *sample, void *ctx) {
     // We failed to get the source timestamp from the attachment.  While this
     // isn't fatal, it is unusual and so we should report it.
     source_timestamp = 0;
-    _Z_ERROR("Unable to obtain sequence number from the attachment.");
+    RMW_ZENOH_LOG_ERROR_NAMED(
+      "rmw_zenoh_cpp", "Unable to obtain source timestamp from the attachment.");
   }
 
   _Z_DEBUG(">> [Subscriber] Received (%s) [%s]",
