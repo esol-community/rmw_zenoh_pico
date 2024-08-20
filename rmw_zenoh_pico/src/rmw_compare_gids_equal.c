@@ -28,10 +28,10 @@ rmw_compare_gids_equal(
   RMW_CHECK_ARGUMENT_FOR_NULL(gid2, RMW_RET_INVALID_ARGUMENT);
   RMW_CHECK_TYPE_IDENTIFIERS_MATCH(
     gid1->implementation_identifier,
-    RMW_RET_INCORRECT_RMW_IMPLEMENTATION);
+    return RMW_RET_INCORRECT_RMW_IMPLEMENTATION);
   RMW_CHECK_TYPE_IDENTIFIERS_MATCH(
     gid2->implementation_identifier,
-    RMW_RET_INCORRECT_RMW_IMPLEMENTATION);
+    return RMW_RET_INCORRECT_RMW_IMPLEMENTATION);
 
   *result = memcmp(gid1->data, gid2->data, sizeof(rmw_gid_t)) == 0;
 

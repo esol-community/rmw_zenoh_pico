@@ -24,7 +24,7 @@ rmw_get_gid_for_publisher(
   RMW_CHECK_ARGUMENT_FOR_NULL(gid, RMW_RET_INVALID_ARGUMENT);
   RMW_CHECK_TYPE_IDENTIFIERS_MATCH(
     publisher->implementation_identifier,
-    RMW_RET_INCORRECT_RMW_IMPLEMENTATION);
+    return RMW_RET_INCORRECT_RMW_IMPLEMENTATION);
 
   return RMW_RET_ERROR;
 }

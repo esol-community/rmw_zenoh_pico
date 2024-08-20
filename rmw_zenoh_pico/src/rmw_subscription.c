@@ -342,7 +342,7 @@ rmw_init_subscription_allocation(
   (void)message_bounds;
   (void)allocation;
   RMW_UROS_TRACE_MESSAGE("function not implemented")
-  return RMW_RET_UNSUPPORTED;
+    return RMW_RET_UNSUPPORTED;
 }
 
 rmw_ret_t
@@ -352,7 +352,7 @@ rmw_fini_subscription_allocation(
   _Z_DEBUG("%s : start()", __func__);
   (void)allocation;
   RMW_UROS_TRACE_MESSAGE("function not implemented")
-  return RMW_RET_UNSUPPORTED;
+    return RMW_RET_UNSUPPORTED;
 }
 
 static const char RIHS01_PREFIX[]	= "RIHS01_";

@@ -26,7 +26,7 @@
   { \
     if (NULL != identifier && strcmp(identifier, zenoh_pico_identifier) != 0) { \
       RMW_SET_ERROR_MSG("Implementation identifiers does not match"); \
-      return ret_on_failure; \
+      ret_on_failure; \
     } \
   }
 

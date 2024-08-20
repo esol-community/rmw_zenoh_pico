@@ -221,7 +221,7 @@ rmw_init_options_copy(
   RMW_CHECK_ARGUMENT_FOR_NULL(dst, RMW_RET_INVALID_ARGUMENT);
   RMW_CHECK_TYPE_IDENTIFIERS_MATCH(
     src->implementation_identifier,
-    RMW_RET_INCORRECT_RMW_IMPLEMENTATION);
+    return RMW_RET_INCORRECT_RMW_IMPLEMENTATION);
   if (NULL != dst->implementation_identifier) {
     RMW_UROS_TRACE_MESSAGE("expected zero-initialized dst")
       return RMW_RET_INVALID_ARGUMENT;
@@ -257,7 +257,7 @@ rmw_init_options_fini(
   RCUTILS_CHECK_ALLOCATOR(&(init_options->allocator), return RMW_RET_INVALID_ARGUMENT);
   RMW_CHECK_TYPE_IDENTIFIERS_MATCH(
     init_options->implementation_identifier,
-    RMW_RET_INCORRECT_RMW_IMPLEMENTATION);
+    return RMW_RET_INCORRECT_RMW_IMPLEMENTATION);
 
   if(init_options->impl != NULL){
     zenoh_pico_destroy_param((ZenohPicoTransportParams*)init_options->impl);
@@ -329,7 +329,7 @@ rmw_init(
     return RMW_RET_INVALID_ARGUMENT);
   RMW_CHECK_TYPE_IDENTIFIERS_MATCH(
     options->implementation_identifier,
-    RMW_RET_INCORRECT_RMW_IMPLEMENTATION);
+    return RMW_RET_INCORRECT_RMW_IMPLEMENTATION);
   RMW_CHECK_FOR_NULL_WITH_MSG(
     options->enclave,
     "expected non-null enclave",
@@ -390,7 +390,7 @@ rmw_shutdown(
   RCUTILS_CHECK_ARGUMENT_FOR_NULL(context, RMW_RET_INVALID_ARGUMENT);
   RMW_CHECK_TYPE_IDENTIFIERS_MATCH(
     context->implementation_identifier,
-    RMW_RET_INCORRECT_RMW_IMPLEMENTATION);
+    return RMW_RET_INCORRECT_RMW_IMPLEMENTATION);
 
   ZenohPicoSession *session = (ZenohPicoSession *)context->impl;
 

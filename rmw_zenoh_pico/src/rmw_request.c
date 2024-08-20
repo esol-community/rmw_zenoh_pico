@@ -24,7 +24,7 @@ rmw_send_request(
 {
   RMW_CHECK_TYPE_IDENTIFIERS_MATCH(
     client->implementation_identifier,
-    RMW_RET_INCORRECT_RMW_IMPLEMENTATION);
+    return RMW_RET_INCORRECT_RMW_IMPLEMENTATION);
 
   return RMW_RET_OK;
 }
@@ -38,7 +38,7 @@ rmw_take_request(
 {
   RMW_CHECK_TYPE_IDENTIFIERS_MATCH(
     service->implementation_identifier,
-    RMW_RET_INCORRECT_RMW_IMPLEMENTATION);
+    return RMW_RET_INCORRECT_RMW_IMPLEMENTATION);
 
   if (taken != NULL) {
     *taken = false;
