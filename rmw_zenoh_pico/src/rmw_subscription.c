@@ -35,8 +35,8 @@
 #define RMW_ZENOH_PICO_TYPESUPPORT_C rosidl_typesupport_rmw_zenoh_identifier
 
 static rmw_subscription_t *rmw_subscription_generate(rmw_context_t *context,
-					     ZenohPicoSubData *sub_data,
-					     const rmw_subscription_options_t *options)
+						     ZenohPicoSubData *sub_data,
+						     const rmw_subscription_options_t *options)
 {
   _Z_DEBUG("%s : start()", __func__);
 
@@ -114,23 +114,23 @@ static const size_t RIHS01_STRING_LEN	= 71;  // RIHS_PREFIX_LEN + (ROSIDL_TYPE_H
 static const uint8_t INVALID_NIBBLE	= 0xff;
 
 static void test_qos_profile(rmw_qos_profile_t *qos) {
-    // Reliability.
-    qos->reliability	= RMW_QOS_POLICY_RELIABILITY_RELIABLE; // 1;
-    // Durability.
-    qos->durability	= RMW_QOS_POLICY_DURABILITY_VOLATILE;  // 2;
-    // History.
-    qos->history	= RMW_QOS_POLICY_HISTORY_KEEP_LAST;    // 1;
-    qos->depth		= 10;
-    // Deadline.
-    qos->deadline.sec	= 0;
-    qos->deadline.nsec	= 0;
-    // Lifespan.
-    qos->lifespan.sec	= 0;
-    qos->lifespan.nsec	= 0;
-    // Liveliness.
-    qos->liveliness     = 0;
-    qos->liveliness_lease_duration.sec = 0;
-    qos->liveliness_lease_duration.nsec = 0;
+  // Reliability.
+  qos->reliability	= RMW_QOS_POLICY_RELIABILITY_RELIABLE; // 1;
+  // Durability.
+  qos->durability	= RMW_QOS_POLICY_DURABILITY_VOLATILE;  // 2;
+  // History.
+  qos->history	= RMW_QOS_POLICY_HISTORY_KEEP_LAST;    // 1;
+  qos->depth		= 10;
+  // Deadline.
+  qos->deadline.sec	= 0;
+  qos->deadline.nsec	= 0;
+  // Lifespan.
+  qos->lifespan.sec	= 0;
+  qos->lifespan.nsec	= 0;
+  // Liveliness.
+  qos->liveliness     = 0;
+  qos->liveliness_lease_duration.sec = 0;
+  qos->liveliness_lease_duration.nsec = 0;
 }
 
 rmw_subscription_t *
@@ -198,9 +198,9 @@ rmw_create_subscription(
 
   _z_string_t _topic_name = _z_string_make(topic_name);
   ZenohPicoTopicInfo_t *_topic_info = zenoh_pico_generate_topic_info(&_topic_name,
-								    &_type_name,
-								    &_hash_data,
-								    &qos_key);
+								     &_type_name,
+								     &_hash_data,
+								     &qos_key);
   // clone node_info
   ZenohPicoNodeInfo_t *_node_info = zenoh_pico_clone_node_info(node_data->entity_->node_info_);
 
@@ -209,21 +209,21 @@ rmw_create_subscription(
   ZenohPicoSession *session = node_data->session_;
 
   ZenohPicoEntity *_entity = zenoh_pico_generate_entitiy(NULL,
-							z_info_zid(z_loan(session->session_)),
-							_entity_id,
-							node_data->id_,
-							Subscription,
-							_node_info,
-							_topic_info);
+							 z_info_zid(z_loan(session->session_)),
+							 _entity_id,
+							 node_data->id_,
+							 Subscription,
+							 _node_info,
+							 _topic_info);
   // zenoh_pico_debug_entitiy(_entity);
 
   // generate subscription data
   ZenohPicoNodeData *_node = zenoh_pico_loan_node_data(node_data);
   ZenohPicoSubData *_sub_data = zenoh_pico_generate_sub_data(_entity_id,
-							    _node,
-							    _entity,
-							    type_support,
-							    &_qos_profile);
+							     _node,
+							     _entity,
+							     type_support,
+							     &_qos_profile);
 
   zenoh_pico_debug_sub_data(_sub_data);
 
@@ -270,22 +270,21 @@ rmw_destroy_subscription(
   rmw_ret_t result_ret = RMW_RET_OK;
   if (!node) {
     RMW_UROS_TRACE_MESSAGE("node handle is null")
-    result_ret = RMW_RET_ERROR;
+      result_ret = RMW_RET_ERROR;
     result_ret = RMW_RET_ERROR;
   } else if (!node->data) {
     RMW_UROS_TRACE_MESSAGE("node imp is null")
-    result_ret = RMW_RET_ERROR;
+      result_ret = RMW_RET_ERROR;
   } else if (!subscription) {
     RMW_UROS_TRACE_MESSAGE("subscription handle is null")
-    result_ret = RMW_RET_ERROR;
+      result_ret = RMW_RET_ERROR;
     result_ret = RMW_RET_ERROR;
   } else if (!subscription->data) {
     RMW_UROS_TRACE_MESSAGE("subscription imp is null")
-    result_ret = RMW_RET_ERROR;
+      result_ret = RMW_RET_ERROR;
   } else {
+    rmw_subscription_destroy(subscription);
   }
-
-  rmw_subscription_destroy(subscription);
 
   return result_ret;
 }
