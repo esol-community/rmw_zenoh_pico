@@ -18,6 +18,8 @@ typedef struct _ReceiveMessageData {
 } ReceiveMessageData;
 
 typedef struct _ReceiveMessageDataList {
+  z_mutex_t mutex;
+
   ReceiveMessageData *que_top;
   ReceiveMessageData *que_bottom;
   int count;
