@@ -10,6 +10,7 @@
 
 #include <rmw_zenoh_pico/rmw_zenoh_pico_node.h>
 #include <rmw_zenoh_pico/rmw_zenoh_pico_receiveMessage.h>
+#include <rmw_zenoh_pico/rmw_zenoh_pico_event_callbacks.h>
 
 #if defined(__cplusplus)
 extern "C"
@@ -39,6 +40,9 @@ extern "C"
 
     // recived message list
     ReceiveMessageDataList list_;
+
+    // data callback on new message
+    DataCallbackManager data_callback_mgr;
 
   } ZenohPicoSubData;
 
