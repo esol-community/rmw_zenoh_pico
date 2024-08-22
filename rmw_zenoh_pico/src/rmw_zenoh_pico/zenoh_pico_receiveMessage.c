@@ -90,13 +90,35 @@ void recv_msg_list_init(ReceiveMessageDataList *msg_list)
   msg_list->que_top    = (ReceiveMessageData *)NULL;
   msg_list->que_bottom = (ReceiveMessageData *)NULL;
   msg_list->count      = 0;
+
+  z_mutex_init(&msg_list->mutex);
+}
+
+void recv_msg_list_destroy(ReceiveMessageDataList *msg_list)
+{
+  if(msg_list == NULL){
+    return;
+  }
+
+  z_mutex_lock(&msg_list->mutex);
+  ReceiveMessageData * msg_data = msg_list->que_top;
+
+  for(size_t count = 0; msg_data != NULL; count++){
+    zenoh_pico_delete_recv_msg_data(msg_data);
+    msg_data = msg_data->next_;
+  }
+  z_mutex_unlock(&msg_list->mutex);
+
+  z_mutex_free(&msg_list->mutex);
 }
 
 ReceiveMessageData *recv_msg_list_push(ReceiveMessageDataList *msg_list,
 				       ReceiveMessageData *recv_data)
 {
-  if(recv_data == NULL)
+  if((msg_list == NULL) || (recv_data == NULL))
     return NULL;
+
+  z_mutex_lock(&msg_list->mutex);
 
   ReceiveMessageData *bottom_msg = msg_list->que_bottom;
 
@@ -112,15 +134,24 @@ ReceiveMessageData *recv_msg_list_push(ReceiveMessageDataList *msg_list,
   msg_list->que_bottom = recv_data;
   msg_list->count += 1;
 
+  z_mutex_unlock(&msg_list->mutex);
+
   return(recv_data);
 }
 
 ReceiveMessageData *recv_msg_list_pop(ReceiveMessageDataList *msg_list)
 {
-  ReceiveMessageData *bottom_msg = msg_list->que_top;
 
-  if(bottom_msg == NULL)
+  if(msg_list == NULL)
     return NULL;
+
+  z_mutex_lock(&msg_list->mutex);
+
+  ReceiveMessageData *bottom_msg = msg_list->que_top;
+  if(bottom_msg == NULL){
+    z_mutex_unlock(&msg_list->mutex);
+    return NULL;
+  }
 
   msg_list->que_top = bottom_msg->next_;
   bottom_msg->next_  = NULL;
@@ -129,12 +160,20 @@ ReceiveMessageData *recv_msg_list_pop(ReceiveMessageDataList *msg_list)
   if(msg_list->count <= 0)
     msg_list->count = 0;
 
+  z_mutex_unlock(&msg_list->mutex);
+
   return bottom_msg;
 }
 
 int recv_msg_list_count(ReceiveMessageDataList *msg_list)
 {
-  return msg_list->count;
+  int ret;
+
+  z_mutex_lock(&msg_list->mutex);
+  ret = msg_list->count;
+  z_mutex_unlock(&msg_list->mutex);
+
+  return ret;
 }
 
 void recv_msg_list_debug(ReceiveMessageDataList *msg_list)
@@ -144,15 +183,17 @@ void recv_msg_list_debug(ReceiveMessageDataList *msg_list)
     return;
   }
 
-  ReceiveMessageData * msg_data = msg_list->que_top;
-
   printf("data dump start... \n");
+
+  z_mutex_lock(&msg_list->mutex);
+  ReceiveMessageData * msg_data = msg_list->que_top;
 
   for(size_t count = 0; msg_data != NULL; count++){
     printf("[%ld]\n", count);
     zenoh_pico_debug_recv_msg_data(msg_data);
     msg_data = msg_data->next_;
   }
+  z_mutex_unlock(&msg_list->mutex);
 
   printf("data dump end  ... \n");
 }
