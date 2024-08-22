@@ -38,6 +38,7 @@
 #include <rmw_zenoh_pico/rmw_zenoh_pico_subscription.h>
 #include <rmw_zenoh_pico/rmw_zenoh_pico_wait.h>
 #include <rmw_zenoh_pico/rmw_zenoh_pico_guard_condition.h>
+#include <rmw_zenoh_pico/rmw_zenoh_pico_event_callbacks.h>
 
 // expand zenoh-pico api
 extern int8_t z_condvar_wait_time(z_condvar_t *cv, z_mutex_t *m, struct timespec *wait_timeout);

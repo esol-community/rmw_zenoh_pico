@@ -79,6 +79,9 @@ ZenohPicoSubData * zenoh_pico_generate_sub_data(size_t sub_id,
   // init receive message list
   recv_msg_list_init(&sub_data->list_);
 
+  // init data callback manager
+  data_callback_init(&sub_data->data_callback_mgr);
+
   return sub_data;
 }
 
