@@ -46,19 +46,19 @@ extern "C"
 
   } ZenohPicoSubData;
 
-  extern ZenohPicoSubData * zenoh_pico_generate_sub_data(size_t sub_id,
+  extern ZenohPicoSubData * zenoh_pico_generate_subscription_data(size_t sub_id,
 							 ZenohPicoNodeData *node,
 							 ZenohPicoEntity *entity,
 							 const rosidl_message_type_support_t * type_support,
 							 rmw_qos_profile_t *qos_profile);
 
-  extern bool zenoh_pico_destroy_sub_data(ZenohPicoSubData *sub_data);
-  extern void zenoh_pico_debug_sub_data(ZenohPicoSubData *sub_data);
+  extern bool zenoh_pico_destroy_subscription_data(ZenohPicoSubData *sub_data);
+  extern void zenoh_pico_debug_subscription_data(ZenohPicoSubData *sub_data);
 
   // --------------------------
 
-  extern bool declaration_sub_data(ZenohPicoSubData *sub_data);
-  extern bool undeclaration_sub_data(ZenohPicoSubData *sub_data);
+  extern bool declaration_subscription_data(ZenohPicoSubData *sub_data);
+  extern bool undeclaration_subscription_data(ZenohPicoSubData *sub_data);
 
 #if defined(__cplusplus)
 }

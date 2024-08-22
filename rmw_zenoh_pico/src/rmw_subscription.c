@@ -45,7 +45,7 @@
 
 //-----------------------------
 
-ZenohPicoSubData * zenoh_pico_generate_sub_data(size_t sub_id,
+ZenohPicoSubData * zenoh_pico_generate_subscription_data(size_t sub_id,
 						ZenohPicoNodeData *node,
 						ZenohPicoEntity *entity,
 						const rosidl_message_type_support_t * type_support,
@@ -85,11 +85,11 @@ ZenohPicoSubData * zenoh_pico_generate_sub_data(size_t sub_id,
   return sub_data;
 }
 
-bool zenoh_pico_destroy_sub_data(ZenohPicoSubData *sub_data)
+bool zenoh_pico_destroy_subscription_data(ZenohPicoSubData *sub_data)
 {
   _Z_DEBUG("%s : start", __func__);
 
-  undeclaration_sub_data(sub_data);
+  undeclaration_subscription_data(sub_data);
 
   Z_STRING_FREE(sub_data->token_key_);
   Z_STRING_FREE(sub_data->topic_key_);
@@ -124,7 +124,7 @@ bool zenoh_pico_destroy_sub_data(ZenohPicoSubData *sub_data)
   return true;
 }
 
-void zenoh_pico_debug_sub_data(ZenohPicoSubData *sub_data)
+void zenoh_pico_debug_subscription_data(ZenohPicoSubData *sub_data)
 {
   printf("--------- subscription data ----------\n");
   printf("ref = %d\n", sub_data->ref_);
@@ -288,7 +288,7 @@ void sub_data_handler(const z_sample_t *sample, void *ctx) {
 // dropper: allows the callback's state to be freed. ``context`` will be passed as its last argument.
 // context: a pointer to an arbitrary state.
 
-bool declaration_sub_data(ZenohPicoSubData *sub_data)
+bool declaration_subscription_data(ZenohPicoSubData *sub_data)
 {
   printf("init sub_data = %p\n", sub_data);
 
@@ -319,7 +319,7 @@ bool declaration_sub_data(ZenohPicoSubData *sub_data)
   return true;
 }
 
-bool undeclaration_sub_data(ZenohPicoSubData *sub_data)
+bool undeclaration_subscription_data(ZenohPicoSubData *sub_data)
 {
   ZenohPicoSession *session = sub_data->node_->session_;
 
@@ -364,7 +364,7 @@ static rmw_ret_t rmw_subscription_destroy(rmw_subscription_t * sub)
   _Z_DEBUG("%s : start()", __func__);
 
   ZenohPicoSubData *sub_data = (ZenohPicoSubData *)sub->data;
-  undeclaration_sub_data(sub_data);
+  undeclaration_subscription_data(sub_data);
 
   return RMW_RET_OK;
 }
@@ -524,20 +524,19 @@ rmw_create_subscription(
 
   // generate subscription data
   ZenohPicoNodeData *_node = zenoh_pico_loan_node_data(node_data);
-  ZenohPicoSubData *_sub_data = zenoh_pico_generate_sub_data(_entity_id,
+  ZenohPicoSubData *_sub_data = zenoh_pico_generate_subscription_data(_entity_id,
 							     _node,
 							     _entity,
 							     type_support,
 							     &_qos_profile);
 
-  zenoh_pico_debug_sub_data(_sub_data);
+  zenoh_pico_debug_subscription_data(_sub_data);
 
   rmw_subscription_t * rmw_subscription = rmw_subscription_generate(node->context,
 								    _sub_data,
 								    subscription_options);
-  declaration_sub_data(_sub_data);
+  declaration_subscription_data(_sub_data);
 
-  // return rmw_subscription;
   return rmw_subscription;
 }
 
