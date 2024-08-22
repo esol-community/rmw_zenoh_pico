@@ -14,10 +14,12 @@
 
 #include "rmw_zenoh_pico/rmw_zenoh_pico_logging.h"
 #include "rmw_zenoh_pico/rmw_zenoh_pico_session.h"
+#include "rmw_zenoh_pico/rmw_zenoh_pico_wait.h"
 #include "zenoh-pico/api/primitives.h"
 #include "zenoh-pico/api/types.h"
 #include "zenoh-pico/collections/bytes.h"
 #include "zenoh-pico/collections/string.h"
+#include "zenoh-pico/system/platform-common.h"
 #include <rmw_zenoh_pico/config.h>
 
 #ifdef HAVE_C_TYPESUPPORT
@@ -46,10 +48,10 @@
 //-----------------------------
 
 ZenohPicoSubData * zenoh_pico_generate_subscription_data(size_t sub_id,
-						ZenohPicoNodeData *node,
-						ZenohPicoEntity *entity,
-						const rosidl_message_type_support_t * type_support,
-						rmw_qos_profile_t *qos_profile)
+							 ZenohPicoNodeData *node,
+							 ZenohPicoEntity *entity,
+							 const rosidl_message_type_support_t * type_support,
+							 rmw_qos_profile_t *qos_profile)
 {
   if((node == NULL) || (entity == NULL))
     return NULL;
@@ -77,10 +79,14 @@ ZenohPicoSubData * zenoh_pico_generate_subscription_data(size_t sub_id,
 						     Z_STRING_VAL(topic_info->type_),
 						     Z_STRING_VAL(topic_info->hash_));
   // init receive message list
-  recv_msg_list_init(&sub_data->list_);
+  recv_msg_list_init(&sub_data->message_queue_);
 
   // init data callback manager
   data_callback_init(&sub_data->data_callback_mgr);
+
+  // init rmw_wait condition
+  z_mutex_init(&sub_data->condition_mutex);
+  sub_data->wait_set_data_ = NULL;
 
   return sub_data;
 }
@@ -106,11 +112,11 @@ bool zenoh_pico_destroy_subscription_data(ZenohPicoSubData *sub_data)
   }
 
   // free receive message list
-  recv_msg_list_debug(&sub_data->list_);
+  recv_msg_list_debug(&sub_data->message_queue_);
 
-  if(recv_msg_list_count(&sub_data->list_) > 0){
+  if(recv_msg_list_count(&sub_data->message_queue_) > 0){
     while(true){
-      ReceiveMessageData * recv_data = recv_msg_list_pop(&sub_data->list_);
+      ReceiveMessageData * recv_data = recv_msg_list_pop(&sub_data->message_queue_);
 
       if(recv_data == NULL)
 	break;
@@ -118,6 +124,9 @@ bool zenoh_pico_destroy_subscription_data(ZenohPicoSubData *sub_data)
       zenoh_pico_delete_recv_msg_data(recv_data);
     }
   }
+
+  z_mutex_free(&sub_data->condition_mutex);
+  sub_data->wait_set_data_ = NULL;
 
   ZenohPicoDestroyData(sub_data);
 
@@ -213,6 +222,22 @@ int64_t get_int64_from_attachment(const z_attachment_t * const attachment, char 
 }
 #endif
 
+void add_new_message(ZenohPicoSubData *sub_data, ReceiveMessageData *recv_data)
+{
+  zenoh_pico_debug_recv_msg_data(recv_data);
+
+  (void)recv_msg_list_push(&sub_data->message_queue_, recv_data);
+  RMW_ZENOH_LOG_INFO_NAMED("add_new_message",
+			   "message_queue size is %d",
+			   recv_msg_list_count(&sub_data->message_queue_));
+
+  (void)data_callback_trigger(&sub_data->data_callback_mgr);
+
+  (void)subscription_condition_trigger(sub_data);
+
+  return;
+}
+
 void sub_data_handler(const z_sample_t *sample, void *ctx) {
   _Z_DEBUG("%s : start", __func__);
 
@@ -275,13 +300,7 @@ void sub_data_handler(const z_sample_t *sample, void *ctx) {
 								     source_timestamp);
   if(recv_data == NULL) return;
 
-  zenoh_pico_debug_recv_msg_data(recv_data);
-
-  (void)recv_msg_list_push(&sub_data->list_, recv_data);
-  _Z_INFO("%s : recv_msg_list_count = %d\n",
-	  __func__,
-	  recv_msg_list_count(&sub_data->list_));
-
+  (void)add_new_message(sub_data, recv_data);
 }
 
 // callback: the typical ``callback`` function. ``context`` will be passed as its last argument.
@@ -332,6 +351,60 @@ bool undeclaration_subscription_data(ZenohPicoSubData *sub_data)
   }
 
   return true;
+}
+
+void subscription_condition_trigger(ZenohPicoSubData *sub_data)
+{
+  z_mutex_lock(&sub_data->condition_mutex);
+
+  if(sub_data->wait_set_data_ != NULL) {
+    ZenohPicoWaitSetData * wait_set_data = sub_data->wait_set_data_;
+
+    wait_condition_lock(wait_set_data);
+
+    wait_condition_triggered(wait_set_data, true);
+    wait_condition_signal(wait_set_data);
+
+    wait_condition_unlock(wait_set_data);
+  }
+
+  z_mutex_unlock(&sub_data->condition_mutex);
+}
+
+bool subscription_condition_check_and_attach(ZenohPicoSubData *sub_data,
+					     ZenohPicoWaitSetData * wait_set_data)
+{
+  bool ret;
+
+  z_mutex_lock(&sub_data->condition_mutex);
+
+  if(!recv_msg_list_empty(&sub_data->message_queue_)){
+    RMW_ZENOH_LOG_INFO_NAMED("queue_has_data_and_attach_condition_if_not",
+			     "message_queue size is %d",
+			     recv_msg_list_count(&sub_data->message_queue_));
+    z_mutex_unlock(&sub_data->condition_mutex);
+    return true;
+  }
+
+  sub_data->wait_set_data_ = wait_set_data;
+
+  z_mutex_unlock(&sub_data->condition_mutex);
+
+  return false;
+}
+
+bool subscription_condition_detach_and_queue_is_empty(ZenohPicoSubData *sub_data)
+{
+  bool ret;
+
+  z_mutex_lock(&sub_data->condition_mutex);
+
+  sub_data->wait_set_data_ = NULL;
+  ret = recv_msg_list_empty(&sub_data->message_queue_);
+
+  z_mutex_unlock(&sub_data->condition_mutex);
+
+  return ret;
 }
 
 //-----------------------------
@@ -424,7 +497,7 @@ static void test_qos_profile(rmw_qos_profile_t *qos) {
   // Durability.
   qos->durability	= RMW_QOS_POLICY_DURABILITY_VOLATILE;  // 2;
   // History.
-  qos->history	= RMW_QOS_POLICY_HISTORY_KEEP_LAST;    // 1;
+  qos->history	        = RMW_QOS_POLICY_HISTORY_KEEP_LAST;    // 1;
   qos->depth		= 10;
   // Deadline.
   qos->deadline.sec	= 0;
@@ -433,7 +506,7 @@ static void test_qos_profile(rmw_qos_profile_t *qos) {
   qos->lifespan.sec	= 0;
   qos->lifespan.nsec	= 0;
   // Liveliness.
-  qos->liveliness     = 0;
+  qos->liveliness       = 0;
   qos->liveliness_lease_duration.sec = 0;
   qos->liveliness_lease_duration.nsec = 0;
 }
@@ -525,10 +598,10 @@ rmw_create_subscription(
   // generate subscription data
   ZenohPicoNodeData *_node = zenoh_pico_loan_node_data(node_data);
   ZenohPicoSubData *_sub_data = zenoh_pico_generate_subscription_data(_entity_id,
-							     _node,
-							     _entity,
-							     type_support,
-							     &_qos_profile);
+								      _node,
+								      _entity,
+								      type_support,
+								      &_qos_profile);
 
   zenoh_pico_debug_subscription_data(_sub_data);
 

@@ -28,6 +28,7 @@ extern "C"
   extern void wait_condition_lock(ZenohPicoWaitSetData * wait_set_data);
   extern void wait_condition_unlock(ZenohPicoWaitSetData * wait_set_data);
   extern void wait_condition_signal(ZenohPicoWaitSetData * wait_set_data);
+  extern void wait_condition_triggered(ZenohPicoWaitSetData * wait_set_data, bool value);
 
 #if defined(__cplusplus)
 }

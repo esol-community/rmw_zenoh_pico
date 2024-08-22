@@ -12,6 +12,8 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
+#include "rmw_zenoh_pico/rmw_zenoh_pico_logging.h"
+#include "rmw_zenoh_pico/rmw_zenoh_pico_subscription.h"
 #include "zenoh-pico/system/platform-common.h"
 #include "zenoh-pico/system/platform/unix.h"
 
@@ -37,6 +39,11 @@ void wait_condition_unlock(ZenohPicoWaitSetData * wait_set_data)
 void wait_condition_signal(ZenohPicoWaitSetData * wait_set_data)
 {
   z_condvar_signal(&wait_set_data->condition_variable_);
+}
+
+void wait_condition_triggered(ZenohPicoWaitSetData * wait_set_data, bool value)
+{
+  wait_set_data->triggered_ = value;
 }
 
 bool check_and_attach_condition(
@@ -67,6 +74,14 @@ bool check_and_attach_condition(
 
   if (subscriptions) {
     for (size_t i = 0; i < subscriptions->subscriber_count; ++i) {
+      ZenohPicoSubData *sub_data = (ZenohPicoSubData *)subscriptions->subscribers[i];
+      if (sub_data == NULL) {
+        continue;
+      }
+
+      if(subscription_condition_check_and_attach(sub_data, wait_set_data)) {
+	return true;
+      }
     }
   }
 
@@ -132,6 +147,8 @@ rmw_wait(
       }
     }
 
+    _Z_INFO("%s : wakeup from wait condition....", __func__);
+
     wait_set_data->triggered_ = false;
 
     z_mutex_unlock(lock);
@@ -161,6 +178,17 @@ rmw_wait(
 
   if (subscriptions) {
     for (size_t i = 0; i < subscriptions->subscriber_count; ++i) {
+      ZenohPicoSubData *sub_data = (ZenohPicoSubData *)subscriptions->subscribers[i];
+      if (sub_data == NULL) {
+	continue;
+      }
+
+      if(subscription_condition_detach_and_queue_is_empty(sub_data)){
+	// Setting to NULL lets rcl know that this subscription is not ready
+        subscriptions->subscribers[i] = NULL;
+      }else{
+        wait_result = true;
+      }
     }
   }
 

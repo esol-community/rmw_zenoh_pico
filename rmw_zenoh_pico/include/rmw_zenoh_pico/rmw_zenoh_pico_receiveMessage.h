@@ -38,6 +38,7 @@ extern ReceiveMessageData *recv_msg_list_push(ReceiveMessageDataList *msg_list,
 					      ReceiveMessageData *recv_data);
 extern ReceiveMessageData *recv_msg_list_pop(ReceiveMessageDataList *msg_list);
 extern int recv_msg_list_count(ReceiveMessageDataList *msg_list);
+extern bool recv_msg_list_empty(ReceiveMessageDataList *msg_list);
 extern void recv_msg_list_debug(ReceiveMessageDataList *msg_list);
 
 #endif
