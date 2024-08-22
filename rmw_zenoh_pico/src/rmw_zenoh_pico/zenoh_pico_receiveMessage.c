@@ -1,6 +1,7 @@
 
 #include "rmw_zenoh_pico/rmw_zenoh_pico_macros.h"
 #include "rmw_zenoh_pico/rmw_zenoh_pico_receiveMessage.h"
+#include <stdbool.h>
 
 static void _z_recv_sample_clone(z_sample_t *dst, const z_sample_t *src)
 {
@@ -174,6 +175,11 @@ int recv_msg_list_count(ReceiveMessageDataList *msg_list)
   z_mutex_unlock(&msg_list->mutex);
 
   return ret;
+}
+
+bool recv_msg_list_empty(ReceiveMessageDataList *msg_list)
+{
+  return recv_msg_list_count(msg_list) == 0 ? true : false;
 }
 
 void recv_msg_list_debug(ReceiveMessageDataList *msg_list)
