@@ -12,7 +12,7 @@ extern "C"
 #include <rmw_zenoh_pico/rmw_zenoh_pico_wait.h>
 
   typedef struct _ZenohPicoGuardConditionData {
-    z_mutex_t internal_mutex_;
+    z_mutex_t condition_mutex_;
     bool triggered_;
     ZenohPicoWaitSetData * wait_set_data_;
 
@@ -23,10 +23,10 @@ extern "C"
 
   // ---------
 
-  extern void condition_trigger(ZenohPicoGuardConditionData *condition_data);
-  extern bool condition_check(ZenohPicoGuardConditionData *condition_data,
-			      ZenohPicoWaitSetData * wait_set_data);
-  extern bool condition_detach(ZenohPicoGuardConditionData *condition_data);
+  extern void guard_condition_trigger(ZenohPicoGuardConditionData *condition_data);
+  extern bool guard_condition_check_and_attach(ZenohPicoGuardConditionData *condition_data,
+				    ZenohPicoWaitSetData * wait_set_data);
+  extern bool guard_condition_detach_and_is_trigger_set(ZenohPicoGuardConditionData *condition_data);
 
 #if defined(__cplusplus)
 }

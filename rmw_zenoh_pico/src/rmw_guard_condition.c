@@ -23,7 +23,7 @@ ZenohPicoGuardConditionData * zenoh_pico_guard_condition_data(void)
   ZenohPicoGuardConditionData *condition_data = z_malloc(sizeof(ZenohPicoGuardConditionData));
   memset(condition_data, 0, sizeof(ZenohPicoGuardConditionData));
 
-  z_mutex_init(&condition_data->internal_mutex_);
+  z_mutex_init(&condition_data->condition_mutex_);
   condition_data->triggered_ = false;
 
   return condition_data;
@@ -31,8 +31,9 @@ ZenohPicoGuardConditionData * zenoh_pico_guard_condition_data(void)
 
 bool zenoh_pico_destroy_guard_condition_data(ZenohPicoGuardConditionData *condition_data)
 {
-    z_free(condition_data);
-    return true;
+  z_mutex_free(&condition_data->condition_mutex_);
+  z_free(condition_data);
+  return true;
 }
 
 rmw_guard_condition_t *

@@ -54,7 +54,7 @@ bool check_and_attach_condition(
 	continue;
       }
 
-      if(condition_check(gc, wait_set_data)) {
+      if(guard_condition_check_and_attach(gc, wait_set_data)) {
 	return true;
       }
     }
@@ -146,7 +146,7 @@ rmw_wait(
 	continue;
       }
 
-      if(!condition_detach(gc)){
+      if(!guard_condition_detach_and_is_trigger_set(gc)){
 	guard_conditions->guard_conditions[i] = NULL;
       }else{
 	wait_result = true;
