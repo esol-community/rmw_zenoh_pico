@@ -28,6 +28,8 @@
 #include <rmw_zenoh_pico/liveliness/rmw_zenoh_pico_entity.h>
 #include <rmw_zenoh_pico/liveliness/rmw_zenoh_pico_liveliness.h>
 
+#include <rmw_zenoh_pico/rmw_zenoh_pico_receiveMessage.h>
+
 #include <rmw_zenoh_pico/rmw_zenoh_pico_identifiers.h>
 #include <rmw_zenoh_pico/rmw_zenoh_pico_param.h>
 #include <rmw_zenoh_pico/rmw_zenoh_pico_session.h>
