@@ -111,10 +111,11 @@ if(BUILD_TESTING)
 endif()
 
 set(SRCS
-  src/liveliness/zenoh_pico_topicInfo.c
-  src/liveliness/zenoh_pico_entity.c
-  src/liveliness/zenoh_pico_liveliness.c
-  src/liveliness/zenoh_pico_nodeInfo.c
+  src/rmw_zenoh_pico/zenoh_pico_topicInfo.c
+  src/rmw_zenoh_pico/zenoh_pico_entity.c
+  src/rmw_zenoh_pico/zenoh_pico_liveliness.c
+  src/rmw_zenoh_pico/zenoh_pico_nodeInfo.c
+  src/rmw_zenoh_pico/zenoh_pico_receiveMessage.c
 
   src/utilities/z_condvar_wait_time.c
 
@@ -221,6 +222,8 @@ target_compile_options(${PROJECT_NAME}
     $<$<C_COMPILER_ID:GNU>:-Wno-unused-variable>
     $<$<C_COMPILER_ID:GNU>:-Wno-pedantic>
     $<$<C_COMPILER_ID:GNU>:$<$<VERSION_GREATER:$<C_COMPILER_VERSION>,8.1>:-Wcast-align=strict>>
+    $<$<C_COMPILER_ID:GNU>:-g>
+    $<$<C_COMPILER_ID:GNU>:-O0>
     $<$<C_COMPILER_ID:GNU>:-Wvla>
     $<$<C_COMPILER_ID:MSVC>:/Wall>
 )
