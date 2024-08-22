@@ -12,7 +12,12 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
+#include "rmw_zenoh_pico/rmw_zenoh_pico_logging.h"
 #include "rmw_zenoh_pico/rmw_zenoh_pico_session.h"
+#include "zenoh-pico/api/primitives.h"
+#include "zenoh-pico/api/types.h"
+#include "zenoh-pico/collections/bytes.h"
+#include "zenoh-pico/collections/string.h"
 #include <rmw_zenoh_pico/config.h>
 
 #ifdef HAVE_C_TYPESUPPORT
@@ -71,6 +76,8 @@ ZenohPicoSubData * zenoh_pico_generate_sub_data(size_t sub_id,
 						     Z_STRING_VAL(topic_info->name_),
 						     Z_STRING_VAL(topic_info->type_),
 						     Z_STRING_VAL(topic_info->hash_));
+  // init receive message list
+  recv_msg_list_init(&sub_data->list_);
 
   return sub_data;
 }
@@ -95,6 +102,20 @@ bool zenoh_pico_destroy_sub_data(ZenohPicoSubData *sub_data)
     sub_data->entity_ = NULL;
   }
 
+  // free receive message list
+  recv_msg_list_debug(&sub_data->list_);
+
+  if(recv_msg_list_count(&sub_data->list_) > 0){
+    while(true){
+      ReceiveMessageData * recv_data = recv_msg_list_pop(&sub_data->list_);
+
+      if(recv_data == NULL)
+	break;
+
+      zenoh_pico_delete_recv_msg_data(recv_data);
+    }
+  }
+
   ZenohPicoDestroyData(sub_data);
 
   return true;
@@ -116,6 +137,8 @@ void zenoh_pico_debug_sub_data(ZenohPicoSubData *sub_data)
 }
 
 // --------------------------
+
+#if Z_FEATURE_ATTACHMENT == 1
 
 bool get_gid_from_attachment(
   const z_attachment_t *attachment, uint8_t gid[RMW_GID_STORAGE_SIZE])
@@ -185,27 +208,34 @@ int64_t get_int64_from_attachment(const z_attachment_t * const attachment, char 
 
   return num;
 }
+#endif
 
 void sub_data_handler(const z_sample_t *sample, void *ctx) {
   _Z_DEBUG("%s : start", __func__);
 
-  z_owned_str_t keystr = z_keyexpr_to_string(sample->keyexpr);
-  _Z_INFO("%s : keystr is %s ", __func__, keystr._value);
-
   ZenohPicoSubData *sub_data = (ZenohPicoSubData *)ctx;
   if (sub_data == NULL) {
+    z_owned_str_t keystr = z_keyexpr_to_string(sample->keyexpr);
+    _Z_INFO("%s : keystr is %s ", __func__, keystr._value);
+
     RMW_ZENOH_LOG_ERROR_NAMED(
       "rmw_zenoh_cpp",
       "Unable to obtain rmw_subscription_data_t from data for "
       "subscription for %s",
       z_loan(keystr)
       );
+    z_drop(z_move(keystr));
 
     return;
   }
 
   uint8_t pub_gid[RMW_GID_STORAGE_SIZE];
+  int64_t sequence_number  = 0;
+  int64_t source_timestamp = 0;
+
+#if Z_FEATURE_ATTACHMENT == 1
   if (!get_gid_from_attachment(&sample->attachment, pub_gid)) {
+    // by rmw_zenoh_c
     // We failed to get the GID from the attachment.  While this isn't fatal,
     // it is unusual and so we should report it.
     memset(pub_gid, 0, RMW_GID_STORAGE_SIZE);
@@ -214,8 +244,9 @@ void sub_data_handler(const z_sample_t *sample, void *ctx) {
       "Unable to obtain publisher GID from the attachment.");
   }
 
-  int64_t sequence_number = get_int64_from_attachment(&sample->attachment, "sequence_number");
+  sequence_number = get_int64_from_attachment(&sample->attachment, "sequence_number");
   if (sequence_number < 0) {
+    // by rmw_zenoh_c
     // We failed to get the sequence number from the attachment.  While this
     // isn't fatal, it is unusual and so we should report it.
     sequence_number = 0;
@@ -223,18 +254,30 @@ void sub_data_handler(const z_sample_t *sample, void *ctx) {
       "rmw_zenoh_cpp", "Unable to obtain sequence number from the attachment.");
   }
 
-  int64_t source_timestamp = get_int64_from_attachment(&sample->attachment, "source_timestamp");
+  source_timestamp = get_int64_from_attachment(&sample->attachment, "source_timestamp");
   if (source_timestamp < 0) {
+    // by rmw_zenoh_c
     // We failed to get the source timestamp from the attachment.  While this
     // isn't fatal, it is unusual and so we should report it.
     source_timestamp = 0;
     RMW_ZENOH_LOG_ERROR_NAMED(
       "rmw_zenoh_cpp", "Unable to obtain source timestamp from the attachment.");
   }
+#endif
 
-  _Z_DEBUG(">> [Subscriber] Received (%s) [%s]",
-	   z_loan(keystr),
-	   sample->payload.start + 8);
+  ReceiveMessageData * recv_data = zenoh_pico_generate_recv_msg_data(sample,
+								     sample->timestamp.time,
+								     pub_gid,
+								     sequence_number,
+								     source_timestamp);
+  if(recv_data == NULL) return;
+
+  zenoh_pico_debug_recv_msg_data(recv_data);
+
+  (void)recv_msg_list_push(&sub_data->list_, recv_data);
+  _Z_INFO("%s : recv_msg_list_count = %d\n",
+	  __func__,
+	  recv_msg_list_count(&sub_data->list_));
 
 }
 
@@ -316,6 +359,9 @@ static rmw_subscription_t *rmw_subscription_generate(rmw_context_t *context,
 static rmw_ret_t rmw_subscription_destroy(rmw_subscription_t * sub)
 {
   _Z_DEBUG("%s : start()", __func__);
+
+  ZenohPicoSubData *sub_data = (ZenohPicoSubData *)sub->data;
+  undeclaration_sub_data(sub_data);
 
   return RMW_RET_OK;
 }
@@ -523,26 +569,17 @@ rmw_destroy_subscription(
   rmw_subscription_t * subscription)
 {
   _Z_DEBUG("%s : start()", __func__);
-  rmw_ret_t result_ret = RMW_RET_OK;
-  if (!node) {
-    RMW_UROS_TRACE_MESSAGE("node handle is null")
-      result_ret = RMW_RET_ERROR;
-    result_ret = RMW_RET_ERROR;
-  } else if (!node->data) {
-    RMW_UROS_TRACE_MESSAGE("node imp is null")
-      result_ret = RMW_RET_ERROR;
-  } else if (!subscription) {
-    RMW_UROS_TRACE_MESSAGE("subscription handle is null")
-      result_ret = RMW_RET_ERROR;
-    result_ret = RMW_RET_ERROR;
-  } else if (!subscription->data) {
-    RMW_UROS_TRACE_MESSAGE("subscription imp is null")
-      result_ret = RMW_RET_ERROR;
-  } else {
-    rmw_subscription_destroy(subscription);
-  }
 
-  return result_ret;
+  RMW_CHECK_ARGUMENT_FOR_NULL(node, RMW_RET_INVALID_ARGUMENT);
+  RMW_CHECK_ARGUMENT_FOR_NULL(subscription, RMW_RET_INVALID_ARGUMENT);
+  RMW_CHECK_TYPE_IDENTIFIERS_MATCH(
+    node->implementation_identifier,
+    return RMW_RET_INCORRECT_RMW_IMPLEMENTATION);
+  RMW_CHECK_TYPE_IDENTIFIERS_MATCH(
+    subscription->implementation_identifier,
+    return RMW_RET_INCORRECT_RMW_IMPLEMENTATION);
+
+  return rmw_subscription_destroy(subscription);
 }
 
 rmw_ret_t

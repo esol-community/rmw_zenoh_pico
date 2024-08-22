@@ -9,6 +9,7 @@
 #include <rmw_zenoh_pico/liveliness/rmw_zenoh_pico_liveliness.h>
 
 #include <rmw_zenoh_pico/rmw_zenoh_pico_node.h>
+#include <rmw_zenoh_pico/rmw_zenoh_pico_receiveMessage.h>
 
 #if defined(__cplusplus)
 extern "C"
@@ -35,6 +36,9 @@ extern "C"
 
     // Store the actual QoS profile used to configure this subscription.
     rmw_qos_profile_t adapted_qos_profile_;
+
+    // recived message list
+    ReceiveMessageDataList list_;
 
   } ZenohPicoSubData;
 
