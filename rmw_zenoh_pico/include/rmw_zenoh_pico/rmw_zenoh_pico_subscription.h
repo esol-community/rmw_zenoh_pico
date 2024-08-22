@@ -11,6 +11,7 @@
 #include <rmw_zenoh_pico/rmw_zenoh_pico_node.h>
 #include <rmw_zenoh_pico/rmw_zenoh_pico_receiveMessage.h>
 #include <rmw_zenoh_pico/rmw_zenoh_pico_event_callbacks.h>
+#include <rmw_zenoh_pico/rmw_zenoh_pico_wait.h>
 
 #if defined(__cplusplus)
 extern "C"
@@ -39,10 +40,14 @@ extern "C"
     rmw_qos_profile_t adapted_qos_profile_;
 
     // recived message list
-    ReceiveMessageDataList list_;
+    ReceiveMessageDataList message_queue_;
 
     // data callback on new message
     DataCallbackManager data_callback_mgr;
+
+    // rmw_wait condition
+    z_mutex_t condition_mutex;
+    ZenohPicoWaitSetData * wait_set_data_;
 
   } ZenohPicoSubData;
 
@@ -59,6 +64,11 @@ extern "C"
 
   extern bool declaration_subscription_data(ZenohPicoSubData *sub_data);
   extern bool undeclaration_subscription_data(ZenohPicoSubData *sub_data);
+
+  extern void subscription_condition_trigger(ZenohPicoSubData *sub_data);
+  extern bool subscription_condition_check_and_attach(ZenohPicoSubData *sub_data,
+						      ZenohPicoWaitSetData * wait_set_data);
+  extern bool subscription_condition_detach_and_queue_is_empty(ZenohPicoSubData *sub_data);
 
 #if defined(__cplusplus)
 }
