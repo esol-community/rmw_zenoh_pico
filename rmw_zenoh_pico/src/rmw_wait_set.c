@@ -57,6 +57,8 @@ rmw_create_wait_set(
   rmw_context_t * context,
   size_t max_conditions)
 {
+  (void)max_conditions;
+
   _Z_DEBUG("%s : start", __func__);
 
   RCUTILS_CHECK_ARGUMENT_FOR_NULL(context, NULL);
