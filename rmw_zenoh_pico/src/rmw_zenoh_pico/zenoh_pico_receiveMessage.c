@@ -1,31 +1,8 @@
 
 #include "rmw_zenoh_pico/rmw_zenoh_pico_macros.h"
 #include "rmw_zenoh_pico/rmw_zenoh_pico_receiveMessage.h"
+#include <ctype.h>
 #include <stdbool.h>
-
-static void _z_recv_sample_clone(z_sample_t *dst, const z_sample_t *src)
-{
-  dst->keyexpr._id = src->keyexpr._id;
-  z_string_t keyexpr_data = z_string_make(src->keyexpr._suffix);
-  dst->keyexpr._suffix = keyexpr_data.val;
-
-  _z_bytes_copy(&dst->payload, &src->payload);
-
-  dst->encoding.prefix = src->encoding.prefix;
-  _z_bytes_copy(&dst->encoding.suffix, &src->encoding.suffix);
-
-  dst->timestamp.time = src->timestamp.time;
-  dst->timestamp.id = src->timestamp.id;
-}
-
-static void _z_recv_sample_clear(z_sample_t *sample)
-{
-  z_string_t keyexpr;
-  keyexpr.val = sample->keyexpr._suffix;
-  keyexpr.len = strlen(sample->keyexpr._suffix);
-
-  _z_string_clear(&keyexpr);
-}
 
 ReceiveMessageData * zenoh_pico_generate_recv_msg_data(const z_sample_t *sample,
 						       uint64_t recv_ts,
@@ -38,7 +15,12 @@ ReceiveMessageData * zenoh_pico_generate_recv_msg_data(const z_sample_t *sample,
   if(recv_data == NULL)
     return NULL;
 
-  _z_recv_sample_clone(&recv_data->sample_, sample);
+  recv_data->payload_start = (void *)z_malloc(sample->payload.len);
+  if(recv_data->payload_start == NULL)
+    return NULL;
+
+  recv_data->payload_size  = sample->payload.len;
+  memcpy(recv_data->payload_start, sample->payload.start, sample->payload.len);
 
   memcpy(recv_data->publisher_gid_, pub_gid, RMW_GID_STORAGE_SIZE);
   recv_data->recv_timestamp_	= recv_ts;
@@ -50,11 +32,13 @@ ReceiveMessageData * zenoh_pico_generate_recv_msg_data(const z_sample_t *sample,
 
 void zenoh_pico_delete_recv_msg_data(ReceiveMessageData * recv_data)
 {
-  _z_recv_sample_clear(&recv_data->sample_);
+  if(recv_data->payload_start != NULL)
+    z_free(recv_data->payload_start);
 
   ZenohPicoDestroyData(recv_data);
 }
 
+#define PAYLOAD_DUMP_MAX 32
 void zenoh_pico_debug_recv_msg_data(ReceiveMessageData * recv_data)
 {
   printf("--------- recv msg data ----------\n");
@@ -70,19 +54,44 @@ void zenoh_pico_debug_recv_msg_data(ReceiveMessageData * recv_data)
 
   {
     printf("--------- recv simple data ----------\n");
-    z_sample_t *sample = &recv_data->sample_;
+    printf("payload size = [%ld]\n", recv_data->payload_size);
+    for(size_t count = 0; count < recv_data->payload_size  && count <= PAYLOAD_DUMP_MAX; count += 4){
+      char *payload_ptr = recv_data->payload_start + count;
 
-    z_owned_str_t keystr = z_keyexpr_to_string(sample->keyexpr);
-    printf("keystr = [%s]\n", keystr._value);
-    z_drop(z_move(keystr));
+      if((recv_data->payload_size -count)>= 4){
+	printf("%02x %02x %02x %02x\t%c %c %c %c",
+	       *(payload_ptr +0), *(payload_ptr +1),
+	       *(payload_ptr +2), *(payload_ptr +3),
+	       isascii(*(payload_ptr +0)) ? *(payload_ptr +0) : '.' ,
+	       isascii(*(payload_ptr +1)) ? *(payload_ptr +1) : '.' ,
+	       isascii(*(payload_ptr +2)) ? *(payload_ptr +2) : '.' ,
+	       isascii(*(payload_ptr +3)) ? *(payload_ptr +3) : '.'
+	  );
 
-    printf("payload[%ld]   = [%s]\n", sample->payload.len, sample->payload.start +8);
-    printf("timestamp      = [%ld]\n", sample->timestamp.time);
-    printf("encoding[%d]   = [%p][%ld]\n",
-	   sample->encoding.prefix,
-	   sample->encoding.suffix.start,
-	   sample->encoding.suffix.len);
-    printf("kind           = [%d]\n", sample->kind);
+      } else if((recv_data->payload_size -count) >= 3) {
+	printf("%02x %02x %02x     \t%c %c %c",
+	       *(payload_ptr +0), *(payload_ptr +1),
+	       *(payload_ptr +2),
+	       isascii(*(payload_ptr +0)) ? *(payload_ptr +0) : '.' ,
+	       isascii(*(payload_ptr +1)) ? *(payload_ptr +1) : '.' ,
+	       isascii(*(payload_ptr +2)) ? *(payload_ptr +2) : '.'
+	  );
+
+      } else if((recv_data->payload_size -count) >= 2) {
+	printf("%02x %02x          \t%c %c",
+	       *(payload_ptr +0), *(payload_ptr +1),
+	       isascii(*(payload_ptr +0)) ? *(payload_ptr +0) : '.' ,
+	       isascii(*(payload_ptr +1)) ? *(payload_ptr +1) : '.'
+	  );
+
+      } else if((recv_data->payload_size -count) >= 1) {
+	printf("%02x               \t%c",
+	       *(payload_ptr +0),
+	       isascii(*(payload_ptr +0)) ? *(payload_ptr +0) : '.'
+	  );
+      }
+      printf("\n");
+    }
   }
 }
 

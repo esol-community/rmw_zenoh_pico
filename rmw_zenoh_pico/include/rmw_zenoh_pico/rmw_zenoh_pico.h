@@ -10,6 +10,8 @@
 #include <rmw/ret_types.h>
 #include <rmw/init_options.h>
 
+#include <ucdr/microcdr.h>
+
 #include "zenoh-pico/system/platform-common.h"
 #include "zenoh-pico.h"
 
@@ -29,6 +31,7 @@
 #include <rmw_zenoh_pico/liveliness/rmw_zenoh_pico_liveliness.h>
 
 #include <rmw_zenoh_pico/rmw_zenoh_pico_receiveMessage.h>
+#include <rmw_zenoh_pico/rmw_zenoh_pico_messageType.h>
 
 #include <rmw_zenoh_pico/rmw_zenoh_pico_identifiers.h>
 #include <rmw_zenoh_pico/rmw_zenoh_pico_param.h>
@@ -39,6 +42,8 @@
 #include <rmw_zenoh_pico/rmw_zenoh_pico_wait.h>
 #include <rmw_zenoh_pico/rmw_zenoh_pico_guard_condition.h>
 #include <rmw_zenoh_pico/rmw_zenoh_pico_event_callbacks.h>
+
+#define RMW_ZENOH_PICO_TYPESUPPORT_C rmw_zenoh_pico_typesupport_c()
 
 // expand zenoh-pico api
 extern int8_t z_condvar_wait_time(z_condvar_t *cv, z_mutex_t *m, struct timespec *wait_timeout);

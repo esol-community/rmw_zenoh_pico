@@ -116,6 +116,7 @@ set(SRCS
   src/rmw_zenoh_pico/zenoh_pico_liveliness.c
   src/rmw_zenoh_pico/zenoh_pico_nodeInfo.c
   src/rmw_zenoh_pico/zenoh_pico_receiveMessage.c
+  src/rmw_zenoh_pico/zenoh_pico_messageType.c
 
   src/utilities/z_condvar_wait_time.c
 

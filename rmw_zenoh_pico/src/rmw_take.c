@@ -12,10 +12,74 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
+#include "rmw_zenoh_pico/rmw_zenoh_pico_logging.h"
+#include "rmw_zenoh_pico/rmw_zenoh_pico_receiveMessage.h"
+#include "ucdr/microcdr.h"
+#include <limits.h>
+
 #include <rmw/rmw.h>
 #include <rmw/event.h>
 
 #include <rmw_zenoh_pico/rmw_zenoh_pico.h>
+#include <rmw_zenoh_pico/rmw_zenoh_pico_subscription.h>
+
+bool rmw_zenoh_pico_deserialize(ReceiveMessageData *msg_data,
+				const message_type_support_callbacks_t *callbacks,
+				void * ros_message)
+{
+  ucdrBuffer temp_buffer;
+  ucdr_init_buffer_origin_offset(
+    &temp_buffer,
+    msg_data->payload_start,
+    msg_data->payload_size,
+    0,
+    SUB_MSG_OFFSET
+    );
+
+  bool ret = callbacks->cdr_deserialize(
+    &temp_buffer,
+    ros_message);
+
+  return ret;
+}
+
+static rmw_ret_t
+__rmw_take_one(ZenohPicoSubData * sub_data,
+	       void * ros_message,
+	       rmw_message_info_t * message_info,
+	       bool * taken)
+{
+  *taken = false;
+
+  ReceiveMessageData *msg_data = recv_msg_list_pop(&sub_data->message_queue_);
+
+  const message_type_support_callbacks_t *callbacks = sub_data->callbacks_;
+
+  bool deserialize_rv = rmw_zenoh_pico_deserialize(msg_data, callbacks, ros_message);
+
+  if (message_info != NULL) {
+    message_info->source_timestamp		= msg_data->source_timestamp_;
+    message_info->received_timestamp		= msg_data->recv_timestamp_;
+    message_info->publication_sequence_number	= msg_data->sequence_number_;
+    message_info->reception_sequence_number	= 0;
+
+    message_info->publisher_gid.implementation_identifier = rmw_get_implementation_identifier();
+    memcpy(message_info->publisher_gid.data, msg_data->publisher_gid_, RMW_GID_STORAGE_SIZE);
+
+    message_info->from_intra_process = false;
+  }
+
+  if (taken != NULL) {
+    *taken = deserialize_rv;
+  }
+
+  if (!deserialize_rv) {
+    RMW_SET_ERROR_MSG("Typesupport deserialize error.");
+    return RMW_RET_ERROR;
+  }
+
+  return RMW_RET_OK;
+}
 
 rmw_ret_t
 rmw_take(
@@ -24,7 +88,22 @@ rmw_take(
   bool * taken,
   rmw_subscription_allocation_t * allocation)
 {
-  return rmw_take_with_info(subscription, ros_message, taken, NULL, allocation);
+  _Z_DEBUG("%s : start", __func__);
+
+  RMW_CHECK_ARGUMENT_FOR_NULL(subscription, RMW_RET_INVALID_ARGUMENT);
+  RMW_CHECK_ARGUMENT_FOR_NULL(subscription->topic_name, RMW_RET_ERROR);
+  RMW_CHECK_ARGUMENT_FOR_NULL(subscription->data, RMW_RET_ERROR);
+  RMW_CHECK_ARGUMENT_FOR_NULL(ros_message, RMW_RET_INVALID_ARGUMENT);
+  RMW_CHECK_ARGUMENT_FOR_NULL(taken, RMW_RET_INVALID_ARGUMENT);
+  RMW_CHECK_TYPE_IDENTIFIERS_MATCH(
+    subscription->implementation_identifier,
+    return RMW_RET_INCORRECT_RMW_IMPLEMENTATION);
+
+  *taken = false;
+  ZenohPicoSubData *sub_data = (ZenohPicoSubData *)subscription->data;
+  RMW_CHECK_ARGUMENT_FOR_NULL(sub_data, RMW_RET_INVALID_ARGUMENT);
+
+  return __rmw_take_one(sub_data, ros_message, NULL, taken);
 }
 
 rmw_ret_t
@@ -35,18 +114,23 @@ rmw_take_with_info(
   rmw_message_info_t * message_info,
   rmw_subscription_allocation_t * allocation)
 {
-  (void)message_info;
-  (void)allocation;
+  _Z_DEBUG("%s : start", __func__);
 
+  RMW_CHECK_ARGUMENT_FOR_NULL(subscription, RMW_RET_INVALID_ARGUMENT);
+  RMW_CHECK_ARGUMENT_FOR_NULL(subscription->topic_name, RMW_RET_ERROR);
+  RMW_CHECK_ARGUMENT_FOR_NULL(subscription->data, RMW_RET_ERROR);
+  RMW_CHECK_ARGUMENT_FOR_NULL(ros_message, RMW_RET_INVALID_ARGUMENT);
+  RMW_CHECK_ARGUMENT_FOR_NULL(message_info, RMW_RET_INVALID_ARGUMENT);
+  RMW_CHECK_ARGUMENT_FOR_NULL(taken, RMW_RET_INVALID_ARGUMENT);
   RMW_CHECK_TYPE_IDENTIFIERS_MATCH(
     subscription->implementation_identifier,
-    RMW_RET_INCORRECT_RMW_IMPLEMENTATION);
+    return RMW_RET_INCORRECT_RMW_IMPLEMENTATION);
 
-  if (taken != NULL) {
-    *taken = false;
-  }
+  *taken = false;
+  ZenohPicoSubData *sub_data = (ZenohPicoSubData *)subscription->data;
+  RMW_CHECK_ARGUMENT_FOR_NULL(sub_data, RMW_RET_INVALID_ARGUMENT);
 
-  return RMW_RET_OK;
+  return __rmw_take_one(sub_data, ros_message, message_info, taken);
 }
 
 rmw_ret_t
@@ -58,27 +142,62 @@ rmw_take_sequence(
   size_t * taken,
   rmw_subscription_allocation_t * allocation)
 {
+  _Z_DEBUG("%s : start", __func__);
+
+  RMW_CHECK_ARGUMENT_FOR_NULL(subscription, RMW_RET_INVALID_ARGUMENT);
+  RMW_CHECK_ARGUMENT_FOR_NULL(subscription->topic_name, RMW_RET_ERROR);
+  RMW_CHECK_ARGUMENT_FOR_NULL(subscription->data, RMW_RET_ERROR);
+  RMW_CHECK_ARGUMENT_FOR_NULL(message_sequence, RMW_RET_INVALID_ARGUMENT);
+  RMW_CHECK_ARGUMENT_FOR_NULL(message_info_sequence, RMW_RET_INVALID_ARGUMENT);
+  RMW_CHECK_ARGUMENT_FOR_NULL(taken, RMW_RET_INVALID_ARGUMENT);
   RMW_CHECK_TYPE_IDENTIFIERS_MATCH(
     subscription->implementation_identifier,
-    RMW_RET_INCORRECT_RMW_IMPLEMENTATION);
+    return RMW_RET_INCORRECT_RMW_IMPLEMENTATION);
 
-  bool taken_flag;
-  rmw_ret_t ret = RMW_RET_OK;
+  if (0u == count) {
+    RMW_SET_ERROR_MSG("count cannot be 0");
+    return RMW_RET_INVALID_ARGUMENT;
+  }
+
+  if (count > message_sequence->capacity) {
+    RMW_SET_ERROR_MSG("Insuffient capacity in message_sequence");
+    return RMW_RET_INVALID_ARGUMENT;
+  }
+
+  if (count > message_info_sequence->capacity) {
+    RMW_SET_ERROR_MSG("Insuffient capacity in message_info_sequence");
+    return RMW_RET_INVALID_ARGUMENT;
+  }
+
+  if (count > UINT_MAX) {
+    RMW_SET_ERROR_MSG_WITH_FORMAT_STRING(
+      "Cannot take %zu samples at once, limit is %u", count, UINT_MAX);
+    return RMW_RET_ERROR;
+  }
 
   *taken = 0;
 
-  for (size_t i = 0; i < count; i++) {
-    taken_flag = false;
+  ZenohPicoSubData *sub_data = (ZenohPicoSubData *)subscription->data;
+  RMW_CHECK_ARGUMENT_FOR_NULL(sub_data, RMW_RET_INVALID_ARGUMENT);
 
-    ret = rmw_take_with_info(
-      subscription,
-      message_sequence->data[*taken],
-      &taken_flag,
-      &message_info_sequence->data[*taken],
-      allocation
-    );
+  rmw_ret_t ret;
 
-    if (ret != RMW_RET_OK || !taken_flag) {
+  while (*taken < count) {
+    bool one_taken = false;
+
+    ret = __rmw_take_one(
+      sub_data, message_sequence->data[*taken],
+      &message_info_sequence->data[*taken], &one_taken);
+    if (ret != RMW_RET_OK) {
+      // If we are taking a sequence and the 2nd take in the sequence failed, we'll report
+      // RMW_RET_ERROR to the caller, but we will *also* tell the caller that there are valid
+      // messages already taken (via the message_sequence size).  It is up to the caller to deal
+      // with that situation appropriately.
+      break;
+    }
+
+    if (!one_taken) {
+      // No error, but there was nothing left to be taken, so break out of the loop
       break;
     }
 
@@ -98,12 +217,14 @@ rmw_take_serialized_message(
   bool * taken,
   rmw_subscription_allocation_t * allocation)
 {
+  _Z_DEBUG("%s : start", __func__);
+
   (void)subscription;
   (void)serialized_message;
   (void)taken;
   (void)allocation;
   RMW_UROS_TRACE_MESSAGE("function not implemented")
-  return RMW_RET_UNSUPPORTED;
+    return RMW_RET_UNSUPPORTED;
 }
 
 rmw_ret_t
@@ -114,13 +235,15 @@ rmw_take_serialized_message_with_info(
   rmw_message_info_t * message_info,
   rmw_subscription_allocation_t * allocation)
 {
+  _Z_DEBUG("%s : start", __func__);
+
   (void)subscription;
   (void)serialized_message;
   (void)taken;
   (void)message_info;
   (void)allocation;
   RMW_UROS_TRACE_MESSAGE("function not implemented")
-  return RMW_RET_UNSUPPORTED;
+    return RMW_RET_UNSUPPORTED;
 }
 
 rmw_ret_t
@@ -130,13 +253,15 @@ rmw_take_loaned_message(
   bool * taken,
   rmw_subscription_allocation_t * allocation)
 {
+  _Z_DEBUG("%s : start", __func__);
+
   (void)subscription;
   (void)loaned_message;
   (void)taken;
   (void)allocation;
 
   RMW_UROS_TRACE_MESSAGE("function not implemented")
-  return RMW_RET_UNSUPPORTED;
+    return RMW_RET_UNSUPPORTED;
 }
 
 rmw_ret_t
@@ -147,6 +272,8 @@ rmw_take_loaned_message_with_info(
   rmw_message_info_t * message_info,
   rmw_subscription_allocation_t * allocation)
 {
+  _Z_DEBUG("%s : start", __func__);
+
   (void)subscription;
   (void)loaned_message;
   (void)taken;
@@ -154,7 +281,7 @@ rmw_take_loaned_message_with_info(
   (void)allocation;
 
   RMW_UROS_TRACE_MESSAGE("function not implemented")
-  return RMW_RET_UNSUPPORTED;
+    return RMW_RET_UNSUPPORTED;
 }
 
 rmw_ret_t
@@ -162,11 +289,13 @@ rmw_return_loaned_message_from_subscription(
   const rmw_subscription_t * subscription,
   void * loaned_message)
 {
+  _Z_DEBUG("%s : start", __func__);
+
   (void)subscription;
   (void)loaned_message;
 
   RMW_UROS_TRACE_MESSAGE("function not implemented")
-  return RMW_RET_UNSUPPORTED;
+    return RMW_RET_UNSUPPORTED;
 }
 
 rmw_ret_t
@@ -175,9 +304,11 @@ rmw_take_event(
   void * event_info,
   bool * taken)
 {
+  _Z_DEBUG("%s : start", __func__);
+
   (void)event_handle;
   (void)event_info;
   (void)taken;
   RMW_UROS_TRACE_MESSAGE("function not implemented")
-  return RMW_RET_UNSUPPORTED;
+    return RMW_RET_UNSUPPORTED;
 }
