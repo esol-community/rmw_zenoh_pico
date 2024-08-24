@@ -9,7 +9,9 @@ typedef struct _ReceiveMessageData {
 
   int ref_;
 
-  z_sample_t sample_;
+  void *payload_start;
+  size_t payload_size;
+
   uint64_t recv_timestamp_;
   uint8_t publisher_gid_[RMW_GID_STORAGE_SIZE];
   int64_t sequence_number_;

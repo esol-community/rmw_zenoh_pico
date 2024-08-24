@@ -198,7 +198,6 @@ static const uint8_t INVALID_NIBBLE	= 0xff;
 
 z_string_t convert_hash(const rosidl_type_hash_t * type_hash)
 {
-  printf("type_hash = %p\n", type_hash);
   char _hash_data[RIHS01_STRING_LEN +1];
 
   memset(_hash_data, 0, sizeof(_hash_data));

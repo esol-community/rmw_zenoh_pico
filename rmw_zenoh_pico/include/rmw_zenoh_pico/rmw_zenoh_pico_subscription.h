@@ -13,6 +13,8 @@
 #include <rmw_zenoh_pico/rmw_zenoh_pico_event_callbacks.h>
 #include <rmw_zenoh_pico/rmw_zenoh_pico_wait.h>
 
+#define SUB_MSG_OFFSET 4
+
 #if defined(__cplusplus)
 extern "C"
 {
@@ -39,6 +41,9 @@ extern "C"
     // Store the actual QoS profile used to configure this subscription.
     rmw_qos_profile_t adapted_qos_profile_;
 
+    // CDR callback
+    const message_type_support_callbacks_t *callbacks_;
+
     // recived message list
     ReceiveMessageDataList message_queue_;
 
@@ -51,11 +56,13 @@ extern "C"
 
   } ZenohPicoSubData;
 
-  extern ZenohPicoSubData * zenoh_pico_generate_subscription_data(size_t sub_id,
-							 ZenohPicoNodeData *node,
-							 ZenohPicoEntity *entity,
-							 const rosidl_message_type_support_t * type_support,
-							 rmw_qos_profile_t *qos_profile);
+  extern ZenohPicoSubData * zenoh_pico_generate_subscription_data(
+    size_t sub_id,
+    ZenohPicoNodeData *node,
+    ZenohPicoEntity *entity,
+    const rosidl_message_type_support_t * type_support,
+    const message_type_support_callbacks_t *callbacks,
+    rmw_qos_profile_t *qos_profile);
 
   extern bool zenoh_pico_destroy_subscription_data(ZenohPicoSubData *sub_data);
   extern void zenoh_pico_debug_subscription_data(ZenohPicoSubData *sub_data);

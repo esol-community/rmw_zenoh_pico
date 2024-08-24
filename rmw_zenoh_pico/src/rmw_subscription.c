@@ -22,12 +22,7 @@
 #include "zenoh-pico/system/platform-common.h"
 #include <rmw_zenoh_pico/config.h>
 
-#ifdef HAVE_C_TYPESUPPORT
 #include <rosidl_typesupport_microxrcedds_c/identifier.h>
-#endif /* ifdef HAVE_C_TYPESUPPORT */
-#ifdef HAVE_CPP_TYPESUPPORT
-#include <rosidl_typesupport_microxrcedds_cpp/identifier.h>
-#endif /* ifdef HAVE_CPP_TYPESUPPORT */
 
 #include <stdio.h>
 #include <string.h>
@@ -43,15 +38,15 @@
 
 #include <rmw_zenoh_pico/rmw_zenoh_pico.h>
 
-#define RMW_ZENOH_PICO_TYPESUPPORT_C rmw_zenoh_pico_typesupport_c()
-
 //-----------------------------
 
-ZenohPicoSubData * zenoh_pico_generate_subscription_data(size_t sub_id,
-							 ZenohPicoNodeData *node,
-							 ZenohPicoEntity *entity,
-							 const rosidl_message_type_support_t * type_support,
-							 rmw_qos_profile_t *qos_profile)
+ZenohPicoSubData * zenoh_pico_generate_subscription_data(
+  size_t sub_id,
+  ZenohPicoNodeData *node,
+  ZenohPicoEntity *entity,
+  const rosidl_message_type_support_t * type_support,
+  const message_type_support_callbacks_t *callbacks,
+  rmw_qos_profile_t *qos_profile)
 {
   if((node == NULL) || (entity == NULL))
     return NULL;
@@ -65,6 +60,7 @@ ZenohPicoSubData * zenoh_pico_generate_subscription_data(size_t sub_id,
   sub_data->entity_	= entity;
   sub_data->id_		= sub_id;
 
+  sub_data->callbacks_  = callbacks;
   sub_data->adapted_qos_profile_ = *qos_profile;
 
   ZenohPicoNodeInfo_t  *node_info  = entity->node_info_;
@@ -442,24 +438,6 @@ static rmw_ret_t rmw_subscription_destroy(rmw_subscription_t * sub)
   return RMW_RET_OK;
 }
 
-const rosidl_message_type_support_t * find_message_type_support(
-  const rosidl_message_type_support_t * type_supports)
-{
-  const rosidl_message_type_support_t * type_support = get_message_typesupport_handle(
-    type_supports, RMW_ZENOH_PICO_TYPESUPPORT_C);
-  if (!type_support) {
-    rcutils_error_string_t error_string = rcutils_get_error_string();
-    RMW_SET_ERROR_MSG_WITH_FORMAT_STRING(
-      "Type support not from this implementation. Got:\n"
-      "    %s\n"
-      "while fetching it",
-      error_string.str);
-    return NULL;
-  }
-
-  return type_support;
-}
-
 rmw_ret_t
 rmw_init_subscription_allocation(
   const rosidl_message_type_support_t * type_support,
@@ -552,6 +530,8 @@ rmw_create_subscription(
     RMW_UROS_TRACE_MESSAGE("type_support is null");
     return NULL;
   }
+  _Z_INFO("typesupport_identifier = [%s]", type_support->typesupport_identifier);
+
   const rosidl_type_hash_t * type_hash = type_support->get_type_hash_func(type_support);
 
   // convert hash
@@ -586,8 +566,7 @@ rmw_create_subscription(
   size_t _entity_id = zenoh_pico_get_next_entity_id();
   ZenohPicoSession *session = node_data->session_;
 
-  ZenohPicoEntity *_entity = zenoh_pico_generate_entitiy(NULL,
-							 z_info_zid(z_loan(session->session_)),
+  ZenohPicoEntity *_entity = zenoh_pico_generate_entitiy( z_info_zid(z_loan(session->session_)),
 							 _entity_id,
 							 node_data->id_,
 							 Subscription,
@@ -601,6 +580,7 @@ rmw_create_subscription(
 								      _node,
 								      _entity,
 								      type_support,
+								      callbacks,
 								      &_qos_profile);
 
   zenoh_pico_debug_subscription_data(_sub_data);
