@@ -14,7 +14,7 @@
 
 const char * const zenoh_pico_identifier = "rmw_zenoh_pico";
 const char * const zenoh_pico_serialization_format = "cdr";
-const char * const rosidl_typesupport_rmw_zenoh_identifier = "rosidl_typesupport_fastrtps_c";
+const char * const rosidl_typesupport_rmw_zenoh_identifier = "rosidl_typesupport_microxrcedds_c";
 
 const char *
 rmw_get_implementation_identifier(void)
