@@ -183,15 +183,15 @@ rmw_create_node(
   _Z_DEBUG("%s : start(name = [%s], namespace = [%s])", __func__, name, namespace_);
 
   RMW_CHECK_ARGUMENT_FOR_NULL(context, NULL);
-  RMW_CHECK_ARGUMENT_FOR_NULL(name, NULL);
-  RMW_CHECK_ARGUMENT_FOR_NULL(namespace_, NULL);
   RMW_CHECK_TYPE_IDENTIFIERS_MATCH(
     context->implementation_identifier,
-    NULL);
+    return NULL);
   RMW_CHECK_FOR_NULL_WITH_MSG(
     context->impl,
     "expected initialized context",
     return NULL);
+  RMW_CHECK_ARGUMENT_FOR_NULL(name, NULL);
+  RMW_CHECK_ARGUMENT_FOR_NULL(namespace_, NULL);
 
   if (strlen(name) == 0 || strlen(namespace_) == 0) {
     RMW_UROS_TRACE_MESSAGE("name or namespace_ is null");
@@ -217,8 +217,7 @@ rmw_create_node(
 
   // generate entity data
   size_t _entity_id = zenoh_pico_get_next_entity_id();
-  ZenohPicoEntity *entity = zenoh_pico_generate_entitiy(NULL,
-							z_info_zid(z_loan(session->session_)),
+  ZenohPicoEntity *entity = zenoh_pico_generate_entitiy(z_info_zid(z_loan(session->session_)),
 							_entity_id,
 							_entity_id,
 							Node,
