@@ -20,15 +20,14 @@ const char *get_topic_type(ZenohPicoEntity *entity)     { return topic_type(enti
 const char *get_topic_hash(ZenohPicoEntity *entity)     { return topic_hash(entity->topic_info_); }
 const char *get_topic_qos(ZenohPicoEntity *entity)      { return topic_qos(entity->topic_info_); }
 
-ZenohPicoEntity * zenoh_pico_generate_entitiy(ZenohPicoEntity *entity,
-					      z_id_t zid,
+ZenohPicoEntity * zenoh_pico_generate_entitiy(z_id_t zid,
 					      size_t id,
 					      size_t nid,
 					      ZenohPicoEntityType type,
 					      ZenohPicoNodeInfo_t *node_info,
 					      ZenohPicoTopicInfo_t *topic_info)
 {
-
+  ZenohPicoEntity *entity = NULL;
   ZenohPicoGenerateData(entity, ZenohPicoEntity);
   if(entity == NULL){
     return NULL;
