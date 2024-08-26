@@ -39,6 +39,49 @@ void zenoh_pico_delete_recv_msg_data(ReceiveMessageData * recv_data)
 }
 
 #define PAYLOAD_DUMP_MAX 32
+void zenoh_pico_debug_dump_msg(uint8_t *start, size_t size)
+{
+  printf("size = [%ld]\n", size);
+  for(size_t count = 0; count < size  && count <= PAYLOAD_DUMP_MAX; count += 4){
+    char *ptr = start + count;
+
+    if((size -count)>= 4){
+      printf("%02x %02x %02x %02x\t%c %c %c %c",
+	     *(ptr +0), *(ptr +1),
+	     *(ptr +2), *(ptr +3),
+	     isascii(*(ptr +0)) ? *(ptr +0) : '.' ,
+	     isascii(*(ptr +1)) ? *(ptr +1) : '.' ,
+	     isascii(*(ptr +2)) ? *(ptr +2) : '.' ,
+	     isascii(*(ptr +3)) ? *(ptr +3) : '.'
+	);
+
+    } else if((size -count) >= 3) {
+      printf("%02x %02x %02x     \t%c %c %c",
+	     *(ptr +0), *(ptr +1),
+	     *(ptr +2),
+	     isascii(*(ptr +0)) ? *(ptr +0) : '.' ,
+	     isascii(*(ptr +1)) ? *(ptr +1) : '.' ,
+	     isascii(*(ptr +2)) ? *(ptr +2) : '.'
+	);
+
+    } else if((size -count) >= 2) {
+      printf("%02x %02x          \t%c %c",
+	     *(ptr +0), *(ptr +1),
+	     isascii(*(ptr +0)) ? *(ptr +0) : '.' ,
+	     isascii(*(ptr +1)) ? *(ptr +1) : '.'
+	);
+
+    } else if((size -count) >= 1) {
+      printf("%02x               \t%c",
+	     *(ptr +0),
+	     isascii(*(ptr +0)) ? *(ptr +0) : '.'
+	);
+    }
+    printf("\n");
+  }
+
+  return;
+}
 void zenoh_pico_debug_recv_msg_data(ReceiveMessageData * recv_data)
 {
   printf("--------- recv msg data ----------\n");
@@ -52,47 +95,8 @@ void zenoh_pico_debug_recv_msg_data(ReceiveMessageData * recv_data)
   printf("sequence_number  = [%ld]\n", recv_data->sequence_number_);
   printf("source_timestamp = [%ld]\n", recv_data->source_timestamp_);
 
-  {
-    printf("--------- recv simple data ----------\n");
-    printf("payload size = [%ld]\n", recv_data->payload_size);
-    for(size_t count = 0; count < recv_data->payload_size  && count <= PAYLOAD_DUMP_MAX; count += 4){
-      char *payload_ptr = recv_data->payload_start + count;
-
-      if((recv_data->payload_size -count)>= 4){
-	printf("%02x %02x %02x %02x\t%c %c %c %c",
-	       *(payload_ptr +0), *(payload_ptr +1),
-	       *(payload_ptr +2), *(payload_ptr +3),
-	       isascii(*(payload_ptr +0)) ? *(payload_ptr +0) : '.' ,
-	       isascii(*(payload_ptr +1)) ? *(payload_ptr +1) : '.' ,
-	       isascii(*(payload_ptr +2)) ? *(payload_ptr +2) : '.' ,
-	       isascii(*(payload_ptr +3)) ? *(payload_ptr +3) : '.'
-	  );
-
-      } else if((recv_data->payload_size -count) >= 3) {
-	printf("%02x %02x %02x     \t%c %c %c",
-	       *(payload_ptr +0), *(payload_ptr +1),
-	       *(payload_ptr +2),
-	       isascii(*(payload_ptr +0)) ? *(payload_ptr +0) : '.' ,
-	       isascii(*(payload_ptr +1)) ? *(payload_ptr +1) : '.' ,
-	       isascii(*(payload_ptr +2)) ? *(payload_ptr +2) : '.'
-	  );
-
-      } else if((recv_data->payload_size -count) >= 2) {
-	printf("%02x %02x          \t%c %c",
-	       *(payload_ptr +0), *(payload_ptr +1),
-	       isascii(*(payload_ptr +0)) ? *(payload_ptr +0) : '.' ,
-	       isascii(*(payload_ptr +1)) ? *(payload_ptr +1) : '.'
-	  );
-
-      } else if((recv_data->payload_size -count) >= 1) {
-	printf("%02x               \t%c",
-	       *(payload_ptr +0),
-	       isascii(*(payload_ptr +0)) ? *(payload_ptr +0) : '.'
-	  );
-      }
-      printf("\n");
-    }
-  }
+  printf("--------- recv simple data ----------\n");
+  zenoh_pico_debug_dump_msg(recv_data->payload_start, recv_data->payload_size);
 }
 
 void recv_msg_list_init(ReceiveMessageDataList *msg_list)

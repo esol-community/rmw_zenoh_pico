@@ -56,9 +56,9 @@ ZenohPicoSubData * zenoh_pico_generate_subscription_data(
   if(sub_data == NULL)
     return NULL;
 
+  sub_data->id_		= sub_id;
   sub_data->node_	= node;
   sub_data->entity_	= entity;
-  sub_data->id_		= sub_id;
 
   sub_data->callbacks_  = callbacks;
   sub_data->adapted_qos_profile_ = *qos_profile;
@@ -91,7 +91,7 @@ bool zenoh_pico_destroy_subscription_data(ZenohPicoSubData *sub_data)
 {
   _Z_DEBUG("%s : start", __func__);
 
-  undeclaration_subscription_data(sub_data);
+  (void)undeclaration_subscription_data(sub_data);
 
   Z_STRING_FREE(sub_data->token_key_);
   Z_STRING_FREE(sub_data->topic_key_);
@@ -305,17 +305,17 @@ void sub_data_handler(const z_sample_t *sample, void *ctx) {
 
 bool declaration_subscription_data(ZenohPicoSubData *sub_data)
 {
-  printf("init sub_data = %p\n", sub_data);
+  _Z_DEBUG("%s : start", __func__);
 
   ZenohPicoSession *session = sub_data->node_->session_;
 
   // declare subscriber
-  z_subscriber_options_t sub_options = z_subscriber_options_default();
+  z_subscriber_options_t options = z_subscriber_options_default();
   z_owned_closure_sample_t callback_ = z_closure(sub_data_handler, 0, (void *)sub_data);
   sub_data->subscriber_ = z_declare_subscriber(z_loan(session->session_),
 					       z_keyexpr(sub_data->topic_key_.val),
 					       z_move(callback_),
-					       &sub_options);
+					       &options);
   if (!z_check(sub_data->subscriber_)) {
     _Z_DEBUG("Unable to declare subscriber.");
     return false;
@@ -405,11 +405,12 @@ bool subscription_condition_detach_and_queue_is_empty(ZenohPicoSubData *sub_data
 
 //-----------------------------
 
-static rmw_subscription_t *rmw_subscription_generate(rmw_context_t *context,
+static rmw_subscription_t * _rmw_subscription_generate(rmw_context_t *context,
 						     ZenohPicoSubData *sub_data,
 						     const rmw_subscription_options_t *options)
 {
   _Z_DEBUG("%s : start()", __func__);
+  (void)context;
 
   rmw_subscription_t * rmw_subscription = z_malloc(sizeof(rmw_subscription_t));
   RMW_CHECK_FOR_NULL_WITH_MSG(
@@ -419,21 +420,27 @@ static rmw_subscription_t *rmw_subscription_generate(rmw_context_t *context,
 
   rmw_subscription->implementation_identifier	= rmw_get_implementation_identifier();
   rmw_subscription->topic_name			= Z_STRING_VAL(sub_data->entity_->topic_info_->name_);
-  rmw_subscription->options			= *options;
   rmw_subscription->can_loan_messages		= false;
   rmw_subscription->is_cft_enabled		= false;
-
   rmw_subscription->data                        = (void *)sub_data;
+
+  memcpy(&rmw_subscription->options, options, sizeof(rmw_subscription_options_t));
 
   return rmw_subscription;
 }
 
-static rmw_ret_t rmw_subscription_destroy(rmw_subscription_t * sub)
+static rmw_ret_t _rmw_subscription_destroy(rmw_subscription_t * sub)
 {
   _Z_DEBUG("%s : start()", __func__);
 
   ZenohPicoSubData *sub_data = (ZenohPicoSubData *)sub->data;
-  undeclaration_subscription_data(sub_data);
+
+  if(sub_data != NULL){
+    undeclaration_subscription_data(sub_data);
+
+    zenoh_pico_destroy_subscription_data(sub_data);
+  }
+  z_free(sub);
 
   return RMW_RET_OK;
 }
@@ -449,8 +456,8 @@ rmw_init_subscription_allocation(
   (void)type_support;
   (void)message_bounds;
   (void)allocation;
-  RMW_UROS_TRACE_MESSAGE("function not implemented")
-    return RMW_RET_UNSUPPORTED;
+  RMW_SET_ERROR_MSG("function not implemented");
+  return RMW_RET_UNSUPPORTED;
 }
 
 rmw_ret_t
@@ -459,34 +466,8 @@ rmw_fini_subscription_allocation(
 {
   _Z_DEBUG("%s : start()", __func__);
   (void)allocation;
-  RMW_UROS_TRACE_MESSAGE("function not implemented")
-    return RMW_RET_UNSUPPORTED;
-}
-
-static const char RIHS01_PREFIX[]	= "RIHS01_";
-static const size_t RIHS_VERSION_IDX	= 4;
-static const size_t RIHS_PREFIX_LEN	= 7;
-static const size_t RIHS01_STRING_LEN	= 71;  // RIHS_PREFIX_LEN + (ROSIDL_TYPE_HASH_SIZE * 2);
-static const uint8_t INVALID_NIBBLE	= 0xff;
-
-static void test_qos_profile(rmw_qos_profile_t *qos) {
-  // Reliability.
-  qos->reliability	= RMW_QOS_POLICY_RELIABILITY_RELIABLE; // 1;
-  // Durability.
-  qos->durability	= RMW_QOS_POLICY_DURABILITY_VOLATILE;  // 2;
-  // History.
-  qos->history	        = RMW_QOS_POLICY_HISTORY_KEEP_LAST;    // 1;
-  qos->depth		= 10;
-  // Deadline.
-  qos->deadline.sec	= 0;
-  qos->deadline.nsec	= 0;
-  // Lifespan.
-  qos->lifespan.sec	= 0;
-  qos->lifespan.nsec	= 0;
-  // Liveliness.
-  qos->liveliness       = 0;
-  qos->liveliness_lease_duration.sec = 0;
-  qos->liveliness_lease_duration.nsec = 0;
+  RMW_SET_ERROR_MSG("function not implemented");
+  return RMW_RET_UNSUPPORTED;
 }
 
 rmw_subscription_t *
@@ -507,7 +488,6 @@ rmw_create_subscription(
   }
   RMW_CHECK_ARGUMENT_FOR_NULL(qos_profile, NULL);
   RMW_CHECK_ARGUMENT_FOR_NULL(subscription_options, NULL);
-
   RMW_CHECK_ARGUMENT_FOR_NULL(node->data, NULL);
 
   ZenohPicoNodeData *node_data = (ZenohPicoNodeData *)node->data;
@@ -532,6 +512,7 @@ rmw_create_subscription(
   }
   _Z_INFO("typesupport_identifier = [%s]", type_support->typesupport_identifier);
 
+  // get hash data
   const rosidl_type_hash_t * type_hash = type_support->get_type_hash_func(type_support);
 
   // convert hash
@@ -580,12 +561,31 @@ rmw_create_subscription(
 								      &_qos_profile);
   zenoh_pico_debug_subscription_data(_sub_data);
 
-  rmw_subscription_t * rmw_subscription = rmw_subscription_generate(node->context,
+  rmw_subscription_t * rmw_subscription = _rmw_subscription_generate(node->context,
 								    _sub_data,
 								    subscription_options);
   declaration_subscription_data(_sub_data);
 
   return rmw_subscription;
+}
+
+rmw_ret_t
+rmw_destroy_subscription(
+  rmw_node_t * node,
+  rmw_subscription_t * subscription)
+{
+  _Z_DEBUG("%s : start()", __func__);
+
+  RMW_CHECK_ARGUMENT_FOR_NULL(node, RMW_RET_INVALID_ARGUMENT);
+  RMW_CHECK_ARGUMENT_FOR_NULL(subscription, RMW_RET_INVALID_ARGUMENT);
+  RMW_CHECK_TYPE_IDENTIFIERS_MATCH(
+    node->implementation_identifier,
+    return RMW_RET_INCORRECT_RMW_IMPLEMENTATION);
+  RMW_CHECK_TYPE_IDENTIFIERS_MATCH(
+    subscription->implementation_identifier,
+    return RMW_RET_INCORRECT_RMW_IMPLEMENTATION);
+
+  return _rmw_subscription_destroy(subscription);
 }
 
 rmw_ret_t
@@ -611,25 +611,6 @@ rmw_subscription_get_actual_qos(
   RMW_CHECK_ARGUMENT_FOR_NULL(qos, RMW_RET_INVALID_ARGUMENT);
 
   return RMW_RET_OK;
-}
-
-rmw_ret_t
-rmw_destroy_subscription(
-  rmw_node_t * node,
-  rmw_subscription_t * subscription)
-{
-  _Z_DEBUG("%s : start()", __func__);
-
-  RMW_CHECK_ARGUMENT_FOR_NULL(node, RMW_RET_INVALID_ARGUMENT);
-  RMW_CHECK_ARGUMENT_FOR_NULL(subscription, RMW_RET_INVALID_ARGUMENT);
-  RMW_CHECK_TYPE_IDENTIFIERS_MATCH(
-    node->implementation_identifier,
-    return RMW_RET_INCORRECT_RMW_IMPLEMENTATION);
-  RMW_CHECK_TYPE_IDENTIFIERS_MATCH(
-    subscription->implementation_identifier,
-    return RMW_RET_INCORRECT_RMW_IMPLEMENTATION);
-
-  return rmw_subscription_destroy(subscription);
 }
 
 rmw_ret_t
