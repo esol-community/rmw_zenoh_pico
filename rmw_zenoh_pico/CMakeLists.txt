@@ -119,6 +119,7 @@ set(SRCS
   src/rmw_zenoh_pico/zenoh_pico_messageType.c
 
   src/utilities/z_condvar_wait_time.c
+  src/utilities/test_qos_profile.c
 
   src/rmw_client.c
   src/rmw_compare_gids_equal.c

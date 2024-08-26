@@ -25,10 +25,11 @@ extern "C"
 
     size_t id_;
 
-    // Liveliness key for the node.
+    // Liveliness key for the subscriber.
     _z_string_t token_key_;
     _z_string_t topic_key_;
 
+    // Liveliness token for the subscriber.
     z_owned_keyexpr_t token_;
     z_owned_subscriber_t subscriber_;
 

@@ -33,6 +33,7 @@ extern ReceiveMessageData * zenoh_pico_generate_recv_msg_data(const z_sample_t *
 							      int64_t seqnum,
 							      int64_t source_ts);
 extern void zenoh_pico_delete_recv_msg_data(ReceiveMessageData * recv_data);
+extern void zenoh_pico_debug_dump_msg(uint8_t *start, size_t size);
 extern void zenoh_pico_debug_recv_msg_data(ReceiveMessageData * recv_data);
 
 extern void recv_msg_list_init(ReceiveMessageDataList *msg_list);
