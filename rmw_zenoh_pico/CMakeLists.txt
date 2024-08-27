@@ -198,11 +198,11 @@ target_compile_options(${PROJECT_NAME}
     $<$<C_COMPILER_ID:GNU>:-Werror-implicit-function-declaration>
     $<$<C_COMPILER_ID:GNU>:-Wno-unused-parameter>
     $<$<C_COMPILER_ID:GNU>:-Wno-unused-variable>
+    $<$<C_COMPILER_ID:GNU>:-Wno-unused-function>
     $<$<C_COMPILER_ID:GNU>:-Wno-pedantic>
     $<$<C_COMPILER_ID:GNU>:$<$<VERSION_GREATER:$<C_COMPILER_VERSION>,8.1>:-Wcast-align=strict>>
     $<$<C_COMPILER_ID:GNU>:-g>
     $<$<C_COMPILER_ID:GNU>:-O0>
-    $<$<C_COMPILER_ID:GNU>:-Wvla>
     $<$<C_COMPILER_ID:MSVC>:/Wall>
 )
 
