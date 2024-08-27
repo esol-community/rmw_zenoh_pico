@@ -89,7 +89,7 @@ ZenohPicoSubData * zenoh_pico_generate_subscription_data(
 
 bool zenoh_pico_destroy_subscription_data(ZenohPicoSubData *sub_data)
 {
-  _Z_DEBUG("%s : start", __func__);
+  RMW_ZENOH_FUNC_ENTRY();
 
   (void)undeclaration_subscription_data(sub_data);
 
@@ -223,9 +223,8 @@ void add_new_message(ZenohPicoSubData *sub_data, ReceiveMessageData *recv_data)
   zenoh_pico_debug_recv_msg_data(recv_data);
 
   (void)recv_msg_list_push(&sub_data->message_queue_, recv_data);
-  RMW_ZENOH_LOG_INFO_NAMED("add_new_message",
-			   "message_queue size is %d",
-			   recv_msg_list_count(&sub_data->message_queue_));
+  RMW_ZENOH_LOG_INFO("message_queue size is %d",
+		     recv_msg_list_count(&sub_data->message_queue_));
 
   (void)data_callback_trigger(&sub_data->data_callback_mgr);
 
@@ -235,19 +234,16 @@ void add_new_message(ZenohPicoSubData *sub_data, ReceiveMessageData *recv_data)
 }
 
 void sub_data_handler(const z_sample_t *sample, void *ctx) {
-  _Z_DEBUG("%s : start", __func__);
+  RMW_ZENOH_FUNC_ENTRY();
 
   ZenohPicoSubData *sub_data = (ZenohPicoSubData *)ctx;
   if (sub_data == NULL) {
     z_owned_str_t keystr = z_keyexpr_to_string(sample->keyexpr);
-    _Z_INFO("%s : keystr is %s ", __func__, keystr._value);
 
-    RMW_ZENOH_LOG_ERROR_NAMED(
-      "rmw_zenoh_cpp",
-      "Unable to obtain rmw_subscription_data_t from data for "
-      "subscription for %s",
-      z_loan(keystr)
-      );
+    RMW_ZENOH_LOG_INFO("%s : keystr is %s ", __func__, keystr._value);
+    RMW_ZENOH_LOG_ERROR("Unable to obtain rmw_subscription_data_t from data for "
+			      "subscription for %s",
+			      z_loan(keystr));
     z_drop(z_move(keystr));
 
     return;
@@ -263,9 +259,7 @@ void sub_data_handler(const z_sample_t *sample, void *ctx) {
     // We failed to get the GID from the attachment.  While this isn't fatal,
     // it is unusual and so we should report it.
     memset(pub_gid, 0, RMW_GID_STORAGE_SIZE);
-    RMW_ZENOH_LOG_ERROR_NAMED(
-      "rmw_zenoh_cpp",
-      "Unable to obtain publisher GID from the attachment.");
+    RMW_ZENOH_LOG_ERROR("Unable to obtain publisher GID from the attachment.");
   }
 
   sequence_number = get_int64_from_attachment(&sample->attachment, "sequence_number");
@@ -274,8 +268,7 @@ void sub_data_handler(const z_sample_t *sample, void *ctx) {
     // We failed to get the sequence number from the attachment.  While this
     // isn't fatal, it is unusual and so we should report it.
     sequence_number = 0;
-    RMW_ZENOH_LOG_ERROR_NAMED(
-      "rmw_zenoh_cpp", "Unable to obtain sequence number from the attachment.");
+    RMW_ZENOH_LOG_ERROR("Unable to obtain sequence number from the attachment.");
   }
 
   source_timestamp = get_int64_from_attachment(&sample->attachment, "source_timestamp");
@@ -284,8 +277,7 @@ void sub_data_handler(const z_sample_t *sample, void *ctx) {
     // We failed to get the source timestamp from the attachment.  While this
     // isn't fatal, it is unusual and so we should report it.
     source_timestamp = 0;
-    RMW_ZENOH_LOG_ERROR_NAMED(
-      "rmw_zenoh_cpp", "Unable to obtain source timestamp from the attachment.");
+    RMW_ZENOH_LOG_ERROR("Unable to obtain source timestamp from the attachment.");
   }
 #endif
 
@@ -305,7 +297,7 @@ void sub_data_handler(const z_sample_t *sample, void *ctx) {
 
 bool declaration_subscription_data(ZenohPicoSubData *sub_data)
 {
-  _Z_DEBUG("%s : start", __func__);
+  RMW_ZENOH_FUNC_ENTRY();
 
   ZenohPicoSession *session = sub_data->node_->session_;
 
@@ -317,17 +309,17 @@ bool declaration_subscription_data(ZenohPicoSubData *sub_data)
 					       z_move(callback_),
 					       &options);
   if (!z_check(sub_data->subscriber_)) {
-    _Z_DEBUG("Unable to declare subscriber.");
+    RMW_ZENOH_LOG_DEBUG("Unable to declare subscriber.");
     return false;
   }
 
   // liveliness tokendeclare
   const char *keyexpr = Z_STRING_VAL(sub_data->token_key_);
 
-  _Z_DEBUG("Declaring subscriber key expression '%s'...", keyexpr);
+  RMW_ZENOH_LOG_DEBUG("Declaring subscriber key expression '%s'...", keyexpr);
   sub_data->token_ = z_declare_keyexpr(z_loan(session->session_), z_keyexpr(keyexpr));
   if (!z_check(sub_data->token_)) {
-    _Z_DEBUG("Unable to declare talken.");
+    RMW_ZENOH_LOG_DEBUG("Unable to declare talken.");
     return false;
   }
 
@@ -375,9 +367,8 @@ bool subscription_condition_check_and_attach(ZenohPicoSubData *sub_data,
   z_mutex_lock(&sub_data->condition_mutex);
 
   if(!recv_msg_list_empty(&sub_data->message_queue_)){
-    RMW_ZENOH_LOG_INFO_NAMED("queue_has_data_and_attach_condition_if_not",
-			     "message_queue size is %d",
-			     recv_msg_list_count(&sub_data->message_queue_));
+    RMW_ZENOH_LOG_INFO("queue_has_data_and_attach_condition_if_notmessage_queue size is %d",
+		       recv_msg_list_count(&sub_data->message_queue_));
     z_mutex_unlock(&sub_data->condition_mutex);
     return true;
   }
@@ -409,10 +400,10 @@ static rmw_subscription_t * _rmw_subscription_generate(rmw_context_t *context,
 						     ZenohPicoSubData *sub_data,
 						     const rmw_subscription_options_t *options)
 {
-  _Z_DEBUG("%s : start()", __func__);
+  RMW_ZENOH_FUNC_ENTRY();
   (void)context;
 
-  rmw_subscription_t * rmw_subscription = z_malloc(sizeof(rmw_subscription_t));
+  rmw_subscription_t * rmw_subscription = Z_MALLOC(sizeof(rmw_subscription_t));
   RMW_CHECK_FOR_NULL_WITH_MSG(
     rmw_subscription,
     "failed to allocate memory for the subscription",
@@ -431,7 +422,7 @@ static rmw_subscription_t * _rmw_subscription_generate(rmw_context_t *context,
 
 static rmw_ret_t _rmw_subscription_destroy(rmw_subscription_t * sub)
 {
-  _Z_DEBUG("%s : start()", __func__);
+  RMW_ZENOH_FUNC_ENTRY();
 
   ZenohPicoSubData *sub_data = (ZenohPicoSubData *)sub->data;
 
@@ -440,7 +431,7 @@ static rmw_ret_t _rmw_subscription_destroy(rmw_subscription_t * sub)
 
     zenoh_pico_destroy_subscription_data(sub_data);
   }
-  z_free(sub);
+  Z_FREE(sub);
 
   return RMW_RET_OK;
 }
@@ -451,7 +442,7 @@ rmw_init_subscription_allocation(
   const rosidl_runtime_c__Sequence__bound * message_bounds,
   rmw_subscription_allocation_t * allocation)
 {
-  _Z_DEBUG("%s : start()", __func__);
+  RMW_ZENOH_FUNC_ENTRY();
 
   (void)type_support;
   (void)message_bounds;
@@ -464,7 +455,7 @@ rmw_ret_t
 rmw_fini_subscription_allocation(
   rmw_subscription_allocation_t * allocation)
 {
-  _Z_DEBUG("%s : start()", __func__);
+  RMW_ZENOH_FUNC_ENTRY();
   (void)allocation;
   RMW_SET_ERROR_MSG("function not implemented");
   return RMW_RET_UNSUPPORTED;
@@ -478,7 +469,9 @@ rmw_create_subscription(
   const rmw_qos_profile_t * qos_profile,
   const rmw_subscription_options_t * subscription_options)
 {
-  _Z_DEBUG("%s : start(%s)", __func__, topic_name);
+  RMW_ZENOH_FUNC_ENTRY();
+  RMW_ZENOH_LOG_INFO("%s : topic_name = %s", __func__, topic_name);
+
   RMW_CHECK_ARGUMENT_FOR_NULL(node, NULL);
   RMW_CHECK_ARGUMENT_FOR_NULL(type_supports, NULL);
   RMW_CHECK_ARGUMENT_FOR_NULL(topic_name, NULL);
@@ -507,24 +500,24 @@ rmw_create_subscription(
   const rosidl_message_type_support_t * type_support = find_message_type_support(type_supports);
   if (type_support == NULL) {
     // error was already set by find_message_type_support
-    _Z_INFO("type_support is null");
+    RMW_ZENOH_LOG_INFO("type_support is null");
     return NULL;
   }
-  _Z_INFO("typesupport_identifier = [%s]", type_support->typesupport_identifier);
+  RMW_ZENOH_LOG_INFO("typesupport_identifier = [%s]", type_support->typesupport_identifier);
 
   // get hash data
   const rosidl_type_hash_t * type_hash = type_support->get_type_hash_func(type_support);
 
   // convert hash
   _z_string_t _hash_data = convert_hash(type_hash);
-  _Z_INFO("%s : hash = [%s][%s]", __func__, topic_name, _hash_data.val);
+  RMW_ZENOH_LOG_INFO("%s : hash = [%s][%s]", __func__, topic_name, _hash_data.val);
 
   // generate message type
   const message_type_support_callbacks_t *callbacks
     = (const message_type_support_callbacks_t *)(type_support->data);
 
   z_string_t _type_name = convert_message_type(callbacks);
-  _Z_INFO("%s : type name = [%s]", __func__, _type_name.val);
+  RMW_ZENOH_LOG_INFO("%s : type name = [%s]", __func__, _type_name.val);
 
   // generate Qos
   // rmw_qos_profile_t _qos_profile = *qos_profile;
@@ -533,7 +526,7 @@ rmw_create_subscription(
   test_qos_profile(&_qos_profile);
 
   z_string_t qos_key = qos_to_keyexpr(&_qos_profile);
-  _Z_INFO("%s : qos = [%s]", __func__, qos_key.val);
+  RMW_ZENOH_LOG_INFO("%s : qos = [%s]", __func__, qos_key.val);
 
   _z_string_t _topic_name = _z_string_make(topic_name);
   ZenohPicoTopicInfo_t *_topic_info = zenoh_pico_generate_topic_info(&_topic_name,
@@ -574,7 +567,7 @@ rmw_destroy_subscription(
   rmw_node_t * node,
   rmw_subscription_t * subscription)
 {
-  _Z_DEBUG("%s : start()", __func__);
+  RMW_ZENOH_FUNC_ENTRY();
 
   RMW_CHECK_ARGUMENT_FOR_NULL(node, RMW_RET_INVALID_ARGUMENT);
   RMW_CHECK_ARGUMENT_FOR_NULL(subscription, RMW_RET_INVALID_ARGUMENT);
@@ -593,10 +586,10 @@ rmw_subscription_count_matched_publishers(
   const rmw_subscription_t * subscription,
   size_t * publisher_count)
 {
-  _Z_DEBUG("%s : start()", __func__);
+  RMW_ZENOH_FUNC_ENTRY();
   (void)subscription;
   (void)publisher_count;
-  _Z_INFO(
+  RMW_ZENOH_LOG_INFO(
     "Function not available; enable RMW_UXRCE_GRAPH configuration profile before using");
   return RMW_RET_UNSUPPORTED;
 }
@@ -606,7 +599,7 @@ rmw_subscription_get_actual_qos(
   const rmw_subscription_t * subscription,
   rmw_qos_profile_t * qos)
 {
-  _Z_DEBUG("%s : start()", __func__);
+  RMW_ZENOH_FUNC_ENTRY();
   RMW_CHECK_ARGUMENT_FOR_NULL(subscription, RMW_RET_INVALID_ARGUMENT);
   RMW_CHECK_ARGUMENT_FOR_NULL(qos, RMW_RET_INVALID_ARGUMENT);
 
@@ -618,7 +611,7 @@ rmw_subscription_set_content_filter(
   rmw_subscription_t * subscription,
   const rmw_subscription_content_filter_options_t * options)
 {
-  _Z_DEBUG("%s : start()", __func__);
+  RMW_ZENOH_FUNC_ENTRY();
   (void) subscription;
   (void) options;
 
@@ -631,7 +624,7 @@ rmw_subscription_get_content_filter(
   rcutils_allocator_t * allocator,
   rmw_subscription_content_filter_options_t * options)
 {
-  _Z_DEBUG("%s : start()", __func__);
+  RMW_ZENOH_FUNC_ENTRY();
   (void) subscription;
   (void) allocator;
   (void) options;

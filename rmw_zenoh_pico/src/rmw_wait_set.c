@@ -59,14 +59,14 @@ rmw_create_wait_set(
 {
   (void)max_conditions;
 
-  _Z_DEBUG("%s : start", __func__);
+  RMW_ZENOH_FUNC_ENTRY();
 
   RCUTILS_CHECK_ARGUMENT_FOR_NULL(context, NULL);
   RMW_CHECK_TYPE_IDENTIFIERS_MATCH(
     context->implementation_identifier,
     return NULL);
 
-  rmw_wait_set_t *wait_set = z_malloc(sizeof(rmw_wait_set_t));
+  rmw_wait_set_t *wait_set = Z_MALLOC(sizeof(rmw_wait_set_t));
   RMW_CHECK_FOR_NULL_WITH_MSG(
     wait_set,
     "failed to allocate wait set",
@@ -86,7 +86,7 @@ rmw_ret_t
 rmw_destroy_wait_set(
   rmw_wait_set_t * wait_set)
 {
-  _Z_DEBUG("%s : start", __func__);
+  RMW_ZENOH_FUNC_ENTRY();
 
   RMW_CHECK_ARGUMENT_FOR_NULL(wait_set, RMW_RET_INVALID_ARGUMENT);
   RMW_CHECK_ARGUMENT_FOR_NULL(wait_set->data, RMW_RET_INVALID_ARGUMENT);
@@ -98,7 +98,7 @@ rmw_destroy_wait_set(
   ZenohPicoWaitSetData *wait_data = (ZenohPicoWaitSetData *)wait_set->data;
   zenoh_pico_destroy_wait_set_data(wait_data);
 
-  z_free(wait_set);
+  Z_FREE(wait_set);
 
   return RMW_RET_OK;
 }

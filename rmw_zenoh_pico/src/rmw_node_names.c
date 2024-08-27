@@ -29,7 +29,7 @@ rmw_get_node_names(
   (void)node;
   (void)node_names;
   (void)node_namespaces;
-  _Z_INFO(
+  RMW_ZENOH_LOG_INFO(
     "Function not available: enable RMW_UXRCE_GRAPH configuration profile before using");
   return RMW_RET_UNSUPPORTED;
 }

@@ -36,7 +36,7 @@ rmw_publish(
   const void * ros_message,
   rmw_publisher_allocation_t * allocation)
 {
-  _Z_DEBUG("%s : start", __func__);
+  RMW_ZENOH_FUNC_ENTRY();
 
   (void)allocation;
   RMW_CHECK_FOR_NULL_WITH_MSG(
@@ -54,7 +54,7 @@ rmw_publish(
   size_t serialized_size = pub_data->callbacks_->get_serialized_size(ros_message);
 
   serialized_size += SUB_MSG_OFFSET;
-  uint8_t * msg_bytes = (uint8_t *)z_malloc(serialized_size);
+  uint8_t * msg_bytes = (uint8_t *)Z_MALLOC(serialized_size);
   memset(msg_bytes, 0, serialized_size);
 
   ucdrBuffer temp_buffer;
@@ -78,7 +78,7 @@ rmw_publish(
 		  serialized_size,
 		  &options);
 
-  z_free(msg_bytes);
+  Z_FREE(msg_bytes);
 
   return RMW_RET_OK;
 }
@@ -89,12 +89,12 @@ rmw_publish_serialized_message(
   const rmw_serialized_message_t * serialized_message,
   rmw_publisher_allocation_t * allocation)
 {
-  _Z_DEBUG("%s : start", __func__);
+  RMW_ZENOH_FUNC_ENTRY();
 
   (void)publisher;
   (void)serialized_message;
   (void)allocation;
-  _Z_INFO("function not implemented");
+  RMW_ZENOH_LOG_INFO("function not implemented");
     return RMW_RET_UNSUPPORTED;
 }
 
@@ -104,13 +104,13 @@ rmw_publish_loaned_message(
   void * ros_message,
   rmw_publisher_allocation_t * allocation)
 {
-  _Z_DEBUG("%s : start", __func__);
+  RMW_ZENOH_FUNC_ENTRY();
 
   (void)publisher;
   (void)ros_message;
   (void)allocation;
 
-  _Z_INFO("function not implemented");
+  RMW_ZENOH_LOG_INFO("function not implemented");
     return RMW_RET_UNSUPPORTED;
 }
 
@@ -119,7 +119,7 @@ rmw_publisher_wait_for_all_acked(
   const rmw_publisher_t * publisher,
   rmw_time_t wait_timeout)
 {
-  _Z_DEBUG("%s : start", __func__);
+  RMW_ZENOH_FUNC_ENTRY();
 
   (void)publisher;
   (void)wait_timeout;

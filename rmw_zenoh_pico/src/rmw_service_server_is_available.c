@@ -24,6 +24,6 @@ rmw_ret_t rmw_service_server_is_available(
   (void)node;
   (void)client;
   (void)is_available;
-  _Z_INFO("function not implemented");
+  RMW_ZENOH_LOG_INFO("function not implemented");
   return RMW_RET_UNSUPPORTED;
 }

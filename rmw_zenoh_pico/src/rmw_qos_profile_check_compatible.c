@@ -31,6 +31,6 @@ rmw_qos_profile_check_compatible(
   (void) reason;
   (void) reason_size;
 
-  _Z_INFO("function not implemented");
+  RMW_ZENOH_LOG_INFO("function not implemented");
   return RMW_RET_UNSUPPORTED;
 }

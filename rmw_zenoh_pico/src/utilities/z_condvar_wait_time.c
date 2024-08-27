@@ -18,7 +18,7 @@ int8_t z_condvar_wait_time(z_condvar_t *cv, z_mutex_t *m, struct timespec *wait_
   abstime.tv_sec += wait_timeout->tv_sec;
   abstime.tv_nsec += wait_timeout->tv_nsec;
 
-  // _Z_DEBUG("%s : wait_set_data->wait_timeout = [%ld : %ld]",
+  // RMW_ZENOH_LOG_DEBUG("%s : wait_set_data->wait_timeout = [%ld : %ld]",
   // 	   __func__,
   // 	   abstime.tv_sec,
   // 	   abstime.tv_nsec);

@@ -109,7 +109,7 @@ rmw_wait(
   rmw_wait_set_t * wait_set,
   const rmw_time_t * wait_timeout)
 {
-  _Z_DEBUG("%s : start", __func__);
+  RMW_ZENOH_FUNC_ENTRY();
 
   RMW_CHECK_ARGUMENT_FOR_NULL(wait_set, RMW_RET_INVALID_ARGUMENT);
   RMW_CHECK_TYPE_IDENTIFIERS_MATCH(
@@ -147,7 +147,7 @@ rmw_wait(
       }
     }
 
-    _Z_INFO("%s : wakeup from wait condition....", __func__);
+    RMW_ZENOH_LOG_INFO("%s : wakeup from wait condition....", __func__);
 
     wait_set_data->triggered_ = false;
 

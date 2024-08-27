@@ -31,7 +31,7 @@ ZenohPicoNodeData * zenoh_pico_generate_node_data(size_t node_id,
 						  ZenohPicoSession *session,
 						  ZenohPicoEntity *entity)
 {
-  _Z_DEBUG("%s : start", __func__);
+  RMW_ZENOH_FUNC_ENTRY();
 
   if((session == NULL) || (entity == NULL))
     return NULL;
@@ -61,7 +61,7 @@ ZenohPicoNodeData *zenoh_pico_loan_node_data(ZenohPicoNodeData *node_data)
 
 bool zenoh_pico_destroy_node_data(ZenohPicoNodeData *node_data)
 {
-  _Z_DEBUG("%s : start", __func__);
+  RMW_ZENOH_FUNC_ENTRY();
 
   (void)undeclaration_node_data(node_data);
 
@@ -107,10 +107,12 @@ void zenoh_pico_debug_node_data(ZenohPicoNodeData *node_data)
 
 bool declaration_node_data(ZenohPicoNodeData *node_data)
 {
+  RMW_ZENOH_FUNC_ENTRY();
+
   ZenohPicoSession *session = node_data->session_;
   const char *keyexpr = Z_STRING_VAL(node_data->token_key_);
 
-  _Z_DEBUG("Declaring node key expression '%s'...", keyexpr);
+  RMW_ZENOH_LOG_DEBUG("Declaring node key expression '%s'...", keyexpr);
   node_data->token_ = z_declare_keyexpr(z_loan(session->session_), z_keyexpr(keyexpr));
   if (!z_check(node_data->token_)) {
     return false;
@@ -136,13 +138,13 @@ bool undeclaration_node_data(ZenohPicoNodeData *node_data)
 
 static rmw_node_t *rmw_node_generate(rmw_context_t *context, ZenohPicoNodeData *node_data)
 {
-  _Z_DEBUG("%s : start()", __func__);
+  RMW_ZENOH_FUNC_ENTRY();
   if(node_data->entity_->node_info_ == NULL)
     return NULL;
 
   ZenohPicoNodeInfo_t *node_info = node_data->entity_->node_info_;
 
-  rmw_node_t * node = z_malloc(sizeof(rmw_node_t));
+  rmw_node_t * node = Z_MALLOC(sizeof(rmw_node_t));
   if(node == NULL)
     return NULL;
 
@@ -159,7 +161,7 @@ static rmw_node_t *rmw_node_generate(rmw_context_t *context, ZenohPicoNodeData *
 
 static rmw_ret_t rmw_node_destroy(rmw_node_t * node)
 {
-  _Z_DEBUG("%s : start()", __func__);
+  RMW_ZENOH_FUNC_ENTRY();
 
   if(node != NULL){
     ZenohPicoNodeData *node_data = (ZenohPicoNodeData *)node->data;
@@ -168,7 +170,7 @@ static rmw_ret_t rmw_node_destroy(rmw_node_t * node)
       node_data = NULL;
     }
 
-    z_free(node);
+    Z_FREE(node);
   }
 
   return RMW_RET_OK;
@@ -180,7 +182,8 @@ rmw_create_node(
   const char * name,
   const char * namespace_)
 {
-  _Z_DEBUG("%s : start(name = [%s], namespace = [%s])", __func__, name, namespace_);
+  RMW_ZENOH_FUNC_ENTRY();
+  RMW_ZENOH_LOG_INFO("%s : name = [%s], namespace = [%s]", __func__, name, namespace_);
 
   RMW_CHECK_ARGUMENT_FOR_NULL(context, NULL);
   RMW_CHECK_TYPE_IDENTIFIERS_MATCH(
@@ -194,7 +197,7 @@ rmw_create_node(
   RMW_CHECK_ARGUMENT_FOR_NULL(namespace_, NULL);
 
   if (strlen(name) == 0 || strlen(namespace_) == 0) {
-    _Z_INFO("name or namespace_ is null");
+    RMW_ZENOH_LOG_INFO("name or namespace_ is null");
     return NULL;
   }
 
@@ -255,17 +258,18 @@ rmw_create_node(
 rmw_ret_t rmw_destroy_node(
   rmw_node_t * node)
 {
-  _Z_DEBUG("%s : start(%p)", __func__, node);
+  RMW_ZENOH_FUNC_ENTRY();
+  RMW_ZENOH_LOG_INFO("%s : start(%p)", __func__, node);
 
   if (!node) {
-    _Z_INFO("node handle is null");
+    RMW_ZENOH_LOG_INFO("node handle is null");
     return RMW_RET_ERROR;
   }
 
   RMW_CHECK_TYPE_IDENTIFIERS_MATCH(node->implementation_identifier, RMW_RET_ERROR);
 
   if (node->data == NULL) {
-    _Z_INFO("node impl is null");
+    RMW_ZENOH_LOG_INFO("node impl is null");
     return RMW_RET_ERROR;
   }
 
@@ -276,10 +280,11 @@ rmw_ret_t
 rmw_node_assert_liveliness(
   const rmw_node_t * node)
 {
-  _Z_DEBUG("%s : start(%p)", __func__, node);
+  RMW_ZENOH_FUNC_ENTRY();
+  RMW_ZENOH_LOG_INFO("%s : start(%p)", __func__, node);
 
   (void)node;
-  _Z_INFO("function not implemented");
+  RMW_ZENOH_LOG_INFO("function not implemented");
   return RMW_RET_UNSUPPORTED;
 }
 
@@ -287,7 +292,9 @@ const rmw_guard_condition_t *
 rmw_node_get_graph_guard_condition(
   const rmw_node_t * node)
 {
-  _Z_DEBUG("%s : start(%p)", __func__, node);
+  RMW_ZENOH_FUNC_ENTRY();
+  RMW_ZENOH_LOG_INFO("%s : start(%p)", __func__, node);
+
   ZenohPicoNodeData *node_data = (ZenohPicoNodeData *)node->data;
   ZenohPicoSession *session = node_data->session_;
   rmw_guard_condition_t * graph_guard_condition = &session->graph_guard_condition;

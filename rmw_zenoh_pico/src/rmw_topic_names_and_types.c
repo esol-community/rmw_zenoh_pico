@@ -33,7 +33,7 @@ rmw_get_topic_names_and_types(
   (void)allocator;
   (void)no_demangle;
   (void)topic_names_and_types;
-  _Z_INFO(
+  RMW_ZENOH_LOG_INFO(
     "Function not available: enable RMW_UXRCE_GRAPH configuration profile before using");
   return RMW_RET_UNSUPPORTED;
 }
