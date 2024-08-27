@@ -54,14 +54,14 @@ extern "C"
   extern const char *get_topic_qos(ZenohPicoEntity *entity);
 
   // functions
-  extern ZenohPicoEntity * zenoh_pico_generate_entitiy(z_id_t zid,
+  extern ZenohPicoEntity * zenoh_pico_generate_entity(z_id_t zid,
 						       size_t id,
 						       size_t nid,
 						       ZenohPicoEntityType type,
 						       ZenohPicoNodeInfo_t *node_info,
 						       ZenohPicoTopicInfo_t *topic_info);
-  extern void zenoh_pico_destroy_entitiy(ZenohPicoEntity *entity);
-  extern void zenoh_pico_debug_entitiy(ZenohPicoEntity *entity);
+  extern void zenoh_pico_destroy_entity(ZenohPicoEntity *entity);
+  extern void zenoh_pico_debug_entity(ZenohPicoEntity *entity);
 
 // -------------------------------------------------
 

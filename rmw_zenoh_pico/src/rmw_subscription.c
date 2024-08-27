@@ -103,7 +103,7 @@ bool zenoh_pico_destroy_subscription_data(ZenohPicoSubData *sub_data)
   // }
 
   if(sub_data->entity_ != NULL){
-    zenoh_pico_destroy_entitiy(sub_data->entity_);
+    zenoh_pico_destroy_entity(sub_data->entity_);
     sub_data->entity_ = NULL;
   }
 
@@ -141,7 +141,7 @@ void zenoh_pico_debug_subscription_data(ZenohPicoSubData *sub_data)
   // zenoh_pico_debug_node_data(sub_data->node_);
 
   // debug entity member
-  zenoh_pico_debug_entitiy(sub_data->entity_);
+  zenoh_pico_debug_entity(sub_data->entity_);
 }
 
 // --------------------------
@@ -564,17 +564,13 @@ rmw_create_subscription(
 
   // generate entity data
   size_t _entity_id = zenoh_pico_get_next_entity_id();
-  ZenohPicoSession *session = node_data->session_;
-
-  ZenohPicoEntity *_entity = zenoh_pico_generate_entitiy( z_info_zid(z_loan(session->session_)),
-							 _entity_id,
-							 node_data->id_,
-							 Subscription,
-							 _node_info,
-							 _topic_info);
-  // zenoh_pico_debug_entitiy(_entity);
-
-  // generate subscription data
+  ZenohPicoSession *_session = node_data->session_;
+  ZenohPicoEntity *_entity = zenoh_pico_generate_entity( z_info_zid(z_loan(_session->session_)),
+							  _entity_id,
+							  node_data->id_,
+							  Subscription,
+							  _node_info,
+							  _topic_info);
   ZenohPicoNodeData *_node = zenoh_pico_loan_node_data(node_data);
   ZenohPicoSubData *_sub_data = zenoh_pico_generate_subscription_data(_entity_id,
 								      _node,
@@ -582,7 +578,6 @@ rmw_create_subscription(
 								      type_support,
 								      callbacks,
 								      &_qos_profile);
-
   zenoh_pico_debug_subscription_data(_sub_data);
 
   rmw_subscription_t * rmw_subscription = rmw_subscription_generate(node->context,
