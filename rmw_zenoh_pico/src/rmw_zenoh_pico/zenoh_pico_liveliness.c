@@ -190,11 +190,11 @@ z_string_t conv_domain(size_t domain){
   return _z_string_make(_domain);
 }
 
-static const char RIHS01_PREFIX[]	= "RIHS01_";
-static const size_t RIHS_VERSION_IDX	= 4;
-static const size_t RIHS_PREFIX_LEN	= 7;
-static const size_t RIHS01_STRING_LEN	= 71;  // RIHS_PREFIX_LEN + (ROSIDL_TYPE_HASH_SIZE * 2);
-static const uint8_t INVALID_NIBBLE	= 0xff;
+#define RIHS01_PREFIX 	   "RIHS01_"
+#define RIHS_VERSION_IDX   4
+#define RIHS_PREFIX_LEN	   7
+#define RIHS01_STRING_LEN  71  // RIHS_PREFIX_LEN + (ROSIDL_TYPE_HASH_SIZE * 2);
+#define INVALID_NIBBLE	   0xff
 
 z_string_t convert_hash(const rosidl_type_hash_t * type_hash)
 {
