@@ -72,9 +72,9 @@ bool zenoh_pico_destroy_node_data(ZenohPicoNodeData *node_data)
       z_undeclare_keyexpr(z_loan(session->session_), &node_data->token_);
   }
 
-  // delete entitiy
+  // delete entity
   if(node_data->entity_ != NULL){
-    zenoh_pico_destroy_entitiy(node_data->entity_);
+    zenoh_pico_destroy_entity(node_data->entity_);
     node_data->entity_ = NULL;
   }
 
@@ -100,7 +100,7 @@ void zenoh_pico_debug_node_data(ZenohPicoNodeData *node_data)
   }
 
   // debug entity member
-  zenoh_pico_debug_entitiy(node_data->entity_);
+  zenoh_pico_debug_entity(node_data->entity_);
 }
 
 //-----------------------------
@@ -217,7 +217,7 @@ rmw_create_node(
 
   // generate entity data
   size_t _entity_id = zenoh_pico_get_next_entity_id();
-  ZenohPicoEntity *entity = zenoh_pico_generate_entitiy(z_info_zid(z_loan(session->session_)),
+  ZenohPicoEntity *entity = zenoh_pico_generate_entity(z_info_zid(z_loan(session->session_)),
 							_entity_id,
 							_entity_id,
 							Node,
@@ -233,7 +233,7 @@ rmw_create_node(
 							       session,
 							       entity);
   if(node_data == NULL){
-    zenoh_pico_destroy_entitiy(entity);
+    zenoh_pico_destroy_entity(entity);
     return NULL;
   }
 

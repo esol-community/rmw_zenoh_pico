@@ -20,7 +20,7 @@ const char *get_topic_type(ZenohPicoEntity *entity)     { return topic_type(enti
 const char *get_topic_hash(ZenohPicoEntity *entity)     { return topic_hash(entity->topic_info_); }
 const char *get_topic_qos(ZenohPicoEntity *entity)      { return topic_qos(entity->topic_info_); }
 
-ZenohPicoEntity * zenoh_pico_generate_entitiy(z_id_t zid,
+ZenohPicoEntity * zenoh_pico_generate_entity(z_id_t zid,
 					      size_t id,
 					      size_t nid,
 					      ZenohPicoEntityType type,
@@ -51,17 +51,19 @@ ZenohPicoEntity * zenoh_pico_generate_entitiy(z_id_t zid,
   entity->node_info_	= node_info;
   entity->topic_info_	= topic_info;
 
+  // zenoh_pico_debug_entity(entity);
+
   return entity;
 }
 
-static void _zenoh_pico_clear_entitiy_member(ZenohPicoEntity *entity)
+static void _zenoh_pico_clear_entity_member(ZenohPicoEntity *entity)
 {
   Z_STRING_FREE(entity->zid_);
 }
 
-void zenoh_pico_destroy_entitiy(ZenohPicoEntity *entity)
+void zenoh_pico_destroy_entity(ZenohPicoEntity *entity)
 {
-  _zenoh_pico_clear_entitiy_member(entity);
+  _zenoh_pico_clear_entity_member(entity);
 
   if(entity->node_info_ != NULL){
     zenoh_pico_destroy_node_info(entity->node_info_);
@@ -76,7 +78,7 @@ void zenoh_pico_destroy_entitiy(ZenohPicoEntity *entity)
   ZenohPicoDestroyData(entity);
 }
 
-void zenoh_pico_debug_entitiy(ZenohPicoEntity *entity)
+void zenoh_pico_debug_entity(ZenohPicoEntity *entity)
 {
   printf("--------- entity data ----------\n");
   printf("ref = %d\n", entity->ref_);
