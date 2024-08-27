@@ -287,7 +287,7 @@ rmw_create_publisher(
   const rosidl_message_type_support_t * type_support = find_message_type_support(type_supports);
   if (type_support == NULL) {
     // error was already set by find_message_type_support
-    RMW_UROS_TRACE_MESSAGE("type_support is null");
+    _Z_INFO("type_support is null");
     return NULL;
   }
   _Z_INFO("typesupport_identifier = [%s]", type_support->typesupport_identifier);
@@ -385,7 +385,7 @@ rmw_publisher_count_matched_subscriptions(
 {
   (void)publisher;
   (void)subscription_count;
-  RMW_UROS_TRACE_MESSAGE(
+  _Z_INFO(
     "Function not available; enable RMW_UXRCE_GRAPH configuration profile before using");
   return RMW_RET_UNSUPPORTED;
 }
@@ -395,7 +395,7 @@ rmw_publisher_assert_liveliness(
   const rmw_publisher_t * publisher)
 {
   (void)publisher;
-  RMW_UROS_TRACE_MESSAGE("function not implemented")
+  _Z_INFO("function not implemented");
     return RMW_RET_UNSUPPORTED;
 }
 
@@ -420,7 +420,7 @@ rmw_borrow_loaned_message(
   (void)type_support;
   (void)ros_message;
 
-  RMW_UROS_TRACE_MESSAGE("function not implemented")
+  _Z_INFO("function not implemented");
     return RMW_RET_UNSUPPORTED;
 }
 
@@ -432,6 +432,6 @@ rmw_return_loaned_message_from_publisher(
   (void)publisher;
   (void)loaned_message;
 
-  RMW_UROS_TRACE_MESSAGE("function not implemented")
+  _Z_INFO("function not implemented");
     return RMW_RET_UNSUPPORTED;
 }

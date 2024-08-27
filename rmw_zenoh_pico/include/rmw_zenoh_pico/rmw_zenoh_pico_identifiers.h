@@ -15,6 +15,8 @@
 #ifndef RMW_MICROROS_INTERNAL__IDENTIFIERS_H_
 #define RMW_MICROROS_INTERNAL__IDENTIFIERS_H_
 
+#define RMW_ZENOH_PICO_TYPESUPPORT_C rmw_zenoh_pico_typesupport_c()
+
 extern const char *rmw_zenoh_pico_typesupport_c(void);
 
 #endif  // RMW_MICROROS_INTERNAL__IDENTIFIERS_H_

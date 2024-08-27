@@ -33,13 +33,13 @@ rmw_create_client(
 {
   rmw_client_t * rmw_client = NULL;
   if (!node) {
-    RMW_UROS_TRACE_MESSAGE("node handle is null")
+    _Z_INFO("node handle is null");
   } else if (!type_support) {
-    RMW_UROS_TRACE_MESSAGE("type support is null")
+    _Z_INFO("type support is null");
   } else if (!service_name || strlen(service_name) == 0) {
-    RMW_UROS_TRACE_MESSAGE("service name is null or empty string")
+    _Z_INFO("service name is null or empty string");
   } else if (!qos_policies) {
-    RMW_UROS_TRACE_MESSAGE("qos_profile is null")
+    _Z_INFO("qos_profile is null");
   } else {
   }
 

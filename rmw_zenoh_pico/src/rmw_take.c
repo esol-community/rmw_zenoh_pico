@@ -223,7 +223,7 @@ rmw_take_serialized_message(
   (void)serialized_message;
   (void)taken;
   (void)allocation;
-  RMW_UROS_TRACE_MESSAGE("function not implemented")
+  _Z_INFO("function not implemented");
     return RMW_RET_UNSUPPORTED;
 }
 
@@ -242,7 +242,7 @@ rmw_take_serialized_message_with_info(
   (void)taken;
   (void)message_info;
   (void)allocation;
-  RMW_UROS_TRACE_MESSAGE("function not implemented")
+  _Z_INFO("function not implemented");
     return RMW_RET_UNSUPPORTED;
 }
 
@@ -260,7 +260,7 @@ rmw_take_loaned_message(
   (void)taken;
   (void)allocation;
 
-  RMW_UROS_TRACE_MESSAGE("function not implemented")
+  _Z_INFO("function not implemented");
     return RMW_RET_UNSUPPORTED;
 }
 
@@ -280,7 +280,7 @@ rmw_take_loaned_message_with_info(
   (void)message_info;
   (void)allocation;
 
-  RMW_UROS_TRACE_MESSAGE("function not implemented")
+  _Z_INFO("function not implemented");
     return RMW_RET_UNSUPPORTED;
 }
 
@@ -294,7 +294,7 @@ rmw_return_loaned_message_from_subscription(
   (void)subscription;
   (void)loaned_message;
 
-  RMW_UROS_TRACE_MESSAGE("function not implemented")
+  _Z_INFO("function not implemented");
     return RMW_RET_UNSUPPORTED;
 }
 
@@ -309,6 +309,6 @@ rmw_take_event(
   (void)event_handle;
   (void)event_info;
   (void)taken;
-  RMW_UROS_TRACE_MESSAGE("function not implemented")
+  _Z_INFO("function not implemented");
     return RMW_RET_UNSUPPORTED;
 }

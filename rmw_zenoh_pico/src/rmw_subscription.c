@@ -507,7 +507,7 @@ rmw_create_subscription(
   const rosidl_message_type_support_t * type_support = find_message_type_support(type_supports);
   if (type_support == NULL) {
     // error was already set by find_message_type_support
-    RMW_UROS_TRACE_MESSAGE("type_support is null");
+    _Z_INFO("type_support is null");
     return NULL;
   }
   _Z_INFO("typesupport_identifier = [%s]", type_support->typesupport_identifier);
@@ -596,7 +596,7 @@ rmw_subscription_count_matched_publishers(
   _Z_DEBUG("%s : start()", __func__);
   (void)subscription;
   (void)publisher_count;
-  RMW_UROS_TRACE_MESSAGE(
+  _Z_INFO(
     "Function not available; enable RMW_UXRCE_GRAPH configuration profile before using");
   return RMW_RET_UNSUPPORTED;
 }
