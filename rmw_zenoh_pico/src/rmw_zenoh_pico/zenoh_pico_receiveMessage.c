@@ -15,7 +15,7 @@ ReceiveMessageData * zenoh_pico_generate_recv_msg_data(const z_sample_t *sample,
   if(recv_data == NULL)
     return NULL;
 
-  recv_data->payload_start = (void *)z_malloc(sample->payload.len);
+  recv_data->payload_start = (void *)Z_MALLOC(sample->payload.len);
   if(recv_data->payload_start == NULL)
     return NULL;
 
@@ -33,7 +33,7 @@ ReceiveMessageData * zenoh_pico_generate_recv_msg_data(const z_sample_t *sample,
 void zenoh_pico_delete_recv_msg_data(ReceiveMessageData * recv_data)
 {
   if(recv_data->payload_start != NULL)
-    z_free(recv_data->payload_start);
+    Z_FREE(recv_data->payload_start);
 
   ZenohPicoDestroyData(recv_data);
 }

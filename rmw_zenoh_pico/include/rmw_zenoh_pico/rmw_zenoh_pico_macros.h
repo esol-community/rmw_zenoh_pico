@@ -47,7 +47,7 @@
     if((d) != NULL) {				\
       (d)->ref_ -= 1;				\
       if((d)->ref_ == 0) {			\
-	z_free((d));				\
+	Z_FREE((d));				\
       }						\
     }						\
   }
@@ -60,6 +60,10 @@
 //
 // zenoh-pico macro
 //
+
+#define Z_MALLOC(size) z_malloc(size)
+#define Z_FREE(ptr)    z_free(ptr)
+
 #define Z_STRING_PRINTF(_z_str, tag)		\
   {						\
     if(_z_str.len == 0)				\

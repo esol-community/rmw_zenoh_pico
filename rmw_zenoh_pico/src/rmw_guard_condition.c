@@ -20,7 +20,7 @@
 
 ZenohPicoGuardConditionData * zenoh_pico_guard_condition_data(void)
 {
-  ZenohPicoGuardConditionData *condition_data = z_malloc(sizeof(ZenohPicoGuardConditionData));
+  ZenohPicoGuardConditionData *condition_data = Z_MALLOC(sizeof(ZenohPicoGuardConditionData));
   memset(condition_data, 0, sizeof(ZenohPicoGuardConditionData));
 
   z_mutex_init(&condition_data->condition_mutex_);
@@ -32,7 +32,7 @@ ZenohPicoGuardConditionData * zenoh_pico_guard_condition_data(void)
 bool zenoh_pico_destroy_guard_condition_data(ZenohPicoGuardConditionData *condition_data)
 {
   z_mutex_free(&condition_data->condition_mutex_);
-  z_free(condition_data);
+  Z_FREE(condition_data);
   return true;
 }
 
@@ -40,7 +40,7 @@ rmw_guard_condition_t *
 rmw_create_guard_condition(
   rmw_context_t * context)
 {
-  rmw_guard_condition_t *guard_condition = z_malloc(sizeof(rmw_guard_condition_t));
+  rmw_guard_condition_t *guard_condition = Z_MALLOC(sizeof(rmw_guard_condition_t));
   RMW_CHECK_FOR_NULL_WITH_MSG(
     guard_condition,
     "unable to allocate memory for guard_condition",
@@ -72,7 +72,7 @@ rmw_destroy_guard_condition(
     guard_condition->data = NULL;
   }
 
-  z_free(guard_condition);
+  Z_FREE(guard_condition);
 
   return RMW_RET_OK;
 }

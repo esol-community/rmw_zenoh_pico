@@ -99,7 +99,7 @@ z_string_t ros_topic_name_to_zenoh_key(const char * domain,
 
   ret = snprintf(keyexpr_ptr, left_size, "%s/%s", type, hash);
 
-  _Z_INFO("new z_keyexpr is [%s]\n", keyexpr_str);
+  RMW_ZENOH_LOG_INFO("new z_keyexpr is [%s]\n", keyexpr_str);
 
   return z_string_make(keyexpr_str);
 }

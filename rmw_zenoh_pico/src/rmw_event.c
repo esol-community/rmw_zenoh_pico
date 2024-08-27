@@ -26,7 +26,7 @@ rmw_publisher_event_init(
   (void)rmw_event;
   (void)publisher;
   (void)event_type;
-  _Z_INFO("function not implemented");
+  RMW_ZENOH_LOG_INFO("function not implemented");
   return RMW_RET_UNSUPPORTED;
 }
 
@@ -39,6 +39,6 @@ rmw_subscription_event_init(
   (void)rmw_event;
   (void)subscription;
   (void)event_type;
-  _Z_INFO("function not implemented");
+  RMW_ZENOH_LOG_INFO("function not implemented");
   return RMW_RET_UNSUPPORTED;
 }
