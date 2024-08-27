@@ -20,6 +20,6 @@ rmw_set_log_severity(
   rmw_log_severity_t severity)
 {
   (void)severity;
-  RMW_UROS_TRACE_MESSAGE("function not implemented")
+  _Z_INFO("function not implemented");
   return RMW_RET_UNSUPPORTED;
 }

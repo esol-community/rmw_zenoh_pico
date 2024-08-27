@@ -24,6 +24,6 @@ rmw_ret_t rmw_service_server_is_available(
   (void)node;
   (void)client;
   (void)is_available;
-  RMW_UROS_TRACE_MESSAGE("function not implemented")
+  _Z_INFO("function not implemented");
   return RMW_RET_UNSUPPORTED;
 }
