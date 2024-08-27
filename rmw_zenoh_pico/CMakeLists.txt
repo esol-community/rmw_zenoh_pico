@@ -45,7 +45,6 @@ find_library(zenohpico_LIBRARY
 
 # Build options
 option(BUILD_DOCUMENTATION			"Use doxygen to create product documentation" OFF)
-option(RMW_UROS_ERROR_HANDLING			"Provides error handling callback functionality to user-space" OFF)
 
 # --- RMW CONFIGURATION ---
 set(RMW_ZENOH_PICO_TRANSPORT			"unicast"      CACHE STRING "Sets zenoh pico transport to use. (unicast | serial)")
@@ -62,23 +61,6 @@ set(RMW_ZENOH_PICO_LOCATOR_PORT			"7446"         CACHE STRING "Sets the scout po
 set(RMW_ZENOH_PICO_SERIAL_DEVICE                "/dev/ttyAMA0" CACHE STRING "Sets the agent serial port.")
 
 set(RMW_ZENOH_PICO_MAX_LINENESS_LEN             "256"          CACHE STRING "This value sets the number of max liveliness resource length")
-
-# -------------
-
-set(RMW_ZENOH_PICO_MAX_HISTORY			"8" CACHE STRING "This value sets the number of history slots available for RMW subscriptions, requests and replies")
-set(RMW_ZENOH_PICO_MAX_SESSIONS                 "1" CACHE STRING "This value sets the maximum number of zenoh-pico sessions.")
-set(RMW_ZENOH_PICO_MAX_NODES			"4" CACHE STRING "This value sets the maximum number of nodes.")
-set(RMW_ZENOH_PICO_MAX_PUBLISHERS		"4" CACHE STRING "This value sets the maximum number of publishers for an application.")
-set(RMW_ZENOH_PICO_MAX_SUBSCRIPTIONS		"4" CACHE STRING "This value sets the maximum number of subscriptions for an application.")
-set(RMW_ZENOH_PICO_MAX_SERVICES			"4" CACHE STRING "This value sets the maximum number of services for an application.")
-set(RMW_ZENOH_PICO_MAX_CLIENTS			"4" CACHE STRING "This value sets the maximum number of clients for an application.")
-set(RMW_ZENOH_PICO_MAX_WAIT_SETS		"4" CACHE STRING "This value sets the maximum number of wait sets for an application.")
-set(RMW_ZENOH_PICO_MAX_GUARD_CONDITION		"4" CACHE STRING "This value sets the maximum number of guard conditions for an application.")
-set(RMW_ZENOH_PICO_MAX_TOPICS			"-1" CACHE STRING
-						"This value sets the maximum number of topics for an application. If set to -1 RMW_ZENOH_PICO_MAX_TOPICS = RMW_ZENOH_PICO_MAX_PUBLISHERS + RMW_ZENOH_PICO_MAX_SUBSCRIPTIONS + RMW_ZENOH_PICO_MAX_NODES.")
-set(RMW_ZENOH_PICO_NODE_NAME_MAX_LENGTH		"60" CACHE STRING "This value sets the maximum number of characters for a node name.")
-set(RMW_ZENOH_PICO_TOPIC_NAME_MAX_LENGTH	"60" CACHE STRING "This value sets the maximum number of characters for a topic name.")
-set(RMW_ZENOH_PICO_TYPE_NAME_MAX_LENGTH		"100" CACHE STRING "This value sets the maximum number of characters for a type name.")
 
 set(RMW_ZENOH_PICO_C_STANDARD			"99" CACHE STRING  "Version of the C language used to build the library")
 
@@ -105,10 +87,6 @@ else()
 endif()
 
 set(DOC_INSTALL_DIR ${DOC_DIR} CACHE PATH "Installation directory for documentation")
-
-if(BUILD_TESTING)
-  set(RMW_UROS_ERROR_HANDLING ON)
-endif()
 
 set(SRCS
   src/rmw_zenoh_pico/zenoh_pico_topicInfo.c
@@ -154,8 +132,6 @@ set(SRCS
   src/rmw_wait.c
   src/rmw_wait_set.c
   src/rmw_event_callbacks.c
-  $<$<BOOL:${RMW_UROS_ERROR_HANDLING}>:src/rmw_microros/error_handling.c>
-  # $<$<BOOL:${RMW_ZENOH_PICO_GRAPH}>:src/rmw_graph.c>
 )
 
 add_library(${PROJECT_NAME}
@@ -259,9 +235,6 @@ if(BUILD_TESTING)
   # Pedantic in CI
   set(CMAKE_C_FLAGS "${CMAKE_C_FLAGS} -Wall -Werror")
   set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -Wall -Werror")
-  if(RMW_ZENOH_PICO_MAX_SESSIONS STREQUAL "1")
-    set(RMW_ZENOH_PICO_MAX_SESSIONS "2")
-  endif()
 
   find_package(ament_lint_auto REQUIRED)
   ament_lint_auto_find_test_dependencies()
