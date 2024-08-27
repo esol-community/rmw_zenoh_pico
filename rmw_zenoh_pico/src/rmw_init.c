@@ -121,7 +121,7 @@ static rmw_ret_t rmw_zenoh_pico_init_option(ZenohPicoTransportParams *params)
 
 #if defined(RMW_ZENOH_PICO_TRANSPORT_SERIAL)
   if(strlen(RMW_ZENOH_PICO_SERIAL_DEVICE) > sizeof(params->serial_device)){
-    RMW_UROS_TRACE_MESSAGE("default ip configuration overflow")
+    _Z_INFO("default ip configuration overflow");
       return RMW_RET_INVALID_ARGUMENT;
   }
 
@@ -135,7 +135,7 @@ static rmw_ret_t rmw_zenoh_pico_init_option(ZenohPicoTransportParams *params)
 #if defined (RMW_ZENOH_PICO_TRANSPORT_UNICAST)
   snprintf(buf, sizeof(buf), "tcp/%s:%s", RMW_ZENOH_PICO_CONNECT, RMW_ZENOH_PICO_CONNECT_PORT);
   if(strlen(buf) >= sizeof(params->connect_addr_) -1) {
-    RMW_UROS_TRACE_MESSAGE("default ip configuration overflow")
+    _Z_INFO("default ip configuration overflow");
       return RMW_RET_INVALID_ARGUMENT;
   }
   memset(params->connect_addr_, 0, sizeof(params->connect_addr_));
@@ -144,7 +144,7 @@ static rmw_ret_t rmw_zenoh_pico_init_option(ZenohPicoTransportParams *params)
 #elif defined (RMW_ZENOH_PICO_TRANSPORT_MCAST)
   snprintf(buf, sizeof(buf), "udp/%s:%s", RMW_ZENOH_PICO_LOCATOR, RMW_ZENOH_PICO_LOCATOR_PORT);
   if(strlen(buf) >= sizeof(params->locator_addr) -1) {
-    RMW_UROS_TRACE_MESSAGE("default ip configuration overflow")
+    _Z_INFO("default ip configuration overflow");
       return RMW_RET_INVALID_ARGUMENT;
   }
   memset(params->locator_addr, 0, sizeof(params->locator_addr));
@@ -156,7 +156,7 @@ static rmw_ret_t rmw_zenoh_pico_init_option(ZenohPicoTransportParams *params)
     memset(buf, 0, sizeof(buf));
     snprintf(buf, sizeof(buf), "tcp/%s:%s", RMW_ZENOH_PICO_LISTEN, RMW_ZENOH_PICO_LISTEN_PORT);
     if(strlen(buf) >= sizeof(params->listen_addr_) -1) {
-      RMW_UROS_TRACE_MESSAGE("default ip configuration overflow")
+      _Z_INFO("default ip configuration overflow");
 	return RMW_RET_INVALID_ARGUMENT;
     }
     memset(params->listen_addr_, 0, sizeof(params->listen_addr_));
@@ -180,7 +180,7 @@ rmw_init_options_init(
   RCUTILS_CHECK_ALLOCATOR(&allocator, return RMW_RET_INVALID_ARGUMENT);
 
   if (NULL != init_options->implementation_identifier) {
-    RMW_UROS_TRACE_MESSAGE("expected zero-initialized init_options")
+    _Z_INFO("expected zero-initialized init_options");
       return RMW_RET_INVALID_ARGUMENT;
   }
 
@@ -196,7 +196,7 @@ rmw_init_options_init(
   ZenohPicoTransportParams *params = zenoh_pico_generate_param(NULL);
 
   if (params == NULL) {
-    RMW_UROS_TRACE_MESSAGE("Not available memory node")
+    _Z_INFO("Not available memory node");
       return RMW_RET_ERROR;
   }
 
@@ -223,7 +223,7 @@ rmw_init_options_copy(
     src->implementation_identifier,
     return RMW_RET_INCORRECT_RMW_IMPLEMENTATION);
   if (NULL != dst->implementation_identifier) {
-    RMW_UROS_TRACE_MESSAGE("expected zero-initialized dst")
+    _Z_INFO("expected zero-initialized dst");
       return RMW_RET_INVALID_ARGUMENT;
   }
 
@@ -231,13 +231,13 @@ rmw_init_options_copy(
 
   ZenohPicoTransportParams *src_contex = (ZenohPicoTransportParams *)src->impl;
   if(src_contex == NULL){
-    RMW_UROS_TRACE_MESSAGE("source context is zero");
+    _Z_INFO("source context is zero");
     return RMW_RET_INVALID_ARGUMENT;
   }
 
   ZenohPicoTransportParams *dst_contex = zenoh_pico_generate_param(NULL);
   if(dst_contex == NULL){
-    RMW_UROS_TRACE_MESSAGE("falid new allocation option area");
+    _Z_INFO("falid new allocation option area");
     return RMW_RET_ERROR;
   }
 

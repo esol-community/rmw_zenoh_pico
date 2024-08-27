@@ -27,7 +27,7 @@ rmw_count_publishers(
   (void)node;
   (void)topic_name;
   (void)count;
-  RMW_UROS_TRACE_MESSAGE(
+  _Z_INFO(
     "Function not available; enable RMW_UXRCE_GRAPH configuration profile before using");
   return RMW_RET_UNSUPPORTED;
 }
@@ -41,7 +41,7 @@ rmw_count_subscribers(
   (void)node;
   (void)topic_name;
   (void)count;
-  RMW_UROS_TRACE_MESSAGE(
+  _Z_INFO(
     "Function not available; enable RMW_UXRCE_GRAPH configuration profile before using");
   return RMW_RET_UNSUPPORTED;
 }
@@ -55,7 +55,7 @@ rmw_count_clients(
   (void)node;
   (void)service_name;
   (void)count;
-  RMW_UROS_TRACE_MESSAGE("function not implemented");
+  _Z_INFO("function not implemented");
   return RMW_RET_UNSUPPORTED;
 }
 
@@ -68,6 +68,6 @@ rmw_count_services(
   (void)node;
   (void)service_name;
   (void)count;
-  RMW_UROS_TRACE_MESSAGE("function not implemented");
+  _Z_INFO("function not implemented");
   return RMW_RET_UNSUPPORTED;
 }

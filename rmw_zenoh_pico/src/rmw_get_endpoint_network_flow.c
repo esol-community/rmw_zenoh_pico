@@ -28,7 +28,7 @@ rmw_publisher_get_network_flow_endpoints(
   (void) allocator;
   (void) network_flow_endpoint_array;
 
-  RMW_UROS_TRACE_MESSAGE("function not implemented")
+  _Z_INFO("function not implemented");
   return RMW_RET_UNSUPPORTED;
 }
 
@@ -42,6 +42,6 @@ rmw_subscription_get_network_flow_endpoints(
   (void) allocator;
   (void) network_flow_endpoint_array;
 
-  RMW_UROS_TRACE_MESSAGE("function not implemented")
+  _Z_INFO("function not implemented");
   return RMW_RET_UNSUPPORTED;
 }

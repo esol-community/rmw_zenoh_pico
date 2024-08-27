@@ -194,7 +194,7 @@ rmw_create_node(
   RMW_CHECK_ARGUMENT_FOR_NULL(namespace_, NULL);
 
   if (strlen(name) == 0 || strlen(namespace_) == 0) {
-    RMW_UROS_TRACE_MESSAGE("name or namespace_ is null");
+    _Z_INFO("name or namespace_ is null");
     return NULL;
   }
 
@@ -258,14 +258,14 @@ rmw_ret_t rmw_destroy_node(
   _Z_DEBUG("%s : start(%p)", __func__, node);
 
   if (!node) {
-    RMW_UROS_TRACE_MESSAGE("node handle is null");
+    _Z_INFO("node handle is null");
     return RMW_RET_ERROR;
   }
 
   RMW_CHECK_TYPE_IDENTIFIERS_MATCH(node->implementation_identifier, RMW_RET_ERROR);
 
   if (node->data == NULL) {
-    RMW_UROS_TRACE_MESSAGE("node impl is null");
+    _Z_INFO("node impl is null");
     return RMW_RET_ERROR;
   }
 
@@ -279,7 +279,7 @@ rmw_node_assert_liveliness(
   _Z_DEBUG("%s : start(%p)", __func__, node);
 
   (void)node;
-  RMW_UROS_TRACE_MESSAGE("function not implemented");
+  _Z_INFO("function not implemented");
   return RMW_RET_UNSUPPORTED;
 }
 

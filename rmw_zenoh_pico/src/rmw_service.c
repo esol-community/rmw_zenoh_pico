@@ -33,13 +33,13 @@ rmw_create_service(
 {
   rmw_service_t * rmw_service = NULL;
   if (!node) {
-    RMW_UROS_TRACE_MESSAGE("node handle is null")
+    _Z_INFO("node handle is null");
   } else if (!type_support) {
-    RMW_UROS_TRACE_MESSAGE("type support is null")
+    _Z_INFO("type support is null");
   } else if (!service_name || strlen(service_name) == 0) {
-    RMW_UROS_TRACE_MESSAGE("service name is null or empty string")
+    _Z_INFO("service name is null or empty string");
   } else if (!qos_policies) {
-    RMW_UROS_TRACE_MESSAGE("qos_profile is null")
+    _Z_INFO("qos_profile is null");
   } else {
   }
   return rmw_service;
@@ -52,18 +52,18 @@ rmw_destroy_service(
 {
   rmw_ret_t result_ret = RMW_RET_OK;
   if (!node) {
-    RMW_UROS_TRACE_MESSAGE("node handle is null")
+    _Z_INFO("node handle is null");
     result_ret = RMW_RET_ERROR;
     result_ret = RMW_RET_ERROR;
   } else if (!node->data) {
-    RMW_UROS_TRACE_MESSAGE("node imp is null")
+    _Z_INFO("node imp is null");
     result_ret = RMW_RET_ERROR;
   } else if (!service) {
-    RMW_UROS_TRACE_MESSAGE("service handle is null")
+    _Z_INFO("service handle is null");
     result_ret = RMW_RET_ERROR;
     result_ret = RMW_RET_ERROR;
   } else if (!service->data) {
-    RMW_UROS_TRACE_MESSAGE("service imp is null")
+    _Z_INFO("service imp is null");
     result_ret = RMW_RET_ERROR;
   } else {
   }

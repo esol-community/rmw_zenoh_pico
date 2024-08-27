@@ -94,7 +94,7 @@ rmw_publish_serialized_message(
   (void)publisher;
   (void)serialized_message;
   (void)allocation;
-  RMW_UROS_TRACE_MESSAGE("function not implemented")
+  _Z_INFO("function not implemented");
     return RMW_RET_UNSUPPORTED;
 }
 
@@ -110,7 +110,7 @@ rmw_publish_loaned_message(
   (void)ros_message;
   (void)allocation;
 
-  RMW_UROS_TRACE_MESSAGE("function not implemented")
+  _Z_INFO("function not implemented");
     return RMW_RET_UNSUPPORTED;
 }
 

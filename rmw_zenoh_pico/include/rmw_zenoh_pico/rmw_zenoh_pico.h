@@ -15,14 +15,9 @@
 #include "zenoh-pico/system/platform-common.h"
 #include "zenoh-pico.h"
 
-#ifdef RMW_UROS_ERROR_HANDLING
-#include "rmw_microros/error_handling.h"
-#endif  // RMW_UROS_ERROR_HANDLING
-
 // utility
 #include <rmw_zenoh_pico/rmw_zenoh_pico_macros.h>
 #include <rmw_zenoh_pico/rmw_zenoh_pico_logging.h>
-#include <rmw_zenoh_pico/rmw_zenoh_pico_error_handling.h>
 
 // internal data
 #include <rmw_zenoh_pico/liveliness/rmw_zenoh_pico_nodeInfo.h>
@@ -43,8 +38,6 @@
 #include <rmw_zenoh_pico/rmw_zenoh_pico_guard_condition.h>
 #include <rmw_zenoh_pico/rmw_zenoh_pico_event_callbacks.h>
 #include <rmw_zenoh_pico/rmw_zenoh_pico_publisher.h>
-
-#define RMW_ZENOH_PICO_TYPESUPPORT_C rmw_zenoh_pico_typesupport_c()
 
 // expand zenoh-pico api
 extern int8_t z_condvar_wait_time(z_condvar_t *cv, z_mutex_t *m, struct timespec *wait_timeout);

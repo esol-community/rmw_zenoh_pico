@@ -88,7 +88,7 @@ rmw_service_set_on_new_request_callback(
   (void) callback;
   (void) user_data;
 
-  RMW_UROS_TRACE_MESSAGE("function not implemented");
+  _Z_INFO("function not implemented");
   return RMW_RET_UNSUPPORTED;
 }
 
@@ -102,7 +102,7 @@ rmw_client_set_on_new_response_callback(
   (void) callback;
   (void) user_data;
 
-  RMW_UROS_TRACE_MESSAGE("function not implemented");
+  _Z_INFO("function not implemented");
   return RMW_RET_UNSUPPORTED;
 }
 
@@ -116,6 +116,6 @@ rmw_event_set_callback(
   (void) callback;
   (void) user_data;
 
-  RMW_UROS_TRACE_MESSAGE("function not implemented");
+  _Z_INFO("function not implemented");
   return RMW_RET_UNSUPPORTED;
 }

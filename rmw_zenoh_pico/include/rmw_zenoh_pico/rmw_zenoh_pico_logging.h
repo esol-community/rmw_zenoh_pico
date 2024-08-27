@@ -41,7 +41,11 @@ static inline void __z_log_prefix(const char *prefix, const char *func_name) {
 #define RMW_ZENOH_LOG_INFO_NAMED (void)(0)
 #define RMW_ZENOH_LOG_ERROR_NAMED (void)(0)
 
+#define RMW_UROS_TRACE_MESSAGE(...) (void)(0)
+
 #else  // ZENOH_DEBUG != 0 || defined(Z_BUILD_DEBUG)
+
+#define RMW_UROS_TRACE_MESSAGE(...) (void)(0)
 
 #define _Z_DEBUG(...)				\
   do {						\
