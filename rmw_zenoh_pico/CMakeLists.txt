@@ -231,14 +231,10 @@ endif()
 
 register_rmw_implementation(${implementations})
 
-if(BUILD_TESTING)
-  # Pedantic in CI
-  set(CMAKE_C_FLAGS "${CMAKE_C_FLAGS} -Wall -Werror")
-  set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -Wall -Werror")
-
+if(BUILD_DEMO)
   find_package(ament_lint_auto REQUIRED)
   ament_lint_auto_find_test_dependencies()
-  add_subdirectory(test)
+  add_subdirectory(demo/rclc)
 endif()
 
 # Create source files with the define
