@@ -33,8 +33,8 @@ extern "C"
 
     ZenohPicoEntityType type_;
 
-    ZenohPicoNodeInfo_t *node_info_;
-    ZenohPicoTopicInfo_t *topic_info_;
+    ZenohPicoNodeInfo *node_info_;
+    ZenohPicoTopicInfo *topic_info_;
 
   } ZenohPicoEntity;
 
@@ -55,15 +55,13 @@ extern "C"
 
   // functions
   extern ZenohPicoEntity * zenoh_pico_generate_entity(z_id_t zid,
-						       size_t id,
-						       size_t nid,
-						       ZenohPicoEntityType type,
-						       ZenohPicoNodeInfo_t *node_info,
-						       ZenohPicoTopicInfo_t *topic_info);
+						      size_t id,
+						      size_t nid,
+						      ZenohPicoEntityType type,
+						      ZenohPicoNodeInfo *node_info,
+						      ZenohPicoTopicInfo *topic_info);
   extern void zenoh_pico_destroy_entity(ZenohPicoEntity *entity);
   extern void zenoh_pico_debug_entity(ZenohPicoEntity *entity);
-
-// -------------------------------------------------
 
   extern size_t zenoh_pico_get_next_entity_id(void);
 

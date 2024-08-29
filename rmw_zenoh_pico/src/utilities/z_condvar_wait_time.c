@@ -1,12 +1,4 @@
 
-#include <errno.h>
-#include <string.h>
-#include <limits.h>
-#include <time.h>
-
-#include <rmw/rmw.h>
-#include <rmw/time.h>
-
 #include <rmw_zenoh_pico/rmw_zenoh_pico.h>
 
 #if defined(ZENOH_LINUX)

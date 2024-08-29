@@ -10,7 +10,7 @@ extern "C"
 #endif  // if defined(__cplusplus)
 
   typedef struct _ZenohPicoWaitSetData {
-    uint ref_;
+    int ref_;
 
     z_condvar_t condition_variable_;
     z_mutex_t condition_mutex_;
@@ -22,8 +22,6 @@ extern "C"
 
   extern ZenohPicoWaitSetData * zenoh_pico_generate_wait_data(rmw_context_t * context);
   extern bool zenoh_pico_destroy_wait_data(ZenohPicoWaitSetData *wait_data);
-
-  // -----------
 
   extern void wait_condition_lock(ZenohPicoWaitSetData * wait_set_data);
   extern void wait_condition_unlock(ZenohPicoWaitSetData * wait_set_data);

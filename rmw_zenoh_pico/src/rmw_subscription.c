@@ -38,8 +38,6 @@
 
 #include <rmw_zenoh_pico/rmw_zenoh_pico.h>
 
-//-----------------------------
-
 ZenohPicoSubData * zenoh_pico_generate_subscription_data(
   size_t sub_id,
   ZenohPicoNodeData *node,
@@ -53,8 +51,10 @@ ZenohPicoSubData * zenoh_pico_generate_subscription_data(
 
   ZenohPicoSubData *sub_data = NULL;
   ZenohPicoGenerateData(sub_data, ZenohPicoSubData);
-  if(sub_data == NULL)
-    return NULL;
+  RMW_CHECK_FOR_NULL_WITH_MSG(
+    sub_data,
+    "failed to allocate struct for the ZenohPicoSubData",
+    return NULL);
 
   sub_data->id_		= sub_id;
   sub_data->node_	= node;
@@ -63,8 +63,8 @@ ZenohPicoSubData * zenoh_pico_generate_subscription_data(
   sub_data->callbacks_  = callbacks;
   sub_data->adapted_qos_profile_ = *qos_profile;
 
-  ZenohPicoNodeInfo_t  *node_info  = entity->node_info_;
-  ZenohPicoTopicInfo_t *topic_info = entity->topic_info_;
+  ZenohPicoNodeInfo  *node_info  = entity->node_info_;
+  ZenohPicoTopicInfo *topic_info = entity->topic_info_;
 
   // generate key from entity data
   sub_data->token_key_ = generate_liveliness(entity);
@@ -143,8 +143,6 @@ void zenoh_pico_debug_subscription_data(ZenohPicoSubData *sub_data)
   // debug entity member
   zenoh_pico_debug_entity(sub_data->entity_);
 }
-
-// --------------------------
 
 #if Z_FEATURE_ATTACHMENT == 1
 
@@ -242,8 +240,8 @@ void sub_data_handler(const z_sample_t *sample, void *ctx) {
 
     RMW_ZENOH_LOG_INFO("%s : keystr is %s ", __func__, keystr._value);
     RMW_ZENOH_LOG_ERROR("Unable to obtain rmw_subscription_data_t from data for "
-			      "subscription for %s",
-			      z_loan(keystr));
+			"subscription for %s",
+			z_loan(keystr));
     z_drop(z_move(keystr));
 
     return;
@@ -394,11 +392,9 @@ bool subscription_condition_detach_and_queue_is_empty(ZenohPicoSubData *sub_data
   return ret;
 }
 
-//-----------------------------
-
 static rmw_subscription_t * _rmw_subscription_generate(rmw_context_t *context,
-						     ZenohPicoSubData *sub_data,
-						     const rmw_subscription_options_t *options)
+						       ZenohPicoSubData *sub_data,
+						       const rmw_subscription_options_t *options)
 {
   RMW_ZENOH_FUNC_ENTRY();
   (void)context;
@@ -424,6 +420,8 @@ static rmw_ret_t _rmw_subscription_destroy(rmw_subscription_t * sub)
 {
   RMW_ZENOH_FUNC_ENTRY();
 
+  RMW_CHECK_ARGUMENT_FOR_NULL(sub, RMW_RET_INVALID_ARGUMENT);
+
   ZenohPicoSubData *sub_data = (ZenohPicoSubData *)sub->data;
 
   if(sub_data != NULL){
@@ -431,6 +429,7 @@ static rmw_ret_t _rmw_subscription_destroy(rmw_subscription_t * sub)
 
     zenoh_pico_destroy_subscription_data(sub_data);
   }
+
   Z_FREE(sub);
 
   return RMW_RET_OK;
@@ -529,22 +528,22 @@ rmw_create_subscription(
   RMW_ZENOH_LOG_INFO("%s : qos = [%s]", __func__, qos_key.val);
 
   _z_string_t _topic_name = _z_string_make(topic_name);
-  ZenohPicoTopicInfo_t *_topic_info = zenoh_pico_generate_topic_info(&_topic_name,
-								     &_type_name,
-								     &_hash_data,
-								     &qos_key);
+  ZenohPicoTopicInfo *_topic_info = zenoh_pico_generate_topic_info(&_topic_name,
+								   &_type_name,
+								   &_hash_data,
+								   &qos_key);
   // clone node_info
-  ZenohPicoNodeInfo_t *_node_info = zenoh_pico_clone_node_info(node_data->entity_->node_info_);
+  ZenohPicoNodeInfo *_node_info = zenoh_pico_clone_node_info(node_data->entity_->node_info_);
 
   // generate entity data
   size_t _entity_id = zenoh_pico_get_next_entity_id();
   ZenohPicoSession *_session = node_data->session_;
   ZenohPicoEntity *_entity = zenoh_pico_generate_entity( z_info_zid(z_loan(_session->session_)),
-							  _entity_id,
-							  node_data->id_,
-							  Subscription,
-							  _node_info,
-							  _topic_info);
+							 _entity_id,
+							 node_data->id_,
+							 Subscription,
+							 _node_info,
+							 _topic_info);
   ZenohPicoNodeData *_node = zenoh_pico_loan_node_data(node_data);
   ZenohPicoSubData *_sub_data = zenoh_pico_generate_subscription_data(_entity_id,
 								      _node,
@@ -555,8 +554,8 @@ rmw_create_subscription(
   zenoh_pico_debug_subscription_data(_sub_data);
 
   rmw_subscription_t * rmw_subscription = _rmw_subscription_generate(node->context,
-								    _sub_data,
-								    subscription_options);
+								     _sub_data,
+								     subscription_options);
   declaration_subscription_data(_sub_data);
 
   return rmw_subscription;

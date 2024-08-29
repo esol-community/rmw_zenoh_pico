@@ -12,24 +12,17 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-#include <rmw/rmw.h>
-#include <rmw/allocators.h>
-
-#include "zenoh-pico/system/platform-common.h"
-#include "zenoh-pico.h"
-#include "zenoh-pico/system/platform/unix.h"
-
 #include <rmw_zenoh_pico/rmw_zenoh_pico.h>
-
-//-----------------------------
 
 ZenohPicoWaitSetData * zenoh_pico_generate_wait_set_data(rmw_context_t * context)
 {
 
   ZenohPicoWaitSetData *wait_data = NULL;
   ZenohPicoGenerateData(wait_data, ZenohPicoWaitSetData);
-  if(wait_data == NULL)
-    return NULL;
+  RMW_CHECK_FOR_NULL_WITH_MSG(
+    wait_data,
+    "failed to allocate struct for the ZenohPicoWaitSetData",
+    return NULL);
 
   z_mutex_init(&wait_data->condition_mutex_);
   z_condvar_init(&wait_data->condition_variable_);
@@ -50,12 +43,9 @@ bool zenoh_pico_destroy_wait_set_data(ZenohPicoWaitSetData *wait_data)
   return true;
 }
 
-//-----------------------------
-
 rmw_wait_set_t *
-rmw_create_wait_set(
-  rmw_context_t * context,
-  size_t max_conditions)
+rmw_create_wait_set(rmw_context_t * context,
+		    size_t max_conditions)
 {
   (void)max_conditions;
 
@@ -70,7 +60,7 @@ rmw_create_wait_set(
   RMW_CHECK_FOR_NULL_WITH_MSG(
     wait_set,
     "failed to allocate wait set",
-    NULL);
+    return NULL);
   wait_set->implementation_identifier = rmw_get_implementation_identifier();
 
   ZenohPicoWaitSetData *wait_set_data = zenoh_pico_generate_wait_set_data(context);
@@ -83,8 +73,7 @@ rmw_create_wait_set(
 }
 
 rmw_ret_t
-rmw_destroy_wait_set(
-  rmw_wait_set_t * wait_set)
+rmw_destroy_wait_set(rmw_wait_set_t * wait_set)
 {
   RMW_ZENOH_FUNC_ENTRY();
 

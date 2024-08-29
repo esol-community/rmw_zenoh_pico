@@ -1,15 +1,11 @@
+#include <rmw_zenoh_pico/rmw_zenoh_pico.h>
 
-#include "rmw_zenoh_pico/rmw_zenoh_pico_macros.h"
+const char *node_domain(ZenohPicoNodeInfo *node)      { return Z_STRING_VAL(node->domain_); }
+const char *node_namespace(ZenohPicoNodeInfo *node)	{ return Z_STRING_VAL(node->ns_); }
+const char *node_name(ZenohPicoNodeInfo *node)	{ return Z_STRING_VAL(node->name_); }
+const char *node_enclave(ZenohPicoNodeInfo *node)	{ return Z_STRING_VAL(node->enclave_); }
 
-#include "rmw_zenoh_pico/liveliness/rmw_zenoh_pico_nodeInfo.h"
-#include "zenoh-pico/collections/string.h"
-
-const char *node_domain(ZenohPicoNodeInfo_t *node)      { return Z_STRING_VAL(node->domain_); }
-const char *node_namespace(ZenohPicoNodeInfo_t *node)	{ return Z_STRING_VAL(node->ns_); }
-const char *node_name(ZenohPicoNodeInfo_t *node)	{ return Z_STRING_VAL(node->name_); }
-const char *node_enclave(ZenohPicoNodeInfo_t *node)	{ return Z_STRING_VAL(node->enclave_); }
-
-static void _zenoh_pico_clear_node_info_member(ZenohPicoNodeInfo_t *node)
+static void _zenoh_pico_clear_node_info_member(ZenohPicoNodeInfo *node)
 {
   Z_STRING_FREE(node->domain_);
   Z_STRING_FREE(node->ns_);
@@ -17,15 +13,17 @@ static void _zenoh_pico_clear_node_info_member(ZenohPicoNodeInfo_t *node)
   Z_STRING_FREE(node->enclave_);
 }
 
-ZenohPicoNodeInfo_t * zenoh_pico_generate_node_info(z_string_t *domain,
-						    z_string_t *ns,
-						    z_string_t *name,
-						    z_string_t *enclave)
+ZenohPicoNodeInfo * zenoh_pico_generate_node_info(z_string_t *domain,
+						  z_string_t *ns,
+						  z_string_t *name,
+						  z_string_t *enclave)
 {
-  ZenohPicoNodeInfo_t *node = NULL;
-  ZenohPicoGenerateData(node, ZenohPicoNodeInfo_t);
-  if(node == NULL)
-    return NULL;
+  ZenohPicoNodeInfo *node = NULL;
+  ZenohPicoGenerateData(node, ZenohPicoNodeInfo);
+  RMW_CHECK_FOR_NULL_WITH_MSG(
+    node,
+    "failed to allocate struct for the ZenohPicoNodeInfo",
+    return NULL);
 
   _zenoh_pico_clear_node_info_member(node);
 
@@ -37,12 +35,14 @@ ZenohPicoNodeInfo_t * zenoh_pico_generate_node_info(z_string_t *domain,
   return node;
 }
 
-ZenohPicoNodeInfo_t *zenoh_pico_clone_node_info(ZenohPicoNodeInfo_t *src)
+ZenohPicoNodeInfo *zenoh_pico_clone_node_info(ZenohPicoNodeInfo *src)
 {
-  ZenohPicoNodeInfo_t *node = NULL;
-  ZenohPicoGenerateData(node, ZenohPicoNodeInfo_t);
-  if(node == NULL)
-    return NULL;
+  ZenohPicoNodeInfo *node = NULL;
+  ZenohPicoGenerateData(node, ZenohPicoNodeInfo);
+  RMW_CHECK_FOR_NULL_WITH_MSG(
+    node,
+    "failed to allocate struct for the ZenohPicoNodeInfo",
+    return NULL);
 
   _z_string_copy(&node->domain_, &src->domain_);
   _z_string_copy(&node->ns_, &src->ns_);
@@ -52,7 +52,7 @@ ZenohPicoNodeInfo_t *zenoh_pico_clone_node_info(ZenohPicoNodeInfo_t *src)
   return node;
 }
 
-bool zenoh_pico_destroy_node_info(ZenohPicoNodeInfo_t *node)
+bool zenoh_pico_destroy_node_info(ZenohPicoNodeInfo *node)
 {
   _zenoh_pico_clear_node_info_member(node);
 
@@ -62,7 +62,7 @@ bool zenoh_pico_destroy_node_info(ZenohPicoNodeInfo_t *node)
 }
 
 
-void zenoh_pico_debug_node_info(ZenohPicoNodeInfo_t *node)
+void zenoh_pico_debug_node_info(ZenohPicoNodeInfo *node)
 {
   printf("node info ...\n");
   printf("\tdomain        = %s\n", node->domain_.val);
