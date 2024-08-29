@@ -3,6 +3,7 @@
 
 #include <rmw_zenoh_pico/config.h>
 
+#include <stdint.h>
 #include <zenoh-pico.h>
 
 #if defined(__cplusplus)
@@ -15,7 +16,7 @@ extern "C"
 
   typedef struct _ZenohPicoTransportParams
   {
-    uint ref_;
+    int ref_;
     const char *mode_;
 
 #if defined(RMW_ZENOH_PICO_TRANSPORT_UNICAST)

@@ -20,14 +20,14 @@ rmw_feature_supported(
 {
   bool ret = false;
   switch (feature) {
-    case RMW_FEATURE_MESSAGE_INFO_PUBLICATION_SEQUENCE_NUMBER:
-      ret = false;
-      break;
-    case RMW_FEATURE_MESSAGE_INFO_RECEPTION_SEQUENCE_NUMBER:
-      ret = false;
-      break;
-    default:
-      break;
+  case RMW_FEATURE_MESSAGE_INFO_PUBLICATION_SEQUENCE_NUMBER:
+    ret = false;
+    break;
+  case RMW_FEATURE_MESSAGE_INFO_RECEPTION_SEQUENCE_NUMBER:
+    ret = false;
+    break;
+  default:
+    break;
   }
 
   return ret;

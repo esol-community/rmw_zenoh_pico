@@ -13,12 +13,7 @@
 // limitations under the License.
 
 
-#ifdef HAVE_C_TYPESUPPORT
 #include <rosidl_typesupport_microxrcedds_c/identifier.h>
-#endif /* ifdef HAVE_C_TYPESUPPORT */
-#ifdef HAVE_CPP_TYPESUPPORT
-#include <rosidl_typesupport_microxrcedds_cpp/identifier.h>
-#endif /* ifdef HAVE_CPP_TYPESUPPORT */
 
 #include <rmw/rmw.h>
 #include <rmw/allocators.h>

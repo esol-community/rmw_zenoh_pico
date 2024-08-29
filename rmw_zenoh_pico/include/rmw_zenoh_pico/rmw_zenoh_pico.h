@@ -5,6 +5,12 @@
 
 #include <stddef.h>
 #include <unistd.h>
+#include <ctype.h>
+#include <stdbool.h>
+#include <string.h>
+#include <limits.h>
+#include <time.h>
+
 
 #include <rmw/rmw.h>
 #include <rmw/ret_types.h>
@@ -13,7 +19,6 @@
 #include <ucdr/microcdr.h>
 
 #include "zenoh-pico/system/platform-common.h"
-#include "zenoh-pico.h"
 
 // utility
 #include <rmw_zenoh_pico/rmw_zenoh_pico_macros.h>

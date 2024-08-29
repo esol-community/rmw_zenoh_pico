@@ -1,8 +1,5 @@
 
-#include <rmw/rmw.h>
-#include <rmw/types.h>
-#include <rmw/allocators.h>
-#include <rmw/error_handling.h>
+#include <rmw_zenoh_pico/rmw_zenoh_pico.h>
 
 void test_qos_profile(rmw_qos_profile_t *qos) {
   // Reliability.

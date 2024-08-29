@@ -21,7 +21,7 @@ extern "C"
 #endif  // if defined(__cplusplus)
 
   typedef struct _ZenohPicoSubData {
-    uint ref_;
+    int ref_;
 
     size_t id_;
 
@@ -67,8 +67,6 @@ extern "C"
 
   extern bool zenoh_pico_destroy_subscription_data(ZenohPicoSubData *sub_data);
   extern void zenoh_pico_debug_subscription_data(ZenohPicoSubData *sub_data);
-
-  // --------------------------
 
   extern bool declaration_subscription_data(ZenohPicoSubData *sub_data);
   extern bool undeclaration_subscription_data(ZenohPicoSubData *sub_data);
