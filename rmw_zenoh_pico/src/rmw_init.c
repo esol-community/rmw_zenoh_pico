@@ -12,19 +12,15 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-#include <rmw/allocators.h>
-#include <rmw/rmw.h>
-
-#include "zenoh-pico/api/macros.h"
-#include "zenoh-pico/api/primitives.h"
-
 #include <rmw_zenoh_pico/rmw_zenoh_pico.h>
-
-//-----------------------------
 
 ZenohPicoTransportParams *zenoh_pico_generate_param(ZenohPicoTransportParams *param)
 {
   ZenohPicoGenerateData(param, ZenohPicoTransportParams);
+  RMW_CHECK_FOR_NULL_WITH_MSG(
+    param,
+    "failed to allocate struct for the ZenohPicoTransportParams",
+    return NULL);
 
   return param;
 }
@@ -46,16 +42,15 @@ bool zenoh_pico_clone_param(ZenohPicoTransportParams *dst, ZenohPicoTransportPar
   return true;
 }
 
-//-----------------------------
-
 ZenohPicoSession *zenoh_pico_generate_session(ZenohPicoSession *session,
 					      z_owned_config_t *config,
 					      const char *enclave)
 {
   ZenohPicoGenerateData(session, ZenohPicoSession);
-  if(session == NULL){
-    return NULL;
-  }
+  RMW_CHECK_FOR_NULL_WITH_MSG(
+    session,
+    "failed to allocate struct for the ZenohPicoSession",
+    return NULL);
 
   session->config_ = *z_move(*config);
 
@@ -113,8 +108,6 @@ rmw_ret_t session_connect(ZenohPicoSession *session)
   return RMW_RET_OK;
 }
 
-//-----------------------------
-
 static rmw_ret_t rmw_zenoh_pico_init_option(ZenohPicoTransportParams *params)
 {
   params->mode_ = RMW_ZENOH_PICO_TRANSPORT_MODE;
@@ -122,7 +115,7 @@ static rmw_ret_t rmw_zenoh_pico_init_option(ZenohPicoTransportParams *params)
 #if defined(RMW_ZENOH_PICO_TRANSPORT_SERIAL)
   if(strlen(RMW_ZENOH_PICO_SERIAL_DEVICE) > sizeof(params->serial_device)){
     RMW_ZENOH_LOG_INFO("default ip configuration overflow");
-      return RMW_RET_INVALID_ARGUMENT;
+    return RMW_RET_INVALID_ARGUMENT;
   }
 
   strncpy(params->serial_device, RMW_ZENOH_PICO_SERIAL_DEVICE, sizeof(params->serial_device));
@@ -136,7 +129,7 @@ static rmw_ret_t rmw_zenoh_pico_init_option(ZenohPicoTransportParams *params)
   snprintf(buf, sizeof(buf), "tcp/%s:%s", RMW_ZENOH_PICO_CONNECT, RMW_ZENOH_PICO_CONNECT_PORT);
   if(strlen(buf) >= sizeof(params->connect_addr_) -1) {
     RMW_ZENOH_LOG_INFO("default ip configuration overflow");
-      return RMW_RET_INVALID_ARGUMENT;
+    return RMW_RET_INVALID_ARGUMENT;
   }
   memset(params->connect_addr_, 0, sizeof(params->connect_addr_));
   strcpy(params->connect_addr_, buf);
@@ -145,7 +138,7 @@ static rmw_ret_t rmw_zenoh_pico_init_option(ZenohPicoTransportParams *params)
   snprintf(buf, sizeof(buf), "udp/%s:%s", RMW_ZENOH_PICO_LOCATOR, RMW_ZENOH_PICO_LOCATOR_PORT);
   if(strlen(buf) >= sizeof(params->locator_addr) -1) {
     RMW_ZENOH_LOG_INFO("default ip configuration overflow");
-      return RMW_RET_INVALID_ARGUMENT;
+    return RMW_RET_INVALID_ARGUMENT;
   }
   memset(params->locator_addr, 0, sizeof(params->locator_addr));
   strcpy(params->locator_addr, buf);
@@ -156,7 +149,7 @@ static rmw_ret_t rmw_zenoh_pico_init_option(ZenohPicoTransportParams *params)
     snprintf(buf, sizeof(buf), "tcp/%s:%s", RMW_ZENOH_PICO_LISTEN, RMW_ZENOH_PICO_LISTEN_PORT);
     if(strlen(buf) >= sizeof(params->listen_addr_) -1) {
       RMW_ZENOH_LOG_INFO("default ip configuration overflow");
-	return RMW_RET_INVALID_ARGUMENT;
+      return RMW_RET_INVALID_ARGUMENT;
     }
     memset(params->listen_addr_, 0, sizeof(params->listen_addr_));
     strcpy(params->listen_addr_, buf);
@@ -168,19 +161,16 @@ static rmw_ret_t rmw_zenoh_pico_init_option(ZenohPicoTransportParams *params)
 }
 
 rmw_ret_t
-rmw_init_options_init(
-  rmw_init_options_t * init_options,
-  rcutils_allocator_t allocator)
+rmw_init_options_init(rmw_init_options_t * init_options, rcutils_allocator_t allocator)
 {
   RMW_ZENOH_FUNC_ENTRY();
-  rmw_ret_t ret = RMW_RET_OK;
 
   RMW_CHECK_ARGUMENT_FOR_NULL(init_options, RMW_RET_INVALID_ARGUMENT);
   RCUTILS_CHECK_ALLOCATOR(&allocator, return RMW_RET_INVALID_ARGUMENT);
 
   if (NULL != init_options->implementation_identifier) {
     RMW_ZENOH_LOG_INFO("expected zero-initialized init_options");
-      return RMW_RET_INVALID_ARGUMENT;
+    return RMW_RET_INVALID_ARGUMENT;
   }
 
   init_options->instance_id		  = 0;
@@ -193,12 +183,12 @@ rmw_init_options_init(
 
   // This can be call before rmw_init()
   ZenohPicoTransportParams *params = zenoh_pico_generate_param(NULL);
+  RMW_CHECK_FOR_NULL_WITH_MSG(
+    params,
+    "Not available memory node",
+    return RMW_RET_ERROR);
 
-  if (params == NULL) {
-    RMW_ZENOH_LOG_INFO("Not available memory node");
-      return RMW_RET_ERROR;
-  }
-
+  rmw_ret_t ret;
   if((ret = rmw_zenoh_pico_init_option(params)) != RMW_RET_OK){
     zenoh_pico_destroy_param(params);
     return ret;
@@ -206,13 +196,11 @@ rmw_init_options_init(
 
   init_options->impl = (rmw_init_options_impl_t *)params;
 
-  return ret;
+  return RMW_RET_OK;
 }
 
 rmw_ret_t
-rmw_init_options_copy(
-  const rmw_init_options_t * src,
-  rmw_init_options_t * dst)
+rmw_init_options_copy(const rmw_init_options_t * src, rmw_init_options_t * dst)
 {
   RMW_ZENOH_FUNC_ENTRY();
 
@@ -223,22 +211,22 @@ rmw_init_options_copy(
     return RMW_RET_INCORRECT_RMW_IMPLEMENTATION);
   if (NULL != dst->implementation_identifier) {
     RMW_ZENOH_LOG_INFO("expected zero-initialized dst");
-      return RMW_RET_INVALID_ARGUMENT;
+    return RMW_RET_INVALID_ARGUMENT;
   }
 
   memcpy(dst, src, sizeof(rmw_init_options_t));
 
   ZenohPicoTransportParams *src_contex = (ZenohPicoTransportParams *)src->impl;
-  if(src_contex == NULL){
-    RMW_ZENOH_LOG_INFO("source context is zero");
-    return RMW_RET_INVALID_ARGUMENT;
-  }
+  RMW_CHECK_FOR_NULL_WITH_MSG(
+    src_contex,
+    "source context is zero",
+    return RMW_RET_INVALID_ARGUMENT);
 
   ZenohPicoTransportParams *dst_contex = zenoh_pico_generate_param(NULL);
-  if(dst_contex == NULL){
-    RMW_ZENOH_LOG_INFO("falid new allocation option area");
-    return RMW_RET_ERROR;
-  }
+  RMW_CHECK_FOR_NULL_WITH_MSG(
+    dst_contex,
+    "falid new allocation option area",
+    return RMW_RET_ERROR);
 
   zenoh_pico_clone_param(dst_contex, src_contex);
   dst->impl = (rmw_init_options_impl_t *)dst_contex;
@@ -247,8 +235,7 @@ rmw_init_options_copy(
 }
 
 rmw_ret_t
-rmw_init_options_fini(
-  rmw_init_options_t * init_options)
+rmw_init_options_fini(rmw_init_options_t * init_options)
 {
   RMW_ZENOH_FUNC_ENTRY();
 
@@ -313,9 +300,7 @@ rmw_zenoh_pico_set_serial_config(ZenohPicoTransportParams *params, z_owned_confi
 }
 
 rmw_ret_t
-rmw_init(
-  const rmw_init_options_t * options,
-  rmw_context_t * context)
+rmw_init(const rmw_init_options_t * options, rmw_context_t * context)
 {
   RMW_ZENOH_FUNC_ENTRY();
 
@@ -381,8 +366,7 @@ rmw_init(
 }
 
 rmw_ret_t
-rmw_shutdown(
-  rmw_context_t * context)
+rmw_shutdown(rmw_context_t * context)
 {
   RMW_ZENOH_FUNC_ENTRY();
 
@@ -411,8 +395,7 @@ rmw_shutdown(
 }
 
 rmw_ret_t
-rmw_context_fini(
-  rmw_context_t * context)
+rmw_context_fini(rmw_context_t * context)
 {
   RMW_ZENOH_FUNC_ENTRY();
   rmw_ret_t ret = RMW_RET_OK;

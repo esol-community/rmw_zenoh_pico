@@ -20,12 +20,12 @@
 //
 // for identifier data utilities
 //
-#define RMW_CHECK_TYPE_IDENTIFIERS_MATCH(identifier, ret_on_failure) \
-  { \
+#define RMW_CHECK_TYPE_IDENTIFIERS_MATCH(identifier, ret_on_failure)	\
+  {									\
     if (NULL != identifier && strcmp(identifier, rmw_get_implementation_identifier()) != 0) { \
-      RMW_SET_ERROR_MSG("Implementation identifiers does not match"); \
-      ret_on_failure; \
-    } \
+      RMW_SET_ERROR_MSG("Implementation identifiers does not match");	\
+      ret_on_failure;							\
+    }									\
   }
 
 //
@@ -54,7 +54,7 @@
 
 #define ZenohPicoLoanData(d)			\
   {						\
-      (d)->ref_ += 1;				\
+    (d)->ref_ += 1;				\
   }						\
 
 //
@@ -78,8 +78,8 @@
 
 #define Z_STRING_FREE(s)			\
   {						\
-  if(!Z_STRING_ENABLE(s))			\
-    _z_string_clear(&s);			\
+    if(!Z_STRING_ENABLE(s))			\
+      _z_string_clear(&s);			\
   }						\
 
 #define Z_DECLARATION_FREE(s) (_z_declaration_clear(&s))

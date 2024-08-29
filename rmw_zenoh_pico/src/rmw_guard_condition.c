@@ -12,15 +12,18 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-#include "zenoh-pico/system/platform-common.h"
-#include <rmw/rmw.h>
-#include <rmw/allocators.h>
-
 #include <rmw_zenoh_pico/rmw_zenoh_pico.h>
 
 ZenohPicoGuardConditionData * zenoh_pico_guard_condition_data(void)
 {
+  RMW_ZENOH_FUNC_ENTRY();
+
   ZenohPicoGuardConditionData *condition_data = Z_MALLOC(sizeof(ZenohPicoGuardConditionData));
+  RMW_CHECK_FOR_NULL_WITH_MSG(
+    condition_data,
+    "failed to allocate memory for the condition_data",
+    return NULL);
+
   memset(condition_data, 0, sizeof(ZenohPicoGuardConditionData));
 
   z_mutex_init(&condition_data->condition_mutex_);
@@ -31,39 +34,44 @@ ZenohPicoGuardConditionData * zenoh_pico_guard_condition_data(void)
 
 bool zenoh_pico_destroy_guard_condition_data(ZenohPicoGuardConditionData *condition_data)
 {
+  RMW_ZENOH_FUNC_ENTRY();
+
   z_mutex_free(&condition_data->condition_mutex_);
-  Z_FREE(condition_data);
+  if(condition_data != NULL)
+    Z_FREE(condition_data);
+
   return true;
 }
 
 rmw_guard_condition_t *
-rmw_create_guard_condition(
-  rmw_context_t * context)
+rmw_create_guard_condition(rmw_context_t * context)
 {
+  RMW_ZENOH_FUNC_ENTRY();
+
   rmw_guard_condition_t *guard_condition = Z_MALLOC(sizeof(rmw_guard_condition_t));
   RMW_CHECK_FOR_NULL_WITH_MSG(
     guard_condition,
     "unable to allocate memory for guard_condition",
-    NULL);
+    return NULL);
 
   guard_condition->implementation_identifier = rmw_get_implementation_identifier();
   guard_condition->context = context;
 
-  RMW_CHECK_FOR_NULL_WITH_MSG(
-    guard_condition->data,
-    "unable to allocate memory for guard condition data",
-    NULL);
-
   ZenohPicoGuardConditionData *condition_data = zenoh_pico_guard_condition_data();
+  RMW_CHECK_FOR_NULL_WITH_MSG(
+    condition_data,
+    "unable to allocate memory for guard condition data",
+    return NULL);
   guard_condition->data = (ZenohPicoGuardConditionData *)condition_data;
 
   return guard_condition;
 }
 
 rmw_ret_t
-rmw_destroy_guard_condition(
-  rmw_guard_condition_t * guard_condition)
+rmw_destroy_guard_condition(rmw_guard_condition_t * guard_condition)
 {
+  RMW_ZENOH_FUNC_ENTRY();
+
   RMW_CHECK_ARGUMENT_FOR_NULL(guard_condition, RMW_RET_INVALID_ARGUMENT);
 
   if(guard_condition->data) {

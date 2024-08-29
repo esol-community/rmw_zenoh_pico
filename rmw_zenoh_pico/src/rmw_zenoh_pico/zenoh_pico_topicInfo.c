@@ -1,20 +1,12 @@
-#include <rmw_zenoh_pico/config.h>
-
-#include <stdio.h>
-#include <string.h>
-
-#include "rmw_zenoh_pico/rmw_zenoh_pico_macros.h"
-#include "rmw_zenoh_pico/liveliness/rmw_zenoh_pico_topicInfo.h"
-#include "zenoh-pico/api/primitives.h"
 
 #include <rmw_zenoh_pico/rmw_zenoh_pico.h>
 
-const char *topic_name(ZenohPicoTopicInfo_t *topic)	{ return Z_STRING_VAL(topic->name_); }
-const char *topic_type(ZenohPicoTopicInfo_t *topic)	{ return Z_STRING_VAL(topic->type_); }
-const char *topic_hash(ZenohPicoTopicInfo_t *topic)	{ return Z_STRING_VAL(topic->hash_); }
-const char *topic_qos(ZenohPicoTopicInfo_t *topic)	{ return Z_STRING_VAL(topic->qos_); }
+const char *topic_name(ZenohPicoTopicInfo *topic)	{ return Z_STRING_VAL(topic->name_); }
+const char *topic_type(ZenohPicoTopicInfo *topic)	{ return Z_STRING_VAL(topic->type_); }
+const char *topic_hash(ZenohPicoTopicInfo *topic)	{ return Z_STRING_VAL(topic->hash_); }
+const char *topic_qos(ZenohPicoTopicInfo *topic)	{ return Z_STRING_VAL(topic->qos_); }
 
-static void _zenoh_pico_clear_topic_info_member(ZenohPicoTopicInfo_t *topic)
+static void _zenoh_pico_clear_topic_info_member(ZenohPicoTopicInfo *topic)
 {
   Z_STRING_FREE(topic->name_);
   Z_STRING_FREE(topic->type_);
@@ -22,16 +14,17 @@ static void _zenoh_pico_clear_topic_info_member(ZenohPicoTopicInfo_t *topic)
   Z_STRING_FREE(topic->qos_);
 }
 
-ZenohPicoTopicInfo_t *zenoh_pico_generate_topic_info(z_string_t *name,
-						     z_string_t *type,
-						     z_string_t *hash,
-						     z_string_t *qos)
+ZenohPicoTopicInfo *zenoh_pico_generate_topic_info(z_string_t *name,
+						   z_string_t *type,
+						   z_string_t *hash,
+						   z_string_t *qos)
 {
-  ZenohPicoTopicInfo_t *topic = NULL;
-  ZenohPicoGenerateData(topic, ZenohPicoTopicInfo_t);
-  if (topic == NULL) {
-    return NULL;
-  }
+  ZenohPicoTopicInfo *topic = NULL;
+  ZenohPicoGenerateData(topic, ZenohPicoTopicInfo);
+  RMW_CHECK_FOR_NULL_WITH_MSG(
+    topic,
+    "failed to allocate struct for the ZenohPicoTopicInfo",
+    return NULL);
 
   _zenoh_pico_clear_topic_info_member(topic);
 
@@ -43,7 +36,7 @@ ZenohPicoTopicInfo_t *zenoh_pico_generate_topic_info(z_string_t *name,
   return topic;
 }
 
-bool zenoh_pico_destroy_topic_info(ZenohPicoTopicInfo_t *topic)
+bool zenoh_pico_destroy_topic_info(ZenohPicoTopicInfo *topic)
 {
   _zenoh_pico_clear_topic_info_member(topic);
 
@@ -52,7 +45,7 @@ bool zenoh_pico_destroy_topic_info(ZenohPicoTopicInfo_t *topic)
   return true;
 }
 
-void zenoh_pico_debug_topic_info(ZenohPicoTopicInfo_t *topic)
+void zenoh_pico_debug_topic_info(ZenohPicoTopicInfo *topic)
 {
   printf("topic info ...\n");
 

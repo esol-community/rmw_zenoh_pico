@@ -1,8 +1,5 @@
 
-#include "rmw_zenoh_pico/rmw_zenoh_pico_macros.h"
-#include "rmw_zenoh_pico/rmw_zenoh_pico_receiveMessage.h"
-#include <ctype.h>
-#include <stdbool.h>
+#include <rmw_zenoh_pico/rmw_zenoh_pico.h>
 
 ReceiveMessageData * zenoh_pico_generate_recv_msg_data(const z_sample_t *sample,
 						       uint64_t recv_ts,
@@ -12,12 +9,16 @@ ReceiveMessageData * zenoh_pico_generate_recv_msg_data(const z_sample_t *sample,
 {
   ReceiveMessageData * recv_data = NULL;
   ZenohPicoGenerateData(recv_data, ReceiveMessageData);
-  if(recv_data == NULL)
-    return NULL;
+  RMW_CHECK_FOR_NULL_WITH_MSG(
+    recv_data,
+    "failed to allocate struct for the ReceiveMessageData",
+    return NULL);
 
   recv_data->payload_start = (void *)Z_MALLOC(sample->payload.len);
-  if(recv_data->payload_start == NULL)
-    return NULL;
+  RMW_CHECK_FOR_NULL_WITH_MSG(
+    recv_data->payload_start,
+    "failed to allocate memory for the payload",
+    return NULL);
 
   recv_data->payload_size  = sample->payload.len;
   memcpy(recv_data->payload_start, sample->payload.start, sample->payload.len);
@@ -30,12 +31,16 @@ ReceiveMessageData * zenoh_pico_generate_recv_msg_data(const z_sample_t *sample,
   return recv_data;
 }
 
-void zenoh_pico_delete_recv_msg_data(ReceiveMessageData * recv_data)
+bool zenoh_pico_delete_recv_msg_data(ReceiveMessageData * recv_data)
 {
+  RMW_CHECK_ARGUMENT_FOR_NULL(recv_data, false);
+
   if(recv_data->payload_start != NULL)
     Z_FREE(recv_data->payload_start);
 
   ZenohPicoDestroyData(recv_data);
+
+  return true;
 }
 
 #define PAYLOAD_DUMP_MAX 32
@@ -43,7 +48,7 @@ void zenoh_pico_debug_dump_msg(uint8_t *start, size_t size)
 {
   printf("size = [%ld]\n", size);
   for(size_t count = 0; count < size  && count <= PAYLOAD_DUMP_MAX; count += 4){
-    char *ptr = start + count;
+    uint8_t *ptr = start + count;
 
     if((size -count)>= 4){
       printf("%02x %02x %02x %02x\t%c %c %c %c",
@@ -118,7 +123,7 @@ void recv_msg_list_destroy(ReceiveMessageDataList *msg_list)
   ReceiveMessageData * msg_data = msg_list->que_top;
 
   for(size_t count = 0; msg_data != NULL; count++){
-    zenoh_pico_delete_recv_msg_data(msg_data);
+    (void)zenoh_pico_delete_recv_msg_data(msg_data);
     msg_data = msg_data->next_;
   }
   z_mutex_unlock(&msg_list->mutex);

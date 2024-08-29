@@ -12,16 +12,7 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-#include "rmw_zenoh_pico/rmw_zenoh_pico_logging.h"
-#include "rmw_zenoh_pico/rmw_zenoh_pico_receiveMessage.h"
-#include "ucdr/microcdr.h"
-#include <limits.h>
-
-#include <rmw/rmw.h>
-#include <rmw/event.h>
-
 #include <rmw_zenoh_pico/rmw_zenoh_pico.h>
-#include <rmw_zenoh_pico/rmw_zenoh_pico_subscription.h>
 
 bool rmw_zenoh_pico_deserialize(ReceiveMessageData *msg_data,
 				const message_type_support_callbacks_t *callbacks,
@@ -82,11 +73,10 @@ __rmw_take_one(ZenohPicoSubData * sub_data,
 }
 
 rmw_ret_t
-rmw_take(
-  const rmw_subscription_t * subscription,
-  void * ros_message,
-  bool * taken,
-  rmw_subscription_allocation_t * allocation)
+rmw_take(const rmw_subscription_t * subscription,
+	 void * ros_message,
+	 bool * taken,
+	 rmw_subscription_allocation_t * allocation)
 {
   RMW_ZENOH_FUNC_ENTRY();
 
@@ -107,12 +97,11 @@ rmw_take(
 }
 
 rmw_ret_t
-rmw_take_with_info(
-  const rmw_subscription_t * subscription,
-  void * ros_message,
-  bool * taken,
-  rmw_message_info_t * message_info,
-  rmw_subscription_allocation_t * allocation)
+rmw_take_with_info(const rmw_subscription_t * subscription,
+		   void * ros_message,
+		   bool * taken,
+		   rmw_message_info_t * message_info,
+		   rmw_subscription_allocation_t * allocation)
 {
   RMW_ZENOH_FUNC_ENTRY();
 
@@ -134,13 +123,12 @@ rmw_take_with_info(
 }
 
 rmw_ret_t
-rmw_take_sequence(
-  const rmw_subscription_t * subscription,
-  size_t count,
-  rmw_message_sequence_t * message_sequence,
-  rmw_message_info_sequence_t * message_info_sequence,
-  size_t * taken,
-  rmw_subscription_allocation_t * allocation)
+rmw_take_sequence(const rmw_subscription_t * subscription,
+		  size_t count,
+		  rmw_message_sequence_t * message_sequence,
+		  rmw_message_info_sequence_t * message_info_sequence,
+		  size_t * taken,
+		  rmw_subscription_allocation_t * allocation)
 {
   RMW_ZENOH_FUNC_ENTRY();
 
@@ -211,11 +199,10 @@ rmw_take_sequence(
 }
 
 rmw_ret_t
-rmw_take_serialized_message(
-  const rmw_subscription_t * subscription,
-  rmw_serialized_message_t * serialized_message,
-  bool * taken,
-  rmw_subscription_allocation_t * allocation)
+rmw_take_serialized_message(const rmw_subscription_t * subscription,
+			    rmw_serialized_message_t * serialized_message,
+			    bool * taken,
+			    rmw_subscription_allocation_t * allocation)
 {
   RMW_ZENOH_FUNC_ENTRY();
 
@@ -224,16 +211,15 @@ rmw_take_serialized_message(
   (void)taken;
   (void)allocation;
   RMW_ZENOH_LOG_INFO("function not implemented");
-    return RMW_RET_UNSUPPORTED;
+  return RMW_RET_UNSUPPORTED;
 }
 
 rmw_ret_t
-rmw_take_serialized_message_with_info(
-  const rmw_subscription_t * subscription,
-  rmw_serialized_message_t * serialized_message,
-  bool * taken,
-  rmw_message_info_t * message_info,
-  rmw_subscription_allocation_t * allocation)
+rmw_take_serialized_message_with_info(const rmw_subscription_t * subscription,
+				      rmw_serialized_message_t * serialized_message,
+				      bool * taken,
+				      rmw_message_info_t * message_info,
+				      rmw_subscription_allocation_t * allocation)
 {
   RMW_ZENOH_FUNC_ENTRY();
 
@@ -243,15 +229,14 @@ rmw_take_serialized_message_with_info(
   (void)message_info;
   (void)allocation;
   RMW_ZENOH_LOG_INFO("function not implemented");
-    return RMW_RET_UNSUPPORTED;
+  return RMW_RET_UNSUPPORTED;
 }
 
 rmw_ret_t
-rmw_take_loaned_message(
-  const rmw_subscription_t * subscription,
-  void ** loaned_message,
-  bool * taken,
-  rmw_subscription_allocation_t * allocation)
+rmw_take_loaned_message(const rmw_subscription_t * subscription,
+			void ** loaned_message,
+			bool * taken,
+			rmw_subscription_allocation_t * allocation)
 {
   RMW_ZENOH_FUNC_ENTRY();
 
@@ -261,16 +246,15 @@ rmw_take_loaned_message(
   (void)allocation;
 
   RMW_ZENOH_LOG_INFO("function not implemented");
-    return RMW_RET_UNSUPPORTED;
+  return RMW_RET_UNSUPPORTED;
 }
 
 rmw_ret_t
-rmw_take_loaned_message_with_info(
-  const rmw_subscription_t * subscription,
-  void ** loaned_message,
-  bool * taken,
-  rmw_message_info_t * message_info,
-  rmw_subscription_allocation_t * allocation)
+rmw_take_loaned_message_with_info(const rmw_subscription_t * subscription,
+				  void ** loaned_message,
+				  bool * taken,
+				  rmw_message_info_t * message_info,
+				  rmw_subscription_allocation_t * allocation)
 {
   RMW_ZENOH_FUNC_ENTRY();
 
@@ -281,13 +265,12 @@ rmw_take_loaned_message_with_info(
   (void)allocation;
 
   RMW_ZENOH_LOG_INFO("function not implemented");
-    return RMW_RET_UNSUPPORTED;
+  return RMW_RET_UNSUPPORTED;
 }
 
 rmw_ret_t
-rmw_return_loaned_message_from_subscription(
-  const rmw_subscription_t * subscription,
-  void * loaned_message)
+rmw_return_loaned_message_from_subscription(const rmw_subscription_t * subscription,
+					    void * loaned_message)
 {
   RMW_ZENOH_FUNC_ENTRY();
 
@@ -295,14 +278,13 @@ rmw_return_loaned_message_from_subscription(
   (void)loaned_message;
 
   RMW_ZENOH_LOG_INFO("function not implemented");
-    return RMW_RET_UNSUPPORTED;
+  return RMW_RET_UNSUPPORTED;
 }
 
 rmw_ret_t
-rmw_take_event(
-  const rmw_event_t * event_handle,
-  void * event_info,
-  bool * taken)
+rmw_take_event(const rmw_event_t * event_handle,
+	       void * event_info,
+	       bool * taken)
 {
   RMW_ZENOH_FUNC_ENTRY();
 
@@ -310,5 +292,5 @@ rmw_take_event(
   (void)event_info;
   (void)taken;
   RMW_ZENOH_LOG_INFO("function not implemented");
-    return RMW_RET_UNSUPPORTED;
+  return RMW_RET_UNSUPPORTED;
 }

@@ -2,6 +2,7 @@
 #define RMW_ZENOH_PICO_SESSION_H
 
 #include <rmw/rmw.h>
+#include <stdint.h>
 #include <zenoh-pico.h>
 
 #if defined(__cplusplus)
@@ -11,7 +12,7 @@ extern "C"
 
   typedef struct _ZenohPicoSession
   {
-    uint ref_;
+    int ref_;
 
     // Enclave, name used to find security artifacts in a sros2 keystore
     z_string_t enclave_;
@@ -30,13 +31,8 @@ extern "C"
   extern ZenohPicoSession *zenoh_pico_generate_session(ZenohPicoSession *session,
 						       z_owned_config_t *config,
 						       const char *enclave);
-
   extern bool zenoh_pico_destroy_session(ZenohPicoSession *session);
-
   extern bool zenoh_pico_clone_session(ZenohPicoSession *dst, ZenohPicoSession *src);
-
-  // --------------------------
-
   extern rmw_ret_t session_connect(ZenohPicoSession *session);
 
 #if defined(__cplusplus)

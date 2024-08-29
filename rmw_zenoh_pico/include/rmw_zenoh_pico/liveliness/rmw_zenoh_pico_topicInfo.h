@@ -10,7 +10,7 @@ extern "C"
 {
 #endif  // if defined(__cplusplus)
 
-  typedef struct ZenohPicoTopicInfo_s
+  typedef struct _ZenohPicoTopicInfo
   {
     int ref_;
 
@@ -18,27 +18,27 @@ extern "C"
     _z_string_t type_;
     _z_string_t hash_;
     _z_string_t qos_;
-  } ZenohPicoTopicInfo_t;
+  } ZenohPicoTopicInfo;
 
-  extern const char *topic_name(ZenohPicoTopicInfo_t *topic);
-  extern const char *topic_type(ZenohPicoTopicInfo_t *topic);
-  extern const char *topic_hash(ZenohPicoTopicInfo_t *topic);
-  extern const char *topic_qos(ZenohPicoTopicInfo_t *topic);
+  extern const char *topic_name(ZenohPicoTopicInfo *topic);
+  extern const char *topic_type(ZenohPicoTopicInfo *topic);
+  extern const char *topic_hash(ZenohPicoTopicInfo *topic);
+  extern const char *topic_qos(ZenohPicoTopicInfo *topic);
 
-  extern ZenohPicoTopicInfo_t *zenoh_pico_generate_topic_info(z_string_t *name,
-							      z_string_t *type,
-							      z_string_t *typehash,
-							      z_string_t *qos);
-  extern bool zenoh_pico_destroy_topic_info(ZenohPicoTopicInfo_t *topic);
+  extern ZenohPicoTopicInfo *zenoh_pico_generate_topic_info(z_string_t *name,
+							    z_string_t *type,
+							    z_string_t *typehash,
+							    z_string_t *qos);
+  extern bool zenoh_pico_destroy_topic_info(ZenohPicoTopicInfo *topic);
 
-  extern void zenoh_pico_debug_topic_info(ZenohPicoTopicInfo_t *topic);
+  extern void zenoh_pico_debug_topic_info(ZenohPicoTopicInfo *topic);
 
   // -------
 
   extern z_string_t ros_topic_name_to_zenoh_key(const char * domain,
-						       const char * name,
-						       const char * type,
-						       const char * hash);
+						const char * name,
+						const char * type,
+						const char * hash);
 
 #if defined(__cplusplus)
 }

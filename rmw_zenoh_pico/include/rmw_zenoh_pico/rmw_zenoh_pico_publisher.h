@@ -2,6 +2,7 @@
 #define RMW_ZENOH_PICO_PUBLISHER_H
 
 #include <rmw/rmw.h>
+#include <stdint.h>
 #include <zenoh-pico.h>
 
 #include <rmw_zenoh_pico/liveliness/rmw_zenoh_pico_nodeInfo.h>
@@ -11,7 +12,7 @@
 #include <rmw_zenoh_pico/rmw_zenoh_pico_node.h>
 
 typedef struct _ZenohPicoPubData {
-  uint ref_;
+  int ref_;
 
   size_t id_;
 

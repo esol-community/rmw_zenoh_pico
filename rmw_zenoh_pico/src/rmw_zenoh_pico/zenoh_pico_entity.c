@@ -1,9 +1,5 @@
 
-#include "rmw_zenoh_pico/rmw_zenoh_pico_macros.h"
-
-#include "rmw_zenoh_pico/liveliness/rmw_zenoh_pico_nodeInfo.h"
-#include "rmw_zenoh_pico/liveliness/rmw_zenoh_pico_topicInfo.h"
-#include "rmw_zenoh_pico/liveliness/rmw_zenoh_pico_entity.h"
+#include <rmw_zenoh_pico/rmw_zenoh_pico.h>
 
 const char *get_zid(ZenohPicoEntity *entity)	        { return Z_STRING_VAL(entity->zid_); }
 size_t get_nid(ZenohPicoEntity *entity)		        { return entity->nid_; }
@@ -21,17 +17,18 @@ const char *get_topic_hash(ZenohPicoEntity *entity)     { return topic_hash(enti
 const char *get_topic_qos(ZenohPicoEntity *entity)      { return topic_qos(entity->topic_info_); }
 
 ZenohPicoEntity * zenoh_pico_generate_entity(z_id_t zid,
-					      size_t id,
-					      size_t nid,
-					      ZenohPicoEntityType type,
-					      ZenohPicoNodeInfo_t *node_info,
-					      ZenohPicoTopicInfo_t *topic_info)
+					     size_t id,
+					     size_t nid,
+					     ZenohPicoEntityType type,
+					     ZenohPicoNodeInfo *node_info,
+					     ZenohPicoTopicInfo *topic_info)
 {
   ZenohPicoEntity *entity = NULL;
   ZenohPicoGenerateData(entity, ZenohPicoEntity);
-  if(entity == NULL){
-    return NULL;
-  }
+  RMW_CHECK_FOR_NULL_WITH_MSG(
+    entity,
+    "failed to allocate struct for the ZenohPicoEntity",
+    return NULL);
 
   if(_z_id_check(zid)) {
     _z_bytes_t zid_data;
@@ -111,9 +108,6 @@ void zenoh_pico_debug_entity(ZenohPicoEntity *entity)
 
   return;
 }
-
-
-// ------------------------
 
 static size_t next_entity_id_ = 0;
 size_t zenoh_pico_get_next_entity_id(void)

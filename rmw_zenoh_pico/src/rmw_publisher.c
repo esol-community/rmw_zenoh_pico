@@ -42,8 +42,10 @@ ZenohPicoPubData * zenoh_pico_generate_publisher_data(
 
   ZenohPicoPubData *pub_data = NULL;
   ZenohPicoGenerateData(pub_data, ZenohPicoPubData);
-  if(pub_data == NULL)
-    return NULL;
+  RMW_CHECK_FOR_NULL_WITH_MSG(
+    pub_data,
+    "failed to allocate struct for the ZenohPicoPubData",
+    return NULL);
 
   pub_data->id_         = pub_id;
   pub_data->node_	= node;
@@ -52,8 +54,8 @@ ZenohPicoPubData * zenoh_pico_generate_publisher_data(
   pub_data->callbacks_  = callbacks;
   pub_data->adapted_qos_profile_ = *qos_profile;
 
-  ZenohPicoNodeInfo_t  *node_info  = entity->node_info_;
-  ZenohPicoTopicInfo_t *topic_info = entity->topic_info_;
+  ZenohPicoNodeInfo  *node_info  = entity->node_info_;
+  ZenohPicoTopicInfo *topic_info = entity->topic_info_;
 
   // generate key from entity data
   pub_data->token_key_ = generate_liveliness(entity);
@@ -160,8 +162,6 @@ bool undeclaration_publisher_data(ZenohPicoPubData *pub_data)
   return true;
 }
 
-//-----------------------------
-
 static rmw_publisher_t *_rmw_publisher_generate(rmw_context_t *context,
 						ZenohPicoPubData *pub_data,
 						const rmw_publisher_options_t *options)
@@ -188,6 +188,8 @@ static rmw_ret_t _rmw_publisher_destroy(rmw_publisher_t * pub)
 {
   RMW_ZENOH_FUNC_ENTRY();
 
+  RMW_CHECK_ARGUMENT_FOR_NULL(pub, RMW_RET_INVALID_ARGUMENT);
+
   ZenohPicoPubData *pub_data = (ZenohPicoPubData *)pub->data;
 
   if(pub_data != NULL){
@@ -199,8 +201,6 @@ static rmw_ret_t _rmw_publisher_destroy(rmw_publisher_t * pub)
 
   return RMW_RET_OK;
 }
-
-//-----------------------------
 
 rmw_ret_t
 rmw_init_publisher_allocation(
@@ -325,12 +325,12 @@ rmw_create_publisher(
   RMW_ZENOH_LOG_INFO("%s : qos = [%s]", __func__, qos_key.val);
 
   _z_string_t _topic_name = _z_string_make(topic_name);
-  ZenohPicoTopicInfo_t *_topic_info = zenoh_pico_generate_topic_info(&_topic_name,
-								     &_type_name,
-								     &_hash_data,
-								     &qos_key);
+  ZenohPicoTopicInfo *_topic_info = zenoh_pico_generate_topic_info(&_topic_name,
+								   &_type_name,
+								   &_hash_data,
+								   &qos_key);
   // clone node_info
-  ZenohPicoNodeInfo_t *_node_info = zenoh_pico_clone_node_info(node_data->entity_->node_info_);
+  ZenohPicoNodeInfo *_node_info = zenoh_pico_clone_node_info(node_data->entity_->node_info_);
 
   // generate entity data
   size_t _entity_id = zenoh_pico_get_next_entity_id();
@@ -396,7 +396,7 @@ rmw_publisher_assert_liveliness(
 {
   (void)publisher;
   RMW_ZENOH_LOG_INFO("function not implemented");
-    return RMW_RET_UNSUPPORTED;
+  return RMW_RET_UNSUPPORTED;
 }
 
 rmw_ret_t
@@ -421,7 +421,7 @@ rmw_borrow_loaned_message(
   (void)ros_message;
 
   RMW_ZENOH_LOG_INFO("function not implemented");
-    return RMW_RET_UNSUPPORTED;
+  return RMW_RET_UNSUPPORTED;
 }
 
 rmw_ret_t
@@ -433,5 +433,5 @@ rmw_return_loaned_message_from_publisher(
   (void)loaned_message;
 
   RMW_ZENOH_LOG_INFO("function not implemented");
-    return RMW_RET_UNSUPPORTED;
+  return RMW_RET_UNSUPPORTED;
 }

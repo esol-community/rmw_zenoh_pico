@@ -12,15 +12,6 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-#include <ctype.h>
-#include <stdbool.h>
-
-#include "zenoh-pico/system/platform-common.h"
-#include <rmw/ret_types.h>
-#include <rmw/rmw.h>
-
-#include <rmw/validate_full_topic_name.h>
-
 #include <rmw_zenoh_pico/rmw_zenoh_pico.h>
 
 static void set_ros2_header(uint8_t *msg_bytes)
@@ -31,14 +22,14 @@ static void set_ros2_header(uint8_t *msg_bytes)
 }
 
 rmw_ret_t
-rmw_publish(
-  const rmw_publisher_t * publisher,
-  const void * ros_message,
-  rmw_publisher_allocation_t * allocation)
+rmw_publish(const rmw_publisher_t * publisher,
+	    const void * ros_message,
+	    rmw_publisher_allocation_t * allocation)
 {
   RMW_ZENOH_FUNC_ENTRY();
 
   (void)allocation;
+
   RMW_CHECK_FOR_NULL_WITH_MSG(
     publisher, "publisher handle is null",
     return RMW_RET_INVALID_ARGUMENT);
@@ -55,19 +46,22 @@ rmw_publish(
 
   serialized_size += SUB_MSG_OFFSET;
   uint8_t * msg_bytes = (uint8_t *)Z_MALLOC(serialized_size);
+  RMW_CHECK_FOR_NULL_WITH_MSG(
+    msg_bytes,
+    "failed to allocate memory for the serialized",
+    return RMW_RET_ERROR);
   memset(msg_bytes, 0, serialized_size);
 
   ucdrBuffer temp_buffer;
-  ucdr_init_buffer_origin_offset(
-    &temp_buffer,
-    msg_bytes,
-    serialized_size,
-    0,
-    SUB_MSG_OFFSET);
+  ucdr_init_buffer_origin_offset(&temp_buffer,
+				 msg_bytes,
+				 serialized_size,
+				 0,
+				 SUB_MSG_OFFSET);
 
   bool ret = pub_data->callbacks_->cdr_serialize(ros_message, &temp_buffer);
-  set_ros2_header(msg_bytes);
 
+  set_ros2_header(msg_bytes);
   (void)zenoh_pico_debug_dump_msg(msg_bytes, serialized_size);
 
   z_publisher_put_options_t options = z_publisher_put_options_default();
@@ -84,10 +78,9 @@ rmw_publish(
 }
 
 rmw_ret_t
-rmw_publish_serialized_message(
-  const rmw_publisher_t * publisher,
-  const rmw_serialized_message_t * serialized_message,
-  rmw_publisher_allocation_t * allocation)
+rmw_publish_serialized_message(const rmw_publisher_t * publisher,
+			       const rmw_serialized_message_t * serialized_message,
+			       rmw_publisher_allocation_t * allocation)
 {
   RMW_ZENOH_FUNC_ENTRY();
 
@@ -95,14 +88,13 @@ rmw_publish_serialized_message(
   (void)serialized_message;
   (void)allocation;
   RMW_ZENOH_LOG_INFO("function not implemented");
-    return RMW_RET_UNSUPPORTED;
+  return RMW_RET_UNSUPPORTED;
 }
 
 rmw_ret_t
-rmw_publish_loaned_message(
-  const rmw_publisher_t * publisher,
-  void * ros_message,
-  rmw_publisher_allocation_t * allocation)
+rmw_publish_loaned_message(const rmw_publisher_t * publisher,
+			   void * ros_message,
+			   rmw_publisher_allocation_t * allocation)
 {
   RMW_ZENOH_FUNC_ENTRY();
 
@@ -111,13 +103,12 @@ rmw_publish_loaned_message(
   (void)allocation;
 
   RMW_ZENOH_LOG_INFO("function not implemented");
-    return RMW_RET_UNSUPPORTED;
+  return RMW_RET_UNSUPPORTED;
 }
 
 rmw_ret_t
-rmw_publisher_wait_for_all_acked(
-  const rmw_publisher_t * publisher,
-  rmw_time_t wait_timeout)
+rmw_publisher_wait_for_all_acked(const rmw_publisher_t * publisher,
+				 rmw_time_t wait_timeout)
 {
   RMW_ZENOH_FUNC_ENTRY();
 

@@ -12,18 +12,6 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-#include "rmw_zenoh_pico/rmw_zenoh_pico_logging.h"
-#include "rmw_zenoh_pico/rmw_zenoh_pico_subscription.h"
-#include "zenoh-pico/system/platform-common.h"
-#include "zenoh-pico/system/platform/unix.h"
-
-#include <string.h>
-#include <limits.h>
-#include <time.h>
-
-#include <rmw/rmw.h>
-#include <rmw/time.h>
-
 #include <rmw_zenoh_pico/rmw_zenoh_pico.h>
 
 void wait_condition_lock(ZenohPicoWaitSetData * wait_set_data)
@@ -46,13 +34,12 @@ void wait_condition_triggered(ZenohPicoWaitSetData * wait_set_data, bool value)
   wait_set_data->triggered_ = value;
 }
 
-bool check_and_attach_condition(
-  const rmw_subscriptions_t * const subscriptions,
-  const rmw_guard_conditions_t * const guard_conditions,
-  const rmw_services_t * const services,
-  const rmw_clients_t * const clients,
-  const rmw_events_t * const events,
-  ZenohPicoWaitSetData * wait_set_data)
+static bool _check_and_attach_condition(const rmw_subscriptions_t * const subscriptions,
+					const rmw_guard_conditions_t * const guard_conditions,
+					const rmw_services_t * const services,
+					const rmw_clients_t * const clients,
+					const rmw_events_t * const events,
+					ZenohPicoWaitSetData * wait_set_data)
 {
   if(guard_conditions){
     for (size_t i = 0; i < guard_conditions->guard_condition_count; ++i) {
@@ -100,14 +87,13 @@ bool check_and_attach_condition(
 }
 
 rmw_ret_t
-rmw_wait(
-  rmw_subscriptions_t * subscriptions,
-  rmw_guard_conditions_t * guard_conditions,
-  rmw_services_t * services,
-  rmw_clients_t * clients,
-  rmw_events_t * events,
-  rmw_wait_set_t * wait_set,
-  const rmw_time_t * wait_timeout)
+rmw_wait(rmw_subscriptions_t * subscriptions,
+	 rmw_guard_conditions_t * guard_conditions,
+	 rmw_services_t * services,
+	 rmw_clients_t * clients,
+	 rmw_events_t * events,
+	 rmw_wait_set_t * wait_set,
+	 const rmw_time_t * wait_timeout)
 {
   RMW_ZENOH_FUNC_ENTRY();
 
@@ -122,7 +108,7 @@ rmw_wait(
     "waitset data struct is null",
     return RMW_RET_ERROR);
 
-  bool skip_wait = check_and_attach_condition(
+  bool skip_wait = _check_and_attach_condition(
     subscriptions, guard_conditions, services, clients, events, wait_set_data);
 
   if(!skip_wait){
@@ -147,7 +133,7 @@ rmw_wait(
       }
     }
 
-    RMW_ZENOH_LOG_INFO("%s : wakeup from wait condition....", __func__);
+    RMW_ZENOH_LOG_INFO("wakeup from wait condition....");
 
     wait_set_data->triggered_ = false;
 
@@ -173,6 +159,7 @@ rmw_wait(
 
   if(events) {
     for (size_t i = 0; i < events->event_count; ++i) {
+      // T.B.D
     }
   }
 
@@ -194,12 +181,13 @@ rmw_wait(
 
   if (services) {
     for (size_t i = 0; i < services->service_count; ++i) {
+      // T.B.D
     }
   }
 
   if (clients) {
     for (size_t i = 0; i < clients->client_count; ++i) {
-
+      // T.B.D
     }
   }
 
