@@ -31,6 +31,8 @@ const char *get_topic_type(ZenohPicoEntity *entity)     { return topic_type(enti
 const char *get_topic_hash(ZenohPicoEntity *entity)     { return topic_hash(entity->topic_info_); }
 const char *get_topic_qos(ZenohPicoEntity *entity)      { return topic_qos(entity->topic_info_); }
 
+z_mutex_t mutex_ZenohPicoEntity;
+
 ZenohPicoEntity * zenoh_pico_generate_entity(z_id_t zid,
 					     size_t id,
 					     size_t nid,
@@ -87,7 +89,7 @@ void zenoh_pico_destroy_entity(ZenohPicoEntity *entity)
     entity->topic_info_ = NULL;
   }
 
-  ZenohPicoDestroyData(entity);
+  ZenohPicoDestroyData(entity, ZenohPicoEntity);
 }
 
 void zenoh_pico_debug_entity(ZenohPicoEntity *entity)
