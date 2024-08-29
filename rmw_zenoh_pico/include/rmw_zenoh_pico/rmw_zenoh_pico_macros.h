@@ -15,7 +15,19 @@
 #ifndef RMW_ZENOH_PICO_MACROS_H_
 #define RMW_ZENOH_PICO_MACROS_H_
 
-#include <rmw/error_handling.h>
+#include <rmw/rmw.h>
+#include <zenoh-pico.h>
+
+extern z_mutex_t mutex_ZenohPicoSubData;
+extern z_mutex_t mutex_ZenohPicoTransportParams;
+extern z_mutex_t mutex_ZenohPicoSession;
+extern z_mutex_t mutex_ZenohPicoWaitSetData;
+extern z_mutex_t mutex_ZenohPicoNodeData;
+extern z_mutex_t mutex_ZenohPicoPubData;
+extern z_mutex_t mutex_ZenohPicoEntity;
+extern z_mutex_t mutex_ZenohPicoTopicInfo;
+
+extern void rmw_zenoh_pico_mutex_init(void);
 
 //
 // for identifier data utilities
@@ -31,30 +43,38 @@
 //
 // rmw_zenoh_pico private data Generater utilities
 //
-#define ZenohPicoGenerateData(d, t)		\
+#define ZenohPicoGenerateData(D, T)		\
   {						\
-    if ((d) == NULL) {				\
-      (d) = (t *)z_malloc(sizeof(t));		\
-      if ((d) != NULL) {			\
-	memset((d), 0, sizeof(t));		\
-	(d)->ref_ = 1;				\
+    if ((D) == NULL) {				\
+      (D) = (T *)z_malloc(sizeof(T));		\
+      if ((D) != NULL) {			\
+	memset((D), 0, sizeof(T));		\
+	z_mutex_lock(&mutex_##T);		\
+	(D)->ref_ = 1;				\
+	z_mutex_unlock(&mutex_##T);		\
       }						\
     }						\
   }						\
 
-#define ZenohPicoDestroyData(d)			\
+#define ZenohPicoDestroyData(D, T)		\
   {						\
-    if((d) != NULL) {				\
-      (d)->ref_ -= 1;				\
-      if((d)->ref_ == 0) {			\
-	Z_FREE((d));				\
+    if((D) != NULL) {				\
+      z_mutex_lock(&mutex_##T);			\
+      (D)->ref_ -= 1;				\
+      if((D)->ref_ == 0) {			\
+	z_mutex_unlock(&mutex_##T);		\
+	Z_FREE((D));				\
+      }else{					\
+	z_mutex_unlock(&mutex_##T);		\
       }						\
     }						\
   }
 
-#define ZenohPicoLoanData(d)			\
+#define ZenohPicoLoanData(D, T)			\
   {						\
-    (d)->ref_ += 1;				\
+    z_mutex_lock(&mutex_##T);			\
+    (D)->ref_ += 1;				\
+    z_mutex_unlock(&mutex_##T);			\
   }						\
 
 //
