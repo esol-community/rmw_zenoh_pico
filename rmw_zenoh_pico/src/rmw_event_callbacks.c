@@ -13,7 +13,6 @@
 // limitations under the License.
 
 #include "zenoh-pico/system/platform-common.h"
-#include "zenoh-pico/system/platform/unix.h"
 #include <rmw/rmw.h>
 
 #include <rmw_zenoh_pico/rmw_zenoh_pico.h>

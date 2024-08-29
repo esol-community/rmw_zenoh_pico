@@ -21,6 +21,8 @@ const char *topic_type(ZenohPicoTopicInfo *topic)	{ return Z_STRING_VAL(topic->t
 const char *topic_hash(ZenohPicoTopicInfo *topic)	{ return Z_STRING_VAL(topic->hash_); }
 const char *topic_qos(ZenohPicoTopicInfo *topic)	{ return Z_STRING_VAL(topic->qos_); }
 
+z_mutex_t mutex_ZenohPicoTopicInfo;
+
 static void _zenoh_pico_clear_topic_info_member(ZenohPicoTopicInfo *topic)
 {
   Z_STRING_FREE(topic->name_);
@@ -55,7 +57,7 @@ bool zenoh_pico_destroy_topic_info(ZenohPicoTopicInfo *topic)
 {
   _zenoh_pico_clear_topic_info_member(topic);
 
-  ZenohPicoDestroyData(topic);
+  ZenohPicoDestroyData(topic, ZenohPicoTopicInfo);
 
   return true;
 }

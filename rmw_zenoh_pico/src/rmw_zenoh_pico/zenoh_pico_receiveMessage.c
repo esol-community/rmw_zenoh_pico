@@ -16,6 +16,8 @@
 
 #include <rmw_zenoh_pico/rmw_zenoh_pico.h>
 
+z_mutex_t mutex_ReceiveMessageData;
+
 ReceiveMessageData * zenoh_pico_generate_recv_msg_data(const z_sample_t *sample,
 						       uint64_t recv_ts,
 						       const uint8_t pub_gid[RMW_GID_STORAGE_SIZE],
@@ -53,7 +55,7 @@ bool zenoh_pico_delete_recv_msg_data(ReceiveMessageData * recv_data)
   if(recv_data->payload_start != NULL)
     Z_FREE(recv_data->payload_start);
 
-  ZenohPicoDestroyData(recv_data);
+  ZenohPicoDestroyData(recv_data, ReceiveMessageData);
 
   return true;
 }

@@ -12,7 +12,11 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
+#include "zenoh-pico/system/platform-common.h"
 #include <rmw_zenoh_pico/rmw_zenoh_pico.h>
+
+z_mutex_t mutex_ZenohPicoTransportParams;
+z_mutex_t mutex_ZenohPicoSession;
 
 ZenohPicoTransportParams *zenoh_pico_generate_param(ZenohPicoTransportParams *param)
 {
@@ -27,7 +31,7 @@ ZenohPicoTransportParams *zenoh_pico_generate_param(ZenohPicoTransportParams *pa
 
 bool zenoh_pico_destroy_param(ZenohPicoTransportParams *param)
 {
-  ZenohPicoDestroyData(param);
+  ZenohPicoDestroyData(param, ZenohPicoTransportParams);
 
   return true;
 }
@@ -70,7 +74,7 @@ bool zenoh_pico_destroy_session(ZenohPicoSession *session)
 
   Z_STRING_FREE(session->enclave_);
 
-  ZenohPicoDestroyData(session);
+  ZenohPicoDestroyData(session, ZenohPicoSession);
 
   return true;
 }
@@ -299,6 +303,18 @@ rmw_zenoh_pico_set_serial_config(ZenohPicoTransportParams *params, z_owned_confi
   return RMW_RET_ERROR;
 }
 
+void rmw_zenoh_pico_mutex_init(void)
+{
+  z_mutex_init(&mutex_ZenohPicoSubData);
+  z_mutex_init(&mutex_ZenohPicoTransportParams);
+  z_mutex_init(&mutex_ZenohPicoSession);
+  z_mutex_init(&mutex_ZenohPicoWaitSetData);
+  z_mutex_init(&mutex_ZenohPicoNodeData);
+  z_mutex_init(&mutex_ZenohPicoPubData);
+  z_mutex_init(&mutex_ZenohPicoEntity);
+  z_mutex_init(&mutex_ZenohPicoTopicInfo);
+}
+
 rmw_ret_t
 rmw_init(const rmw_init_options_t * options, rmw_context_t * context)
 {
@@ -323,6 +339,10 @@ rmw_init(const rmw_init_options_t * options, rmw_context_t * context)
     return RMW_RET_INVALID_ARGUMENT;
   }
 
+  // initirize mutexs which is for private data structure.
+  rmw_zenoh_pico_mutex_init();
+
+  // set data for context data area.
   context->instance_id = options->instance_id;
   context->implementation_identifier = rmw_get_implementation_identifier();
   // No custom handling of RMW_DEFAULT_DOMAIN_ID. Simply use a reasonable domain id.

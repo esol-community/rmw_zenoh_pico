@@ -38,6 +38,8 @@
 
 #include <rmw_zenoh_pico/rmw_zenoh_pico.h>
 
+z_mutex_t mutex_ZenohPicoSubData;
+
 ZenohPicoSubData * zenoh_pico_generate_subscription_data(
   size_t sub_id,
   ZenohPicoNodeData *node,
@@ -96,11 +98,10 @@ bool zenoh_pico_destroy_subscription_data(ZenohPicoSubData *sub_data)
   Z_STRING_FREE(sub_data->token_key_);
   Z_STRING_FREE(sub_data->topic_key_);
 
-  // disable until implement of ref counter.
-  // if(sub_data->node_ != NULL){
-  //   zenoh_pico_destroy_node_data(sub_data->node_);
-  //   sub_data->node_ = NULL;
-  // }
+  if(sub_data->node_ != NULL){
+    zenoh_pico_destroy_node_data(sub_data->node_);
+    sub_data->node_ = NULL;
+  }
 
   if(sub_data->entity_ != NULL){
     zenoh_pico_destroy_entity(sub_data->entity_);
@@ -124,7 +125,7 @@ bool zenoh_pico_destroy_subscription_data(ZenohPicoSubData *sub_data)
   z_mutex_free(&sub_data->condition_mutex);
   sub_data->wait_set_data_ = NULL;
 
-  ZenohPicoDestroyData(sub_data);
+  ZenohPicoDestroyData(sub_data, ZenohPicoSubData);
 
   return true;
 }

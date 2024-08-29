@@ -21,6 +21,8 @@ const char *node_namespace(ZenohPicoNodeInfo *node)	{ return Z_STRING_VAL(node->
 const char *node_name(ZenohPicoNodeInfo *node)	{ return Z_STRING_VAL(node->name_); }
 const char *node_enclave(ZenohPicoNodeInfo *node)	{ return Z_STRING_VAL(node->enclave_); }
 
+z_mutex_t mutex_ZenohPicoNodeInfo;
+
 static void _zenoh_pico_clear_node_info_member(ZenohPicoNodeInfo *node)
 {
   Z_STRING_FREE(node->domain_);
@@ -72,7 +74,7 @@ bool zenoh_pico_destroy_node_info(ZenohPicoNodeInfo *node)
 {
   _zenoh_pico_clear_node_info_member(node);
 
-  ZenohPicoDestroyData(node);
+  ZenohPicoDestroyData(node, ZenohPicoNodeInfo);
 
   return true;
 }

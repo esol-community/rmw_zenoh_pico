@@ -14,6 +14,8 @@
 
 #include <rmw_zenoh_pico/rmw_zenoh_pico.h>
 
+z_mutex_t mutex_ZenohPicoNodeData;
+
 ZenohPicoNodeData * zenoh_pico_generate_node_data(size_t node_id,
 						  ZenohPicoSession *session,
 						  ZenohPicoEntity *entity)
@@ -42,8 +44,7 @@ ZenohPicoNodeData * zenoh_pico_generate_node_data(size_t node_id,
 
 ZenohPicoNodeData *zenoh_pico_loan_node_data(ZenohPicoNodeData *node_data)
 {
-  // ATTENTION :
-  // I have not implemented smart pointer, yet.
+  ZenohPicoLoanData(node_data, ZenohPicoNodeData);
 
   return node_data;
 }
@@ -67,7 +68,7 @@ bool zenoh_pico_destroy_node_data(ZenohPicoNodeData *node_data)
     node_data->entity_ = NULL;
   }
 
-  ZenohPicoDestroyData(node_data);
+  ZenohPicoDestroyData(node_data, ZenohPicoNodeData);
 
   return true;
 }

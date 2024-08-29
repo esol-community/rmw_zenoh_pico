@@ -14,6 +14,8 @@
 
 #include <rmw_zenoh_pico/rmw_zenoh_pico.h>
 
+z_mutex_t mutex_ZenohPicoWaitSetData;
+
 ZenohPicoWaitSetData * zenoh_pico_generate_wait_set_data(rmw_context_t * context)
 {
 
@@ -38,7 +40,7 @@ bool zenoh_pico_destroy_wait_set_data(ZenohPicoWaitSetData *wait_data)
   z_mutex_free(&wait_data->condition_mutex_);
   z_condvar_free(&wait_data->condition_variable_);
 
-  ZenohPicoDestroyData(wait_data);
+  ZenohPicoDestroyData(wait_data, ZenohPicoWaitSetData);
 
   return true;
 }

@@ -29,6 +29,8 @@
 
 #include <rmw_zenoh_pico/rmw_zenoh_pico.h>
 
+z_mutex_t mutex_ZenohPicoPubData;
+
 ZenohPicoPubData * zenoh_pico_generate_publisher_data(
   size_t pub_id,
   ZenohPicoNodeData *node,
@@ -79,18 +81,17 @@ bool zenoh_pico_destroy_publisher_data(ZenohPicoPubData *pub_data)
   Z_STRING_FREE(pub_data->token_key_);
   Z_STRING_FREE(pub_data->topic_key_);
 
-  // disable until implement of ref counter.
-  // if(pub_data->node_ != NULL){
-  //   zenoh_pico_destroy_node_data(pub_data->node_);
-  //   pub_data->node_ = NULL;
-  // }
+  if(pub_data->node_ != NULL){
+    zenoh_pico_destroy_node_data(pub_data->node_);
+    pub_data->node_ = NULL;
+  }
 
   if(pub_data->entity_ != NULL){
     zenoh_pico_destroy_entity(pub_data->entity_);
     pub_data->entity_ = NULL;
   }
 
-  ZenohPicoDestroyData(pub_data);
+  ZenohPicoDestroyData(pub_data, ZenohPicoPubData);
 
   return true;
 }
