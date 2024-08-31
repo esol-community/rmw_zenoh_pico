@@ -1,0 +1,502 @@
+From e9880a9ec403ad938137729f9147b5153a8c9c8a Mon Sep 17 00:00:00 2001
+From: Katsumi Yamazaki <v-yamazaki8668@esol.co.jp>
+Date: Sat, 27 Jul 2024 19:37:49 +0900
+Subject: [PATCH] import host_zenoh configuration.
+
+---
+ CMakeLists.txt                                |  2 +-
+ config/host_zenoh/client_ros2_packages.txt    |  2 +
+ config/host_zenoh/dev_ros2_packages.txt       |  2 +
+ config/host_zenoh/dev_uros_packages.repos     |  1 +
+ config/host_zenoh/generic/build.sh            | 15 +++
+ .../generic/client-host-colcon.meta           | 42 ++++++++
+ .../generic/client_host_packages.repos        | 63 ++++++++++++
+ config/host_zenoh/generic/create.sh           | 28 ++++++
+ config/host_zenoh/generic/flash.sh            |  2 +
+ config/host_zenoh/generic/package.xml         | 15 +++
+ ...ng-field-initializers-of-build-optio.patch | 98 +++++++++++++++++++
+ .../zenohpico/0001-change-package-name.patch  | 26 +++++
+ scripts/build_firmware.sh                     |  3 +-
+ scripts/clean_env.sh                          | 10 +-
+ scripts/create_firmware_ws.sh                 |  5 +-
+ 15 files changed, 303 insertions(+), 11 deletions(-)
+ create mode 100644 config/host_zenoh/client_ros2_packages.txt
+ create mode 100644 config/host_zenoh/dev_ros2_packages.txt
+ create mode 100644 config/host_zenoh/dev_uros_packages.repos
+ create mode 100755 config/host_zenoh/generic/build.sh
+ create mode 100644 config/host_zenoh/generic/client-host-colcon.meta
+ create mode 100644 config/host_zenoh/generic/client_host_packages.repos
+ create mode 100755 config/host_zenoh/generic/create.sh
+ create mode 100755 config/host_zenoh/generic/flash.sh
+ create mode 100644 config/host_zenoh/generic/package.xml
+ create mode 100644 config/host_zenoh/patches/rosidl_typesupport_microxrcedds/0001-append-Wno-missing-field-initializers-of-build-optio.patch
+ create mode 100644 config/host_zenoh/patches/zenohpico/0001-change-package-name.patch
+
+diff --git a/CMakeLists.txt b/CMakeLists.txt
+index fa2997a..a3b133d 100644
+--- a/CMakeLists.txt
++++ b/CMakeLists.txt
+@@ -12,7 +12,7 @@ if(NOT CMAKE_CXX_STANDARD)
+ endif()
+ 
+ if(CMAKE_COMPILER_IS_GNUCXX OR CMAKE_CXX_COMPILER_ID MATCHES "Clang")
+-  add_compile_options(-Wall -Wextra -Wpedantic)
++  add_compile_options(-Wall -Wextra -Wpedantic -Wno-missing-field-initializers)
+ endif()
+ 
+ # find dependencies
+diff --git a/config/host_zenoh/client_ros2_packages.txt b/config/host_zenoh/client_ros2_packages.txt
+new file mode 100644
+index 0000000..07de46c
+--- /dev/null
++++ b/config/host_zenoh/client_ros2_packages.txt
+@@ -0,0 +1,2 @@
++keep:
++  none
+diff --git a/config/host_zenoh/dev_ros2_packages.txt b/config/host_zenoh/dev_ros2_packages.txt
+new file mode 100644
+index 0000000..07de46c
+--- /dev/null
++++ b/config/host_zenoh/dev_ros2_packages.txt
+@@ -0,0 +1,2 @@
++keep:
++  none
+diff --git a/config/host_zenoh/dev_uros_packages.repos b/config/host_zenoh/dev_uros_packages.repos
+new file mode 100644
+index 0000000..56f46b6
+--- /dev/null
++++ b/config/host_zenoh/dev_uros_packages.repos
+@@ -0,0 +1 @@
++repositories:
+diff --git a/config/host_zenoh/generic/build.sh b/config/host_zenoh/generic/build.sh
+new file mode 100755
+index 0000000..40ee7fa
+--- /dev/null
++++ b/config/host_zenoh/generic/build.sh
+@@ -0,0 +1,15 @@
++#!/bin/bash
++colcon build --packages-up-to rosidl_typesupport_microxrcedds_c --metas src --cmake-args -DBUILD_TESTING=OFF -DBUILD_SHARED_LIBS=ON $@
++colcon build --packages-up-to rosidl_typesupport_microxrcedds_cpp --metas src --cmake-args -DBUILD_TESTING=OFF -DBUILD_SHARED_LIBS=ON $@
++
++colcon build --packages-up-to zenohpico --metas src --cmake-args -DBUILD_TESTING=OFF -DBUILD_SHARED_LIBS=ON $@
++set +o nounset
++. install/local_setup.bash
++set -o nounset
++
++colcon build --packages-up-to rmw_zenoh_pico --metas src --cmake-args -DBUILD_TESTING=OFF -DBUILD_SHARED_LIBS=ON $@
++set +o nounset
++. install/local_setup.bash
++set -o nounset
++
++colcon build --metas src --cmake-args -DBUILD_TESTING=OFF -DBUILD_SHARED_LIBS=ON $@
+diff --git a/config/host_zenoh/generic/client-host-colcon.meta b/config/host_zenoh/generic/client-host-colcon.meta
+new file mode 100644
+index 0000000..ce4c6fe
+--- /dev/null
++++ b/config/host_zenoh/generic/client-host-colcon.meta
+@@ -0,0 +1,42 @@
++{
++    "names":{
++        "microcdr":{
++            "cmake-args":[
++                "-DBUILD_SHARED_LIBS=ON"
++            ]
++        },
++        "rosidl_typesupport_microxrcedds_c":{
++            "cmake-args":[
++                "-DBUILD_SHARED_LIBS=ON"
++            ]
++        },
++        "rosidl_typesupport_microxrcedds_cpp":{
++            "cmake-args":[
++                "-DBUILD_SHARED_LIBS=ON"
++            ]
++        },
++        "rclc_parameter":{
++            "cmake-args":[
++                "-DBUILD_SHARED_LIBS=ON"
++            ]
++        },
++        "rcutils":{
++            "cmake-args":[
++                "-DENABLE_TESTING=ON"
++            ]
++        },
++        "rmw_zenoh_pico":{
++            "cmake-args":[
++                "-DRMW_ZENOH_PICO_TRANSPORT=unicast",
++                "-DRMW_ZENOH_PICO_TRANSPORT_MODE=client",
++                "-DRMW_ZENOH_PICO_CONNECT=127.0.0.1",
++                "-DRMW_ZENOH_PICO_CONNECT_PORT=7447",
++                "-DBUILD_DEMO=ON"
++            ]
++        },
++        "zenohpico":{
++            "cmake-args":[
++            ]
++        },
++    }
++}
+diff --git a/config/host_zenoh/generic/client_host_packages.repos b/config/host_zenoh/generic/client_host_packages.repos
+new file mode 100644
+index 0000000..b0835c9
+--- /dev/null
++++ b/config/host_zenoh/generic/client_host_packages.repos
+@@ -0,0 +1,63 @@
++repositories:
++  eProsima/Micro-CDR:
++    type: git
++    url: https://github.com/eProsima/Micro-CDR.git
++    version: ros2
++
++# MicroROS
++
++  uros/rclc:
++    type: git
++    url: https://github.com/ros2/rclc.git
++    version: master
++  uros/micro_ros_msgs:
++    type: git
++    url: https://github.com/micro-ROS/micro_ros_msgs.git
++    version: jazzy
++  uros/rosidl_typesupport_microxrcedds:
++    type: git
++    url: https://github.com/micro-ROS/rosidl_typesupport_microxrcedds.git
++    version: jazzy
++  uros/micro_ros_utilities:
++    type: git
++    url: https://github.com/micro-ROS/micro_ros_utilities
++    version: jazzy
++
++# Required messages packages
++
++  ros2/common_interfaces:
++    type: git
++    url: https://github.com/ros2/common_interfaces
++    version: jazzy
++
++  ros2/example_interfaces:
++    type: git
++    url: https://github.com/ros2/example_interfaces
++    version: jazzy
++
++  ros2/rcl_interfaces:
++    type: git
++    url: https://github.com/ros2/rcl_interfaces
++    version: jazzy
++
++  ros2/unique_identifier_msgs:
++    type: git
++    url: https://github.com/ros2/unique_identifier_msgs
++    version: jazzy
++
++  ros2/test_interface_files:
++    type: git
++    url: https://github.com/ros2/test_interface_files
++    version: jazzy
++
++# rmw_zenoh_pico
++
++  uros/rosidl_typesupport_microxrcedds:
++    type: git
++    url: https://github.com/micro-ROS/rosidl_typesupport_microxrcedds.git
++    version: jazzy
++
++  uros/zenohpico:
++    type: git
++    url: https://github.com/eclipse-zenoh/zenoh-pico.git
++    version: release/0.11.0
+diff --git a/config/host_zenoh/generic/create.sh b/config/host_zenoh/generic/create.sh
+new file mode 100755
+index 0000000..084aaa8
+--- /dev/null
++++ b/config/host_zenoh/generic/create.sh
+@@ -0,0 +1,28 @@
++# populate the workspace
++mkdir -p src
++
++ros2 run micro_ros_setup create_ws.sh src $PREFIX/config/$RTOS/client_ros2_packages.txt $PREFIX/config/$RTOS/$PLATFORM/client_host_packages.repos
++
++# add appropriate colcon.meta
++cp $PREFIX/config/$RTOS/$PLATFORM/client-host-colcon.meta src/colcon.meta
++
++rosdep install -y --from-paths src -i src --skip-keys="$SKIP" -r
++
++touch src/uros/rclc/rclc_examples/COLCON_IGNORE
++touch src/uros/rclc/rclc_lifecycle/COLCON_IGNORE
++
++# get rmw_zenoh_pico repository from local strage
++if [ ! -v RMW_ZENOH_PICO_PATH ] ; then
++    export RMW_ZENOH_PICO_PATH="../rmw_zenoh_pico"
++fi
++
++if [ ! -d src/uros/rmw_zenoh_pico ] ; then
++    git clone $RMW_ZENOH_PICO_PATH -b master src/uros/rmw_zenoh_pico
++fi
++
++# local patches (2024.08.29)
++git apply --directory=src/uros/zenohpico \
++    $PREFIX/config/$RTOS/patches/zenohpico/*
++
++git apply --directory=src/uros/rosidl_typesupport_microxrcedds \
++    $PREFIX/config/$RTOS/patches/rosidl_typesupport_microxrcedds/*
+diff --git a/config/host_zenoh/generic/flash.sh b/config/host_zenoh/generic/flash.sh
+new file mode 100755
+index 0000000..948361b
+--- /dev/null
++++ b/config/host_zenoh/generic/flash.sh
+@@ -0,0 +1,2 @@
++echo "Nothing to flash: running in host mode"
++echo "Use 'RMW_IMPLEMENTATION=rmw_microxrcedds ros2 run micro_ros_demos_rcl int32_subscriber' to start with examples"
+\ No newline at end of file
+diff --git a/config/host_zenoh/generic/package.xml b/config/host_zenoh/generic/package.xml
+new file mode 100644
+index 0000000..932f597
+--- /dev/null
++++ b/config/host_zenoh/generic/package.xml
+@@ -0,0 +1,15 @@
++<?xml version="1.0"?>
++<?xml-model href="http://download.ros.org/schema/package_format2.xsd" schematypens="http://www.w3.org/2001/XMLSchema"?>
++<package format="2">
++  <name>firmware</name>
++  <version>0.0.0</version>
++  <description>Micro-ROS dependecies for host platforms for rmw_zenoh_pico</description>
++  <maintainer email="v-yamazaki8668@esol.co.jp">Katsumi Yamazaki</maintainer>
++  <license>APL2</license>
++
++  <build_depend>log4cxx</build_depend>
++  <build_depend>clang</build_depend>
++  <build_depend>clang-tidy</build_depend>
++  <build_depend>clang-format</build_depend>
++
++</package>
+diff --git a/config/host_zenoh/patches/rosidl_typesupport_microxrcedds/0001-append-Wno-missing-field-initializers-of-build-optio.patch b/config/host_zenoh/patches/rosidl_typesupport_microxrcedds/0001-append-Wno-missing-field-initializers-of-build-optio.patch
+new file mode 100644
+index 0000000..a0a159b
+--- /dev/null
++++ b/config/host_zenoh/patches/rosidl_typesupport_microxrcedds/0001-append-Wno-missing-field-initializers-of-build-optio.patch
+@@ -0,0 +1,98 @@
++From 9195a6e9ff42a59ee3d93a1f6cccc2aaec1531e3 Mon Sep 17 00:00:00 2001
++From: Katsumi Yamazaki <v-yamazaki8668@esol.co.jp>
++Date: Wed, 31 Jul 2024 17:23:59 +0900
++Subject: [PATCH] append "-Wno-missing-field-initializers" of build option.
++
++---
++ rosidl_typesupport_microxrcedds_c/CMakeLists.txt               | 1 +
++ ...rosidl_typesupport_microxrcedds_c_generate_interfaces.cmake | 1 +
++ rosidl_typesupport_microxrcedds_cpp/CMakeLists.txt             | 1 +
++ ...sidl_typesupport_microxrcedds_cpp_generate_interfaces.cmake | 1 +
++ test/c/CMakeLists.txt                                          | 1 +
++ test/cpp/CMakeLists.txt                                        | 3 ++-
++ 6 files changed, 7 insertions(+), 1 deletion(-)
++
++diff --git a/rosidl_typesupport_microxrcedds_c/CMakeLists.txt b/rosidl_typesupport_microxrcedds_c/CMakeLists.txt
++index f35d375..79237d0 100644
++--- a/rosidl_typesupport_microxrcedds_c/CMakeLists.txt
+++++ b/rosidl_typesupport_microxrcedds_c/CMakeLists.txt
++@@ -58,6 +58,7 @@ target_compile_options(${PROJECT_NAME}
++   PRIVATE
++     $<$<C_COMPILER_ID:GNU>:-Wall>
++     $<$<C_COMPILER_ID:GNU>:-Wextra>
+++    $<$<C_COMPILER_ID:GNU>:-Wno-missing-field-initializers>
++     $<$<C_COMPILER_ID:GNU>:-Wpedantic>
++   )
++ 
++diff --git a/rosidl_typesupport_microxrcedds_c/cmake/rosidl_typesupport_microxrcedds_c_generate_interfaces.cmake b/rosidl_typesupport_microxrcedds_c/cmake/rosidl_typesupport_microxrcedds_c_generate_interfaces.cmake
++index 8587799..cb7630e 100644
++--- a/rosidl_typesupport_microxrcedds_c/cmake/rosidl_typesupport_microxrcedds_c_generate_interfaces.cmake
+++++ b/rosidl_typesupport_microxrcedds_c/cmake/rosidl_typesupport_microxrcedds_c_generate_interfaces.cmake
++@@ -135,6 +135,7 @@ target_compile_options(${rosidl_generate_interfaces_TARGET}${_target_suffix}
++   PRIVATE
++     $<$<PLATFORM_ID:Linux>:-Wall>
++     $<$<PLATFORM_ID:Linux>:-Wextra>
+++    $<$<C_COMPILER_ID:GNU>:-Wno-missing-field-initializers>
++     $<$<PLATFORM_ID:Linux>:-Wpedantic>
++     $<$<PLATFORM_ID:Windows>:/W4>
++   )
++diff --git a/rosidl_typesupport_microxrcedds_cpp/CMakeLists.txt b/rosidl_typesupport_microxrcedds_cpp/CMakeLists.txt
++index 36a97d7..e8fa51e 100644
++--- a/rosidl_typesupport_microxrcedds_cpp/CMakeLists.txt
+++++ b/rosidl_typesupport_microxrcedds_cpp/CMakeLists.txt
++@@ -57,6 +57,7 @@ target_compile_options(${PROJECT_NAME}
++   PRIVATE
++     $<$<C_COMPILER_ID:GNU>:-Wall>
++     $<$<C_COMPILER_ID:GNU>:-Wextra>
+++    $<$<C_COMPILER_ID:GNU>:-Wno-missing-field-initializers>
++     $<$<C_COMPILER_ID:GNU>:-Wpedantic>
++   )
++ 
++diff --git a/rosidl_typesupport_microxrcedds_cpp/cmake/rosidl_typesupport_microxrcedds_cpp_generate_interfaces.cmake b/rosidl_typesupport_microxrcedds_cpp/cmake/rosidl_typesupport_microxrcedds_cpp_generate_interfaces.cmake
++index 66282f9..1c2e51b 100644
++--- a/rosidl_typesupport_microxrcedds_cpp/cmake/rosidl_typesupport_microxrcedds_cpp_generate_interfaces.cmake
+++++ b/rosidl_typesupport_microxrcedds_cpp/cmake/rosidl_typesupport_microxrcedds_cpp_generate_interfaces.cmake
++@@ -137,6 +137,7 @@ target_compile_options(${rosidl_generate_interfaces_TARGET}${_target_suffix}
++   PRIVATE
++     $<$<PLATFORM_ID:Linux>:-Wall>
++     $<$<PLATFORM_ID:Linux>:-Wextra>
+++    $<$<C_COMPILER_ID:GNU>:-Wno-missing-field-initializers>
++     $<$<PLATFORM_ID:Linux>:-Wpedantic>
++     $<$<PLATFORM_ID:Windows>:/W4>
++   )
++diff --git a/test/c/CMakeLists.txt b/test/c/CMakeLists.txt
++index 243734e..f76cae1 100644
++--- a/test/c/CMakeLists.txt
+++++ b/test/c/CMakeLists.txt
++@@ -56,6 +56,7 @@ if(BUILD_TESTING)
++     PRIVATE
++       $<$<C_COMPILER_ID:GNU>:-Wall>
++       $<$<C_COMPILER_ID:GNU>:-Wextra>
+++      $<$<C_COMPILER_ID:GNU>:-Wno-missing-field-initializers>
++       $<$<C_COMPILER_ID:GNU>:-pedantic>
++     )
++ 
++diff --git a/test/cpp/CMakeLists.txt b/test/cpp/CMakeLists.txt
++index 4db1e66..acdd64b 100644
++--- a/test/cpp/CMakeLists.txt
+++++ b/test/cpp/CMakeLists.txt
++@@ -23,7 +23,7 @@ if(BUILD_TESTING)
++   ament_lint_auto_find_test_dependencies()
++ 
++   find_package(rosidl_typesupport_microxrcedds_cpp REQUIRED)
++-  find_package(rosidl_typesupport_microxrcedds_test_msg REQUIRED)  
+++  find_package(rosidl_typesupport_microxrcedds_test_msg REQUIRED)
++   find_package(rosidl_runtime_cpp REQUIRED)
++   find_package(rosidl_typesupport_cpp REQUIRED)
++   find_package(ament_cmake_gtest REQUIRED)
++@@ -48,6 +48,7 @@ if(BUILD_TESTING)
++     PRIVATE
++       $<$<C_COMPILER_ID:GNU>:-Wall>
++       $<$<C_COMPILER_ID:GNU>:-Wextra>
+++      $<$<C_COMPILER_ID:GNU>:-Wno-missing-field-initializers>
++       $<$<C_COMPILER_ID:GNU>:-pedantic>
++     )
++ 
++-- 
++2.43.0
++
+diff --git a/config/host_zenoh/patches/zenohpico/0001-change-package-name.patch b/config/host_zenoh/patches/zenohpico/0001-change-package-name.patch
+new file mode 100644
+index 0000000..46389ac
+--- /dev/null
++++ b/config/host_zenoh/patches/zenohpico/0001-change-package-name.patch
+@@ -0,0 +1,26 @@
++From 99e2640551016965626c438df07f0356ec637b61 Mon Sep 17 00:00:00 2001
++From: Katsumi Yamazaki <v-yamazaki8668@esol.co.jp>
++Date: Thu, 29 Aug 2024 13:52:23 +0900
++Subject: [PATCH] change package name.
++
++---
++ colcon.pkg | 6 +-----
++ 1 file changed, 1 insertion(+), 5 deletions(-)
++
++diff --git a/colcon.pkg b/colcon.pkg
++index 51ae41f2..0841abcc 100644
++--- a/colcon.pkg
+++++ b/colcon.pkg
++@@ -1,8 +1,4 @@
++ {
++-    "name": "zenoh_pico",
+++    "name": "zenohpico",
++     "type": "cmake",
++-    "cmake-args":[
++-        "-DTESTS=OFF",
++-        "-DEXAMPLES=OFF",
++-    ],
++ }
++-- 
++2.43.0
++
+diff --git a/scripts/build_firmware.sh b/scripts/build_firmware.sh
+index 96a2c86..5a3e3ab 100755
+--- a/scripts/build_firmware.sh
++++ b/scripts/build_firmware.sh
+@@ -60,7 +60,7 @@ fi
+ . $(dirname $0)/clean_env.sh
+ 
+ # source dev_ws
+-if [ $RTOS != "host" ]; then
++if [[ "$RTOS" != "host"* ]]; then
+     set +o nounset
+     . $FW_TARGETDIR/dev_ws/install/setup.bash
+     set -o nounset
+@@ -75,4 +75,3 @@ if [ -d "$PREFIX/config/$RTOS/generic" ]; then
+ else
+     . $PREFIX/config/$RTOS/$PLATFORM/build.sh
+ fi
+-
+diff --git a/scripts/clean_env.sh b/scripts/clean_env.sh
+index 7ac5b4c..5e8293a 100644
+--- a/scripts/clean_env.sh
++++ b/scripts/clean_env.sh
+@@ -14,14 +14,14 @@ function clean {
+       grep -v -E "($(echo $PREFIXES_TO_CLEAN | sed 's/:/\|/g'))" ) | sed 's/ /:/g' )
+ }
+ 
+-if [ $RTOS == "host" ]; then
++if [[ "$RTOS" == "host"* ]]; then
+   echo "Compiling for host environment: not cleaning path"
+ else
+   echo "Crosscompiled environment: cleaning path"
+   if [ ! -z ${LD_LIBRARY_PATH+x} ]
+   then
+     MRS_TEMP_VAR=$(clean $LD_LIBRARY_PATH)
+-    if [ ! -z "$MRS_TEMP_VAR" ]  
++    if [ ! -z "$MRS_TEMP_VAR" ]
+     then
+       export LD_LIBRARY_PATH=$MRS_TEMP_VAR
+     else
+@@ -32,7 +32,7 @@ else
+   if [ ! -z ${CMAKE_PREFIX_PATH+x} ]
+   then
+     MRS_TEMP_VAR=$(clean $CMAKE_PREFIX_PATH)
+-    if [ ! -z "$MRS_TEMP_VAR" ]  
++    if [ ! -z "$MRS_TEMP_VAR" ]
+     then
+       export CMAKE_PREFIX_PATH=$MRS_TEMP_VAR
+     else
+@@ -43,7 +43,7 @@ else
+   if [ ! -z ${PYTHONPATH+x} ]
+   then
+     MRS_TEMP_VAR=$(clean $PYTHONPATH)
+-    if [ ! -z "$MRS_TEMP_VAR" ]  
++    if [ ! -z "$MRS_TEMP_VAR" ]
+     then
+       export PYTHONPATH=$MRS_TEMP_VAR
+     else
+@@ -54,4 +54,4 @@ else
+   export PATH=$(clean $PATH)
+   unset AMENT_PREFIX_PATH
+   unset COLCON_PREFIX_PATH
+-fi
+\ No newline at end of file
++fi
+diff --git a/scripts/create_firmware_ws.sh b/scripts/create_firmware_ws.sh
+index 0745c06..061a4f2 100755
+--- a/scripts/create_firmware_ws.sh
++++ b/scripts/create_firmware_ws.sh
+@@ -86,7 +86,7 @@ pushd $FW_TARGETDIR >/dev/null
+     # Creating dev directory
+     mkdir $DEV_WS_DIR
+ 
+-    if [ $RTOS != "host" ]; then
++    if [[ "$RTOS" != "host"* ]]; then
+         ros2 run micro_ros_setup create_ws.sh $DEV_WS_DIR $PREFIX/config/$RTOS/dev_ros2_packages.txt \
+             $PREFIX/config/$RTOS/dev_uros_packages.repos
+         rosdep install --os=ubuntu:jammy -y --from-paths $DEV_WS_DIR -i $DEV_WS_DIR --rosdistro $ROS_DISTRO --skip-keys="$SKIP"
+@@ -100,7 +100,7 @@ popd >/dev/null
+ 
+ # build the dev_ws
+ . $(dirname $0)/clean_env.sh
+-if [ $RTOS != "host" ]; then
++if [[ "$RTOS" != "host"* ]]; then
+     pushd $FW_TARGETDIR/$DEV_WS_DIR >/dev/null
+         colcon build
+         set +o nounset
+@@ -114,4 +114,3 @@ rosdep install --os=ubuntu:jammy -y --from-paths $PREFIX/config/$RTOS/$TARGET_FO
+ 
+ # Creating specific firmware folder
+ . $PREFIX/config/$RTOS/$TARGET_FOLDER/create.sh
+-
+-- 
+2.43.0
+

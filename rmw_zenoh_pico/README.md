@@ -1,4 +1,5 @@
 # rmw_zenoh_pico
 
-T.D.B
+rmw_zenoh_pico implements the ROS middleware interface using zeonh-pico package.
 
+For more information see the repository level [README](../README.md) 
