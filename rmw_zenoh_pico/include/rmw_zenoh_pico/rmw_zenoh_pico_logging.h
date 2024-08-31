@@ -41,13 +41,16 @@ static inline void __z_log_prefix(const char *prefix, const char *func_name) {
 #define _Z_LOG_LVL_INFO  2
 #define _Z_LOG_LVL_DEBUG 3
 
-#define ZENOH_DEBUG _Z_LOG_LVL_DEBUG
+#define ZENOH_DEBUG_ENABLE
+
+extern void rmw_zenoh_pico_debug_level_inir(void);
+extern int rmw_zenoh_pico_debug_level_get(void);
 
 // Logging macros
 #define _Z_LOG_PREFIX(prefix)    __z_log_prefix(#prefix, __func__)
 
 // Ignore print only if log deactivated and build is release
-#if ZENOH_DEBUG == 0
+#ifndef ZENOH_DEBUG_ENABLE
 
 #define _Z_DEBUG(...) (void)(0)
 #define _Z_INFO(...) (void)(0)
@@ -57,35 +60,35 @@ static inline void __z_log_prefix(const char *prefix, const char *func_name) {
 #define RMW_ZENOH_LOG_INFO (void)(0)
 #define RMW_ZENOH_LOG_ERROR (void)(0)
 
-#define RMW_ZENOH_FUNC_ENTRY (void)(0)
+#define RMW_ZENOH_FUNC_ENTRY() (void)(0)
 
-#else  // ZENOH_DEBUG != 0 || defined(Z_BUILD_DEBUG)
+#else
 
-#define _Z_DEBUG(...)				\
-  do {						\
-    if (ZENOH_DEBUG >= _Z_LOG_LVL_DEBUG) {	\
-      _Z_LOG_PREFIX(DEBUG);			\
-      printf(__VA_ARGS__);			\
-      printf("\r\n");				\
-    }						\
+#define _Z_DEBUG(...)						\
+  do {								\
+    if (rmw_zenoh_pico_debug_level_get() >= _Z_LOG_LVL_DEBUG) {	\
+      _Z_LOG_PREFIX(DEBUG);					\
+      printf(__VA_ARGS__);					\
+      printf("\r\n");						\
+    }								\
   } while (false)
 
-#define _Z_INFO(...)				\
-  do {						\
-    if (ZENOH_DEBUG >= _Z_LOG_LVL_INFO) {	\
-      _Z_LOG_PREFIX(INFO);			\
-      printf(__VA_ARGS__);			\
-      printf("\r\n");				\
-    }						\
+#define _Z_INFO(...)						\
+  do {								\
+    if (rmw_zenoh_pico_debug_level_get() >= _Z_LOG_LVL_INFO) {	\
+      _Z_LOG_PREFIX(INFO);					\
+      printf(__VA_ARGS__);					\
+      printf("\r\n");						\
+    }								\
   } while (false)
 
-#define _Z_ERROR(...)				\
-  do {						\
-    if (ZENOH_DEBUG >= _Z_LOG_LVL_ERROR) {	\
-      _Z_LOG_PREFIX(ERROR);			\
-      printf(__VA_ARGS__);			\
-      printf("\r\n");				\
-    }						\
+#define _Z_ERROR(...)						\
+  do {								\
+    if (rmw_zenoh_pico_debug_level_get() >= _Z_LOG_LVL_ERROR) {	\
+      _Z_LOG_PREFIX(ERROR);					\
+      printf(__VA_ARGS__);					\
+      printf("\r\n");						\
+    }								\
   } while (false)
 
 #define RMW_ZENOH_LOG_DEBUG(...) _Z_DEBUG(__VA_ARGS__)
@@ -94,8 +97,6 @@ static inline void __z_log_prefix(const char *prefix, const char *func_name) {
 
 #define RMW_ZENOH_FUNC_ENTRY() RMW_ZENOH_LOG_DEBUG("start()")
 
-#endif /* ZENOH_DEBUG */
-
-
+#endif /* ! ZENOH_DEBUG_ENABLE */
 
 #endif

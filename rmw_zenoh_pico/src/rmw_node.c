@@ -12,6 +12,7 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
+#include "rmw_zenoh_pico/rmw_zenoh_pico_logging.h"
 #include <rmw_zenoh_pico/rmw_zenoh_pico.h>
 
 z_mutex_t mutex_ZenohPicoNodeData;
@@ -106,7 +107,10 @@ bool declaration_node_data(ZenohPicoNodeData *node_data)
     return false;
   }
 
-  zenoh_pico_debug_node_data(node_data);
+  // dump node infomation
+  if(rmw_zenoh_pico_debug_level_get() == _Z_LOG_LVL_DEBUG){
+    zenoh_pico_debug_node_data(node_data);
+  }
 
   return true;
 }

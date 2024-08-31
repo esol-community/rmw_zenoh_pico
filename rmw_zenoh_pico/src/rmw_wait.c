@@ -95,7 +95,7 @@ rmw_wait(rmw_subscriptions_t * subscriptions,
 	 rmw_wait_set_t * wait_set,
 	 const rmw_time_t * wait_timeout)
 {
-  RMW_ZENOH_FUNC_ENTRY();
+  // RMW_ZENOH_FUNC_ENTRY();
 
   RMW_CHECK_ARGUMENT_FOR_NULL(wait_set, RMW_RET_INVALID_ARGUMENT);
   RMW_CHECK_TYPE_IDENTIFIERS_MATCH(
@@ -133,7 +133,7 @@ rmw_wait(rmw_subscriptions_t * subscriptions,
       }
     }
 
-    RMW_ZENOH_LOG_INFO("wakeup from wait condition....");
+    // RMW_ZENOH_LOG_INFO("wakeup from wait condition....");
 
     wait_set_data->triggered_ = false;
 
