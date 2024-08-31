@@ -139,7 +139,7 @@ void zenoh_pico_debug_subscription_data(ZenohPicoSubData *sub_data)
   Z_STRING_PRINTF(sub_data->topic_key_, topic_key);
 
   // debug node member
-  // zenoh_pico_debug_node_data(sub_data->node_);
+  zenoh_pico_debug_node_data(sub_data->node_);
 
   // debug entity member
   zenoh_pico_debug_entity(sub_data->entity_);
@@ -552,7 +552,9 @@ rmw_create_subscription(
 								      type_support,
 								      callbacks,
 								      &_qos_profile);
-  zenoh_pico_debug_subscription_data(_sub_data);
+  if(rmw_zenoh_pico_debug_level_get() == _Z_LOG_LVL_DEBUG){
+    zenoh_pico_debug_subscription_data(_sub_data);
+  }
 
   rmw_subscription_t * rmw_subscription = _rmw_subscription_generate(node->context,
 								     _sub_data,
