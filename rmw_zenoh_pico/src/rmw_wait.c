@@ -126,7 +126,7 @@ rmw_wait(rmw_subscriptions_t * subscriptions,
 	struct timespec timeout;
 
 	memset(&timeout, 0, sizeof(struct timespec));
-	timeout.tv_sec = wait_timeout->sec + 10;
+	timeout.tv_sec = wait_timeout->sec;
 	timeout.tv_nsec = wait_timeout->nsec;
 
 	z_condvar_wait_time(cv, lock, &timeout);
