@@ -315,11 +315,36 @@ void rmw_zenoh_pico_mutex_init(void)
   z_mutex_init(&mutex_ZenohPicoTopicInfo);
 }
 
+static int rmw_zenoh_pico_debug_level = _Z_LOG_LVL_ERROR;
+void rmw_zenoh_pico_debug_level_init(void)
+{
+  char *pathvar;
+
+  if((pathvar = getenv("RMW_ZNEOH_PICO_LOG")) == NULL)
+    return;
+
+  if(strcmp(pathvar, "Z_LOG_DEBUG") == 0) {
+    rmw_zenoh_pico_debug_level = _Z_LOG_LVL_DEBUG;
+  } else if (strcmp(pathvar, "Z_LOG_INFO") == 0) {
+    rmw_zenoh_pico_debug_level = _Z_LOG_LVL_INFO;
+  } else if (strcmp(pathvar, "Z_LOG_ERROR") == 0) {
+    rmw_zenoh_pico_debug_level = _Z_LOG_LVL_ERROR;
+  }
+
+  return;
+}
+
+int rmw_zenoh_pico_debug_level_get(void)
+{
+  return rmw_zenoh_pico_debug_level;
+}
+
 rmw_ret_t
 rmw_init(const rmw_init_options_t * options, rmw_context_t * context)
 {
-  RMW_ZENOH_FUNC_ENTRY();
+  rmw_zenoh_pico_debug_level_init();
 
+  RMW_ZENOH_FUNC_ENTRY();
   RCUTILS_CHECK_ARGUMENT_FOR_NULL(options, RMW_RET_INVALID_ARGUMENT);
   RCUTILS_CHECK_ARGUMENT_FOR_NULL(context, RMW_RET_INVALID_ARGUMENT);
   RCUTILS_CHECK_ARGUMENT_FOR_NULL(options->impl, RMW_RET_INVALID_ARGUMENT);

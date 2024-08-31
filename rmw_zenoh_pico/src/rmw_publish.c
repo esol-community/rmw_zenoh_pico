@@ -62,7 +62,10 @@ rmw_publish(const rmw_publisher_t * publisher,
   bool ret = pub_data->callbacks_->cdr_serialize(ros_message, &temp_buffer);
 
   set_ros2_header(msg_bytes);
-  (void)zenoh_pico_debug_dump_msg(msg_bytes, serialized_size);
+
+  if(rmw_zenoh_pico_debug_level_get() == _Z_LOG_LVL_DEBUG){
+    (void)zenoh_pico_debug_dump_msg(msg_bytes, serialized_size);
+  }
 
   z_publisher_put_options_t options = z_publisher_put_options_default();
   options.encoding = z_encoding(Z_ENCODING_PREFIX_TEXT_PLAIN, NULL);

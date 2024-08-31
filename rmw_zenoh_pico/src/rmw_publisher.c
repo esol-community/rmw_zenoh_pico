@@ -105,7 +105,7 @@ void zenoh_pico_debug_publisher_data(ZenohPicoPubData *pub_data)
   Z_STRING_PRINTF(pub_data->topic_key_, topic_key);
 
   // debug node member
-  // zenoh_pico_debug_node_data(sub_data->node_);
+  zenoh_pico_debug_node_data(pub_data->node_);
 
   // debug entity member
   zenoh_pico_debug_entity(pub_data->entity_);
@@ -349,7 +349,9 @@ rmw_create_publisher(
 								   type_support,
 								   callbacks,
 								   &_qos_profile);
-  zenoh_pico_debug_publisher_data(_pub_data);
+  if(rmw_zenoh_pico_debug_level_get() == _Z_LOG_LVL_DEBUG){
+    zenoh_pico_debug_publisher_data(_pub_data);
+  }
 
   rmw_publisher_t * rmw_publisher = _rmw_publisher_generate(node->context,
 							    _pub_data,
