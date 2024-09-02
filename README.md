@@ -16,7 +16,7 @@ This package is able to connect [rmw_zenoh](https://github.com/ros2/rmw_zenoh) l
   +----------------+        +-------------+
   |    ROS APP     |        |   ROS APP   | 
   +----------------+        +-------------+
-  |    ROS RCLc    |        |   RCLcpp    |
+  |      RCLc      |        |   RCLcpp    |
   +----------------+        +-------------+
   |    rmw API     |        |   rmw API   |
   +----------------+        +-------------+
