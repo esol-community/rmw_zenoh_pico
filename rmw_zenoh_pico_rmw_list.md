@@ -50,6 +50,6 @@ list of implemented rmw api on rmw_zenoh_pico (2024/09/01)
 | rmw_context_init                                |        |
 | rwm_take_response                               |        |
 
-OK      : implemented (* is depend other futures)
-NO      : non support
-<space> : no-plan yet
+OK      : implemented (* is depend other futures)  
+NO      : non support  
+space   : no-plan yet  
