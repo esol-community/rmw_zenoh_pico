@@ -203,6 +203,6 @@ first time, the rmw_zenoh get resource data which is other resource data from ze
 the rmw_zenoh_pico send own liveliness infomation to zenohd when there is starting. however, its data is not downloading rmw_zenoh when the rmw_zenoh is start.   
 the rmw_zenoh_pico sends my liveness information to zenohd when there starts. However, that data is not downloaded to rmw_zenoh from zenohd when the rmw_zenoh starts. Now, the node list command does not work properly on the rmw_zenoh node yet.  
 
-1. the pub/sub message from rmw_zenoh_pico do not using attempt data.
-the rmw_zenoh is using zenoh package. and the message from rmw_zenoh append additional data on attempt future with zenoh. the additional data on rmw_zenoh is "gid", "sequence_number" and "source_timestamp".  
-the rmw_zenoh_pico is using zenoh pico package. however, the rmw_zenoh_pico with zenoh-pico is not able to exchange the attempt data. Therefore, rmw_zenoh_pico does not yet support the full RMW API except for working communication between subscribers and publishers.  
+1. the pub/sub message from rmw_zenoh_pico do not using attachment data.
+the rmw_zenoh is using zenoh package. and the message from rmw_zenoh append additional data on attachment future with zenoh. the additional data on rmw_zenoh is "gid", "sequence_number" and "source_timestamp".  
+the rmw_zenoh_pico is using zenoh pico package. however, the rmw_zenoh_pico with zenoh-pico is not able to exchange the attachment data. Therefore, rmw_zenoh_pico does not yet support the full RMW API except for working communication between subscribers and publishers.  
