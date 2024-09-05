@@ -76,7 +76,7 @@ static bool add_int_value(size_t value, char **buf, int *left)
     return false;
 
   // join value string
-  int ret = snprintf(*buf, *left, "%ld", value);
+  int ret = snprintf(*buf, *left, "%d", (int)value);
 
   *buf += ret;
   *left -= ret;
@@ -200,7 +200,7 @@ z_string_t conv_domain(size_t domain){
   char _domain[16];
 
   memset(_domain, 0, sizeof(_domain));
-  snprintf(_domain, sizeof(_domain), "%ld", domain);
+  snprintf(_domain, sizeof(_domain), "%d", (int)domain);
 
   return _z_string_make(_domain);
 }
@@ -261,18 +261,18 @@ z_string_t qos_to_keyexpr(rmw_qos_profile_t *qos)
 
   memset(qos_data, 0, sizeof(qos_data));
   snprintf(qos_data, sizeof(qos_data),
-	   "%d%c%d%c%d%c%ld%c%ld%c%ld%c%ld%c%ld%c%d%c%ld%c%ld",
+	   "%d%c%d%c%d%c%d%c%d%c%d%c%d%c%d%c%d%c%d%c%d",
 	   qos->reliability, QOS_DELIMITER,
 	   qos->durability,  QOS_DELIMITER,
-	   qos->history, QOS_COMPONENT_DELIMITER,
-	   qos->depth, QOS_DELIMITER,
-	   qos->deadline.sec, QOS_COMPONENT_DELIMITER,
-	   qos->deadline.nsec, QOS_DELIMITER,
-	   qos->lifespan.sec, QOS_COMPONENT_DELIMITER,
-	   qos->lifespan.nsec, QOS_DELIMITER,
+	   (int)qos->history, QOS_COMPONENT_DELIMITER,
+	   (int)qos->depth, QOS_DELIMITER,
+	   (int)qos->deadline.sec, QOS_COMPONENT_DELIMITER,
+	   (int)qos->deadline.nsec, QOS_DELIMITER,
+	   (int)qos->lifespan.sec, QOS_COMPONENT_DELIMITER,
+	   (int)qos->lifespan.nsec, QOS_DELIMITER,
 	   qos->liveliness, QOS_COMPONENT_DELIMITER,
-	   qos->liveliness_lease_duration.sec, QOS_COMPONENT_DELIMITER,
-	   qos->liveliness_lease_duration.nsec);
+	   (int)qos->liveliness_lease_duration.sec, QOS_COMPONENT_DELIMITER,
+	   (int)qos->liveliness_lease_duration.nsec);
 
   return _z_string_make(qos_data);
 }
