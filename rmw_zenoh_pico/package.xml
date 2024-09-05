@@ -17,7 +17,6 @@
   <depend>rosidl_runtime_c</depend>
   <depend>rcutils</depend>
   <depend>rmw</depend>
-  <depend>rclc</depend>
   <depend>rosidl_typesupport_microxrcedds_c</depend>
   <depend>rosidl_typesupport_microxrcedds_cpp</depend>
   <depend>micro_ros_msgs</depend>

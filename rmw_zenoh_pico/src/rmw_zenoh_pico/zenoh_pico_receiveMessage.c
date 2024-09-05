@@ -63,7 +63,7 @@ bool zenoh_pico_delete_recv_msg_data(ReceiveMessageData * recv_data)
 #define PAYLOAD_DUMP_MAX 32
 void zenoh_pico_debug_dump_msg(uint8_t *start, size_t size)
 {
-  printf("size = [%ld]\n", size);
+  printf("size = [%d]\n", (int)size);
   for(size_t count = 0; count < size  && count <= PAYLOAD_DUMP_MAX; count += 4){
     uint8_t *ptr = start + count;
 
@@ -108,14 +108,14 @@ void zenoh_pico_debug_recv_msg_data(ReceiveMessageData * recv_data)
 {
   printf("--------- recv msg data ----------\n");
   printf("ref              = %d\n", recv_data->ref_);
-  printf("recv_timestamp   = %ld\n", recv_data->recv_timestamp_);
+  printf("recv_timestamp   = %d\n", (int)recv_data->recv_timestamp_);
   printf("publisher_gid_   = [");
   for(size_t count = 0; count < RMW_GID_STORAGE_SIZE && count < 16; count++){
     printf("%02x ", recv_data->publisher_gid_[count]);
   }
   printf("]\n");
-  printf("sequence_number  = [%ld]\n", recv_data->sequence_number_);
-  printf("source_timestamp = [%ld]\n", recv_data->source_timestamp_);
+  printf("sequence_number  = [%d]\n", (int)recv_data->sequence_number_);
+  printf("source_timestamp = [%d]\n", (int)recv_data->source_timestamp_);
 
   printf("--------- recv simple data ----------\n");
   zenoh_pico_debug_dump_msg(recv_data->payload_start, recv_data->payload_size);
@@ -230,7 +230,7 @@ void recv_msg_list_debug(ReceiveMessageDataList *msg_list)
   ReceiveMessageData * msg_data = msg_list->que_top;
 
   for(size_t count = 0; msg_data != NULL; count++){
-    printf("[%ld]\n", count);
+    printf("[%d]\n", (int)count);
     zenoh_pico_debug_recv_msg_data(msg_data);
     msg_data = msg_data->next_;
   }

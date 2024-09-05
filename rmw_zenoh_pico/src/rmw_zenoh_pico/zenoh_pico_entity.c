@@ -98,8 +98,8 @@ void zenoh_pico_debug_entity(ZenohPicoEntity *entity)
   printf("ref = %d\n", entity->ref_);
 
   Z_STRING_PRINTF(entity->zid_, zid);
-  printf("id  = %ld\n", entity->id_);
-  printf("nid = %ld\n", entity->nid_);
+  printf("id  = %d\n", (int)entity->id_);
+  printf("nid = %d\n", (int)entity->nid_);
 
   const char *_type_name = "unknown type";
   switch(entity->type_){

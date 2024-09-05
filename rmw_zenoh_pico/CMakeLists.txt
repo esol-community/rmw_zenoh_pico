@@ -23,58 +23,36 @@ project(rmw_zenoh_pico
 )
 
 find_package(ament_cmake_ros REQUIRED)
-find_package(rcutils REQUIRED)
 find_package(rosidl_runtime_c REQUIRED)
-
-find_package(microcdr REQUIRED)
-
+find_package(rcutils REQUIRED)
 find_package(rmw REQUIRED)
-
+find_package(microcdr REQUIRED)
 find_package(zenohpico REQUIRED)
-find_path(zenohpico_INCLUDE_DIR
-  NAMES         zenoh-pico.h
-  PATH_SUFFIXES include
-  PATHS         ${zenohpico_DIR}/../../
-)
-
-find_library(zenohpico_LIBRARY
-  NAME          zenohpico
-  PATH_SUFFIXES lib
-  PATHS         ${zenohpico_DIR}/..
-)
 
 # Build options
-option(BUILD_DOCUMENTATION			"Use doxygen to create product documentation" OFF)
+option(BUILD_DOCUMENTATION              "Use doxygen to create product documentation" OFF)
 
 # --- RMW CONFIGURATION ---
-set(RMW_ZENOH_PICO_TRANSPORT			"unicast"      CACHE STRING "Sets zenoh pico transport to use. (unicast | serial)")
+set(RMW_ZENOH_PICO_TRANSPORT            "unicast"      CACHE STRING "Sets zenoh pico transport to use. (unicast | serial)")
+set(RMW_ZENOH_PICO_TRANSPORT_MODE       "client"       CACHE STRING "zenoh transport connect mode")
+set(RMW_ZENOH_PICO_CONNECT              "127.0.0.1"    CACHE STRING "Sets the scout address.")
+set(RMW_ZENOH_PICO_CONNECT_PORT         "7447"         CACHE STRING "Sets the scout port.")
+set(RMW_ZENOH_PICO_LISTEN               "127.0.0.1"    CACHE STRING "Sets the listen address.")
+set(RMW_ZENOH_PICO_LISTEN_PORT          "-1"           CACHE STRING "Sets the listen port.")
 
-set(RMW_ZENOH_PICO_TRANSPORT_MODE		"client"       CACHE STRING "zenoh transport connect mode")
-set(RMW_ZENOH_PICO_CONNECT			"127.0.0.1"    CACHE STRING "Sets the scout address.")
-set(RMW_ZENOH_PICO_CONNECT_PORT			"7447"         CACHE STRING "Sets the scout port.")
-set(RMW_ZENOH_PICO_LISTEN			"127.0.0.1"    CACHE STRING "Sets the listen address.")
-set(RMW_ZENOH_PICO_LISTEN_PORT			"-1"           CACHE STRING "Sets the listen port.")
+set(RMW_ZENOH_PICO_SERIAL_DEVICE        "/dev/ttyAMA0" CACHE STRING "Sets the agent serial port.")
+set(RMW_ZENOH_PICO_MAX_LINENESS_LEN     "256"          CACHE STRING "This value sets the number of max liveliness resource length")
 
-set(RMW_ZENOH_PICO_LOCATOR			"224.0.0.224"  CACHE STRING "Sets the scout address by mcast.")
-set(RMW_ZENOH_PICO_LOCATOR_PORT			"7446"         CACHE STRING "Sets the scout port by mcast.")
-
-set(RMW_ZENOH_PICO_SERIAL_DEVICE                "/dev/ttyAMA0" CACHE STRING "Sets the agent serial port.")
-
-set(RMW_ZENOH_PICO_MAX_LINENESS_LEN             "256"          CACHE STRING "This value sets the number of max liveliness resource length")
-
-set(RMW_ZENOH_PICO_C_STANDARD			"99" CACHE STRING  "Version of the C language used to build the library")
+set(RMW_ZENOH_PICO_C_STANDARD           "99"           CACHE STRING  "Version of the C language used to build the library")
 
 # Transport handle define macros.
 set(RMW_ZENOH_PICO_TRANSPORT_SERIAL  OFF)
 set(RMW_ZENOH_PICO_TRANSPORT_UNICAST OFF)
-set(RMW_ZENOH_PICO_TRANSPORT_MULTICAST OFF)
 
 if(${RMW_ZENOH_PICO_TRANSPORT} STREQUAL "serial")
   set(RMW_ZENOH_PICO_TRANSPORT_SERIAL ON)
 elseif(${RMW_ZENOH_PICO_TRANSPORT} STREQUAL "unicast")
   set(RMW_ZENOH_PICO_TRANSPORT_UNICAST ON)
-elseif(${RMW_ZENOH_PICO_TRANSPORT} STREQUAL "mcast")
-  set(RMW_ZENOH_PICO_TRANSPORT_MULTICAST ON)
 else()
   message(FATAL_ERROR "Transport not supported. Use \"unicast\", \"serial\"")
 endif()
@@ -139,8 +117,6 @@ add_library(${PROJECT_NAME}
 
 target_link_libraries(${PROJECT_NAME}
   microcdr
-  ${zenohpico_LIBRARY}
-  $<$<BOOL:${RMW_ZENOH_PICO_GRAPH}>:micro_ros_msgs_lib>
 )
 
 # Type support lock-up mechanism
@@ -168,6 +144,7 @@ if(rosidl_typesupport_microxrcedds_cpp_FOUND)
 endif()
 
 ament_target_dependencies(${PROJECT_NAME}
+  "zenohpico"
   "rcutils"
   "rmw"
 )
@@ -180,7 +157,6 @@ target_include_directories(${PROJECT_NAME}
     $<BUILD_INTERFACE:${PROJECT_BINARY_DIR}/include>
   PRIVATE
     $<BUILD_INTERFACE:${PROJECT_SOURCE_DIR}/src>
-    $<BUILD_INTERFACE:${zenohpico_INCLUDE_DIR}>
 )
 
 set_target_properties(${PROJECT_NAME} PROPERTIES
@@ -213,9 +189,12 @@ ament_export_include_directories(${microcdr_INCLUDE_DIR})
 ament_export_libraries(${PROJECT_NAME})
 
 ament_export_dependencies(
+  zenohpico
   rcutils
   rmw
 )
+
+# ament_export_interfaces(export_${PROJECT_NAME} HAS_LIBRARY_TARGET)
 
 if(rosidl_typesupport_microxrcedds_c_FOUND)
   ament_export_dependencies(rosidl_typesupport_microxrcedds_c)
@@ -234,7 +213,7 @@ register_rmw_implementation(${implementations})
 if(BUILD_DEMO)
   find_package(ament_lint_auto REQUIRED)
   ament_lint_auto_find_test_dependencies()
-  add_subdirectory(demo/rclc)
+  add_subdirectory(demo/host)
 endif()
 
 # Create source files with the define
