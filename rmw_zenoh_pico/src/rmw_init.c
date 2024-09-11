@@ -180,7 +180,7 @@ rmw_init_options_init(rmw_init_options_t * init_options, rcutils_allocator_t all
   init_options->instance_id		  = 0;
   init_options->implementation_identifier = rmw_get_implementation_identifier();
   init_options->allocator		  = allocator;
-  init_options->enclave                   = (char *)NULL;
+  init_options->enclave                   = "/";
   init_options->domain_id		  = 0;
   init_options->security_options	  = rmw_get_default_security_options();
   init_options->localhost_only		  = RMW_LOCALHOST_ONLY_DEFAULT;
