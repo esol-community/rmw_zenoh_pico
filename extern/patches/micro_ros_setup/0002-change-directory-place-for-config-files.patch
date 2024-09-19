@@ -1,7 +1,7 @@
 From 03993a420d5c8926418b03600cd1088fa52c0bf0 Mon Sep 17 00:00:00 2001
 From: Katsumi Yamazaki <v-yamazaki8668@esol.co.jp>
 Date: Wed, 4 Sep 2024 14:46:14 +0900
-Subject: [PATCH 2/4] change directory place for config files.
+Subject: [PATCH 2/5] change directory place for config files.
 
 ---
  config/{host_zenoh => zenoh}/client_ros2_packages.txt         | 0

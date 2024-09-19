@@ -1,7 +1,7 @@
 From 9755b5fedef48d11acbbb4e5c2bb51568f5d0999 Mon Sep 17 00:00:00 2001
 From: Katsumi Yamazaki <v-yamazaki8668@esol.co.jp>
 Date: Fri, 6 Sep 2024 16:02:13 +0900
-Subject: [PATCH 3/4] generate config/zenoh/raspbian.
+Subject: [PATCH 3/5] generate config/zenoh/raspbian.
 
 ---
  config/raspbian/generic/create.sh             |  4 +-

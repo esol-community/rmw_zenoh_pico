@@ -1,7 +1,7 @@
 From dc1e57fdf3c7bc5ffe8e1781126bb2f3e212f216 Mon Sep 17 00:00:00 2001
 From: Katsumi Yamazaki <v-yamazaki8668@esol.co.jp>
 Date: Tue, 17 Sep 2024 18:49:28 +0900
-Subject: [PATCH 4/4] bugfix : use rmw_zenoh_pico branch on rmw_zenoh_pico
+Subject: [PATCH 4/5] bugfix : use rmw_zenoh_pico branch on rmw_zenoh_pico
  repository.
 
 ---
