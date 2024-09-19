@@ -1,7 +1,7 @@
 From e9880a9ec403ad938137729f9147b5153a8c9c8a Mon Sep 17 00:00:00 2001
 From: Katsumi Yamazaki <v-yamazaki8668@esol.co.jp>
 Date: Sat, 27 Jul 2024 19:37:49 +0900
-Subject: [PATCH 1/4] import host_zenoh configuration.
+Subject: [PATCH 1/5] import host_zenoh configuration.
 
 ---
  CMakeLists.txt                                |  2 +-
