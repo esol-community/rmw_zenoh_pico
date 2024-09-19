@@ -1,0 +1,26 @@
+From 54320b93bfc15d4615709ee0fcf0359119d758d0 Mon Sep 17 00:00:00 2001
+From: Katsumi Yamazaki <v-yamazaki8668@esol.co.jp>
+Date: Thu, 19 Sep 2024 13:28:53 +0900
+Subject: [PATCH 5/5] bugfix : use rmw_zenoh_pico branch on rmw_zenoh_pico
+ repository. (No2)
+
+---
+ config/zenoh/host/create.sh | 2 +-
+ 1 file changed, 1 insertion(+), 1 deletion(-)
+
+diff --git a/config/zenoh/host/create.sh b/config/zenoh/host/create.sh
+index f67416f..7c0001f 100755
+--- a/config/zenoh/host/create.sh
++++ b/config/zenoh/host/create.sh
+@@ -19,7 +19,7 @@ if [ ! -v RMW_ZENOH_PICO_PATH ] ; then
+ fi
+ 
+ if [ ! -d src/uros/rmw_zenoh_pico ] ; then
+-    git clone $RMW_ZENOH_PICO_PATH -b develop src/uros/rmw_zenoh_pico
++    git clone $RMW_ZENOH_PICO_PATH -b rmw_zenoh_pico src/uros/rmw_zenoh_pico
+ fi
+ 
+ # local patches (2024.08.29)
+-- 
+2.43.0
+
