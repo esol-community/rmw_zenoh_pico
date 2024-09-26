@@ -36,5 +36,5 @@ repositories:
     version: jazzy
   uros/zenohpico:
     type: git
-    url: /home/katsumi/Product/zenoh/zenoh-pico
-    version: develop
+    url: https://github.com/eclipse-zenoh/zenoh-pico.git
+    version: 0.11.0
