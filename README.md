@@ -206,9 +206,9 @@ the command execute on other terminal.
 
 ``` 
 % cd microros
-source install/local_setup.bash
-export RMW_IMPLEMENTATION=rmw_zenoh_pico
-ros2 run rmw_zenoh_demos_rclc listener
+% source install/local_setup.bash
+% export RMW_IMPLEMENTATION=rmw_zenoh_pico
+% ros2 run rmw_zenoh_demos_rclc listener
 ``` 
 
 ### Raspberry Pi target
