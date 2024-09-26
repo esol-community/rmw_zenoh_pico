@@ -37,4 +37,4 @@ repositories:
   uros/zenohpico:
     type: git
     url: https://github.com/eclipse-zenoh/zenoh-pico.git
-    version: develop
+    version: 0.11.0
