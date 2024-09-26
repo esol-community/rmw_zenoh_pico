@@ -95,6 +95,7 @@ the host_zenoh configuration on micro_ros_setup read rmw_zenoh_pico package from
 % popd
 % ls
 microros  rmw_zenoh_pico
+%
 ```
 
 the rmw_zenoh_pico package have patch for micro_ros_setup package. 
@@ -108,13 +109,14 @@ this patch is append any zenoh-pico configration to config diretory on orignal m
 % sudo apt-get install python3-pip
 % colcon build
 % source install/local_setup.bash
+%
 ```
 
 As with other micro-ros-startups, colcon is used to set up the build environment.
 
 ## Creating a new firmware workspace
 
-the rmw_zenoh_pico have any demo program.
+the rmw_zenoh_pico have any demo program.  
 In this session, we will introduce a sample communication example between rmw_zenoh_pico and zenoh_pico.
 
 ### Linux target
@@ -130,7 +132,7 @@ In this session, we will introduce a sample communication example between rmw_ze
 ```
 % pushd microros
 % ros2 run micro_ros_setup create_firmware_ws.sh zenoh raspbian bookworm_v12
-% ros2 run micro_ros_setup configure_firmware.sh listener -t unicast -i <zenoh ip> -p <zenoh port>
+% ros2 run micro_ros_setup configure_firmware.sh listener -t unicast -i <zenohd ip> -p <zenohd port>
 % source install/local_setup.bash
 % ros2 run micro_ros_setup build_firmware.sh
 % file  firmware/bin/listener
@@ -149,8 +151,22 @@ the raspios  configration for rmw_zenoh_pico have to set their ip address and po
 the raspios configration on this patch on rmw_zeno_pico package is support by rasberry pi 1/pico toolchaines (genrate to ELF32bit/EABI5).   
 if you want to use other rasberry pi target which is using 64bit environment, you have to change part of toolchaines URL in create.sh by manual.  
 ```
-see:  micro_ros_setup/config/zenoh/raspbian/create.sh by
+% cat micro_ros_setup/config/zenoh/raspbian/create.sh 
+#! /bin/bash
+
+pushd $FW_TARGETDIR/$DEV_WS_DIR >/dev/null
+    if [ $OPTION == "bookworm_v12" ]; then
+        TOOLCHAIN_URL="https://..."              /* change URL of cross-complile toolchain */
+                                                 /* for match target raspios environment  */
+    else
+        echo "Platform not supported."
+        exit 1
+    fi
+       :
+	   :
 ```
+
+see : https://sourceforge.net/projects/raspberry-pi-cross-compilers/files/Raspberry%20Pi%20GCC%20Cross-Compiler%20Toolchains/  
 
 ### RTOS target 
 T.D.B
@@ -231,19 +247,21 @@ see the file [3rd-party-licenses.txt](3rd-party-licenses.txt).
 
 ## Known Issues/Limitations
 
-1. the pub/sub message from rmw_zenoh_pico do not using attempt data.
-the rmw_zenoh is using zenoh package. and the message from rmw_zenoh append additional data on attempt future with zenoh. the additional data on rmw_zenoh is "gid", "sequence_number" and "source_timestamp".  
-the rmw_zenoh_pico is using zenoh pico package. however, the rmw_zenoh_pico with zenoh-pico is not able to exchange the attempt data. Therefore, rmw_zenoh_pico does not yet support the full RMW API except for working communication between subscribers and publishers.  
+1. The pub/sub message from rmw_zenoh_pico do not using attempt data.
+The rmw_zenoh is using zenoh package. and the message from rmw_zenoh append additional data on attempt future with zenoh. the additional data on rmw_zenoh is "gid", "sequence_number" and "source_timestamp".  
+The rmw_zenoh_pico is using zenoh pico package. however, the rmw_zenoh_pico with zenoh-pico is not able to exchange the attempt data. Therefore, rmw_zenoh_pico does not yet support the full RMW API except for working communication between subscribers and publishers.  
 
-1. the node infomation for rmw_zenoh_pico is not get on other node on rmw_zenoh.
-first time, the rmw_zenoh get resource data which is other resource data from zenohd when the there is starting. and the rmw_zenoh generate own resource data which is used by node infomation.  
-the rmw_zenoh_pico send own liveliness infomation to zenohd when there is starting. however, its data is not downloading rmw_zenoh when the rmw_zenoh is start.   
-the rmw_zenoh_pico sends my liveness information to zenohd when there starts. However, that data is not downloaded to rmw_zenoh from zenohd when the rmw_zenoh starts. Now, the node list command does not work properly on the rmw_zenoh node yet.  
+1. The node infomation for rmw_zenoh_pico is not get on other node on rmw_zenoh.
+First time, the rmw_zenoh get resource data which is other resource data from zenohd when the there is starting. and the rmw_zenoh generate own resource data which is used by node infomation.  
+The rmw_zenoh_pico sends my key information to zenohd when there starts. However, that data is not downloaded to rmw_zenoh from zenohd when the rmw_zenoh starts. Now, the node list command does not work properly on the rmw_zenoh node yet.  </br>The rmw_zenoh implementation sends the key and subscribe zenoh messages to zenohd when creating a new node.  
+However, the rmw_zenoh_pico implementation send only key zenoh messages.   
+After considering the impact of adding subscroibe zenoh message (ex. reception handler,,) when creating the rmw_zenoh_pico node,
+rmw_zenoh_pico will implement the same processing as rmw_zenoh.  
 
-1. the rmw_zenoh_pico using malloc() system futures when there need new memory region.
-the XRCE-DDS implementation have simple memory futures into own layer.  
-this memory futures is designed to run ros communication for small resource system.
+1. The rmw_zenoh_pico using malloc() system futures when there need new memory region.
+The XRCE-DDS implementation have simple memory futures into own layer.  
+This memory futures is designed to run ros communication for small resource system.
 Now, the rmw_zenoh rayer is able to execute on linux system which have memory subsystem for large system with zenoh.  
-the zenoh-pico is designed for small resource system. however, the zenoh-pico memory is compiling into own system and it is not designed to use same data area with upside layer which is rmw_zenoh_pico.  
+The zenoh-pico is designed for small resource system. however, the zenoh-pico memory is compiling into own system and it is not designed to use same data area with upside layer which is rmw_zenoh_pico.  
 If you use rmw_zeno_pico on a small resource system with any RTOS, you might need to add some customizations for zenoh-pico and rmw_zenoh_pico.  
 
