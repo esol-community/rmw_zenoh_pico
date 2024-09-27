@@ -219,7 +219,7 @@ int64_t get_int64_from_attachment(const z_attachment_t * const attachment, char 
 
 void add_new_message(ZenohPicoSubData *sub_data, ReceiveMessageData *recv_data)
 {
-  zenoh_pico_debug_recv_msg_data(recv_data);
+  // zenoh_pico_debug_recv_msg_data(recv_data);
 
   (void)recv_msg_list_push(&sub_data->message_queue_, recv_data);
   RMW_ZENOH_LOG_INFO("message_queue size is %d",
@@ -258,7 +258,7 @@ void sub_data_handler(const z_sample_t *sample, void *ctx) {
     // We failed to get the GID from the attachment.  While this isn't fatal,
     // it is unusual and so we should report it.
     memset(pub_gid, 0, RMW_GID_STORAGE_SIZE);
-    RMW_ZENOH_LOG_ERROR("Unable to obtain publisher GID from the attachment.");
+    RMW_ZENOH_LOG_INFO("Unable to obtain publisher GID from the attachment.");
   }
 
   sequence_number = get_int64_from_attachment(&sample->attachment, "sequence_number");
@@ -267,7 +267,7 @@ void sub_data_handler(const z_sample_t *sample, void *ctx) {
     // We failed to get the sequence number from the attachment.  While this
     // isn't fatal, it is unusual and so we should report it.
     sequence_number = 0;
-    RMW_ZENOH_LOG_ERROR("Unable to obtain sequence number from the attachment.");
+    RMW_ZENOH_LOG_INFO("Unable to obtain sequence number from the attachment.");
   }
 
   source_timestamp = get_int64_from_attachment(&sample->attachment, "source_timestamp");
@@ -276,7 +276,7 @@ void sub_data_handler(const z_sample_t *sample, void *ctx) {
     // We failed to get the source timestamp from the attachment.  While this
     // isn't fatal, it is unusual and so we should report it.
     source_timestamp = 0;
-    RMW_ZENOH_LOG_ERROR("Unable to obtain source timestamp from the attachment.");
+    RMW_ZENOH_LOG_INFO("Unable to obtain source timestamp from the attachment.");
   }
 #endif
 
