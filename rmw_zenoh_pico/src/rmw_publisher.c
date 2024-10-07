@@ -68,7 +68,6 @@ ZenohPicoPubData * zenoh_pico_generate_publisher_data(
 						     Z_STRING_VAL(topic_info->type_),
 						     Z_STRING_VAL(topic_info->hash_));
 
-
   return pub_data;
 }
 
@@ -111,6 +110,14 @@ void zenoh_pico_debug_publisher_data(ZenohPicoPubData *pub_data)
   zenoh_pico_debug_entity(pub_data->entity_);
 }
 
+static void _token_handler(const z_sample_t *sample, void *ctx) {
+  RMW_ZENOH_FUNC_ENTRY();
+
+  ZenohPicoPubData *pub_data = (ZenohPicoPubData *)ctx;
+
+  return;
+}
+
 bool declaration_publisher_data(ZenohPicoPubData *pub_data)
 {
   RMW_ZENOH_FUNC_ENTRY();
@@ -135,9 +142,13 @@ bool declaration_publisher_data(ZenohPicoPubData *pub_data)
 
   // liveliness tokendeclare
   const char *keyexpr = Z_STRING_VAL(pub_data->token_key_);
-
   RMW_ZENOH_LOG_DEBUG("Declaring subscriber key expression '%s'...", keyexpr);
-  pub_data->token_ = z_declare_keyexpr(z_loan(session->session_), z_keyexpr(keyexpr));
+
+  z_owned_closure_sample_t token_callback_ = z_closure(_token_handler, 0, (void *)pub_data);
+  pub_data->token_ = z_declare_subscriber(z_loan(session->session_),
+					 z_keyexpr(keyexpr),
+					 z_move(token_callback_),
+					 NULL);
   if (!z_check(pub_data->token_)) {
     RMW_ZENOH_LOG_DEBUG("Unable to declare talken.");
     return false;
@@ -150,14 +161,12 @@ bool undeclaration_publisher_data(ZenohPicoPubData *pub_data)
 {
   RMW_ZENOH_FUNC_ENTRY();
 
-  ZenohPicoSession *session = pub_data->node_->session_;
+  if (z_check(pub_data->token_)) {
+    z_undeclare_subscriber(z_move(pub_data->token_));
+  }
 
   if (z_check(pub_data->publisher_)) {
     z_undeclare_publisher(z_move(pub_data->publisher_));
-  }
-
-  if (z_check(pub_data->token_)) {
-    z_undeclare_keyexpr(z_loan(session->session_), &pub_data->token_);
   }
 
   return true;

@@ -33,12 +33,12 @@ typedef struct _ZenohPicoPubData {
   size_t id_;
 
   // Liveliness key for the publisher.
-  _z_string_t token_key_;
   _z_string_t topic_key_;
+  _z_string_t token_key_;
 
   // Liveliness token for the publisher.
-  z_owned_keyexpr_t token_;
   z_owned_publisher_t publisher_;
+  z_owned_subscriber_t token_;
 
   // this node
   ZenohPicoNodeData *node_;

@@ -13,6 +13,7 @@
 // limitations under the License.
 
 #include "rmw_zenoh_pico/rmw_zenoh_pico_logging.h"
+#include "zenoh-pico/api/primitives.h"
 #include <rmw_zenoh_pico/rmw_zenoh_pico.h>
 
 z_mutex_t mutex_ZenohPicoNodeData;
@@ -58,11 +59,6 @@ bool zenoh_pico_destroy_node_data(ZenohPicoNodeData *node_data)
 
   Z_STRING_FREE(node_data->token_key_);
 
-  if (z_check(node_data->token_)) {
-    ZenohPicoSession *session = node_data->session_;
-    z_undeclare_keyexpr(z_loan(session->session_), &node_data->token_);
-  }
-
   // delete entity
   if(node_data->entity_ != NULL){
     zenoh_pico_destroy_entity(node_data->entity_);
@@ -81,17 +77,16 @@ void zenoh_pico_debug_node_data(ZenohPicoNodeData *node_data)
 
   Z_STRING_PRINTF(node_data->token_key_, token_key);
 
-  z_keyexpr_t *value = node_data->token_._value;
-  if(value != NULL){
-    printf("z_keyexpr id = %d\n", value->_id);
-    printf("z_keyexpr mapping = %x\n", value->_mapping._val);
-    printf("z_keyexpr suffix = %s\n", value->_suffix);
-  } else {
-    printf("value is zero\n");
-  }
-
   // debug entity member
   zenoh_pico_debug_entity(node_data->entity_);
+}
+
+static void _token_handler(const z_sample_t *sample, void *ctx) {
+  RMW_ZENOH_FUNC_ENTRY();
+
+  ZenohPicoNodeData *node_data = (ZenohPicoNodeData *)ctx;
+
+  return;
 }
 
 bool declaration_node_data(ZenohPicoNodeData *node_data)
@@ -101,8 +96,11 @@ bool declaration_node_data(ZenohPicoNodeData *node_data)
   ZenohPicoSession *session = node_data->session_;
   const char *keyexpr = Z_STRING_VAL(node_data->token_key_);
 
-  RMW_ZENOH_LOG_DEBUG("Declaring node key expression '%s'...", keyexpr);
-  node_data->token_ = z_declare_keyexpr(z_loan(session->session_), z_keyexpr(keyexpr));
+  z_owned_closure_sample_t callback_ = z_closure(_token_handler, 0, (void *)node_data);
+  node_data->token_ = z_declare_subscriber(z_loan(session->session_),
+					   z_keyexpr(keyexpr),
+                                           z_move(callback_),
+                                           NULL);
   if (!z_check(node_data->token_)) {
     return false;
   }
@@ -122,7 +120,7 @@ bool undeclaration_node_data(ZenohPicoNodeData *node_data)
   ZenohPicoSession *session = node_data->session_;
 
   if (z_check(node_data->token_)) {
-    z_undeclare_keyexpr(z_loan(session->session_), &node_data->token_);
+    z_undeclare_subscriber(z_move(node_data->token_));
   }
 
   return true;

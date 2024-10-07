@@ -232,7 +232,7 @@ void add_new_message(ZenohPicoSubData *sub_data, ReceiveMessageData *recv_data)
   return;
 }
 
-void sub_data_handler(const z_sample_t *sample, void *ctx) {
+static void _sub_data_handler(const z_sample_t *sample, void *ctx) {
   RMW_ZENOH_FUNC_ENTRY();
 
   ZenohPicoSubData *sub_data = (ZenohPicoSubData *)ctx;
@@ -290,6 +290,14 @@ void sub_data_handler(const z_sample_t *sample, void *ctx) {
   (void)add_new_message(sub_data, recv_data);
 }
 
+static void _token_handler(const z_sample_t *sample, void *ctx) {
+  RMW_ZENOH_FUNC_ENTRY();
+
+  ZenohPicoSubData *sub_data = (ZenohPicoSubData *)ctx;
+
+  return;
+}
+
 // callback: the typical ``callback`` function. ``context`` will be passed as its last argument.
 // dropper: allows the callback's state to be freed. ``context`` will be passed as its last argument.
 // context: a pointer to an arbitrary state.
@@ -302,10 +310,10 @@ bool declaration_subscription_data(ZenohPicoSubData *sub_data)
 
   // declare subscriber
   z_subscriber_options_t options = z_subscriber_options_default();
-  z_owned_closure_sample_t callback_ = z_closure(sub_data_handler, 0, (void *)sub_data);
+  z_owned_closure_sample_t sub_callback_ = z_closure(_sub_data_handler, 0, (void *)sub_data);
   sub_data->subscriber_ = z_declare_subscriber(z_loan(session->session_),
 					       z_keyexpr(sub_data->topic_key_.val),
-					       z_move(callback_),
+					       z_move(sub_callback_),
 					       &options);
   if (!z_check(sub_data->subscriber_)) {
     RMW_ZENOH_LOG_DEBUG("Unable to declare subscriber.");
@@ -314,9 +322,13 @@ bool declaration_subscription_data(ZenohPicoSubData *sub_data)
 
   // liveliness tokendeclare
   const char *keyexpr = Z_STRING_VAL(sub_data->token_key_);
-
   RMW_ZENOH_LOG_DEBUG("Declaring subscriber key expression '%s'...", keyexpr);
-  sub_data->token_ = z_declare_keyexpr(z_loan(session->session_), z_keyexpr(keyexpr));
+
+  z_owned_closure_sample_t token_callback_ = z_closure(_token_handler, 0, (void *)sub_data);
+  sub_data->token_ = z_declare_subscriber(z_loan(session->session_),
+					 z_keyexpr(keyexpr),
+					 z_move(token_callback_),
+					 NULL);
   if (!z_check(sub_data->token_)) {
     RMW_ZENOH_LOG_DEBUG("Unable to declare talken.");
     return false;
@@ -329,12 +341,13 @@ bool undeclaration_subscription_data(ZenohPicoSubData *sub_data)
 {
   ZenohPicoSession *session = sub_data->node_->session_;
 
-  if (z_check(sub_data->subscriber_)) {
-    z_undeclare_subscriber(z_move(sub_data->subscriber_));
+  if (z_check(sub_data->token_)) {
+    z_undeclare_subscriber(z_move(sub_data->token_));
   }
 
-  if (z_check(sub_data->token_)) {
-    z_undeclare_keyexpr(z_loan(session->session_), &sub_data->token_);
+
+  if (z_check(sub_data->subscriber_)) {
+    z_undeclare_subscriber(z_move(sub_data->subscriber_));
   }
 
   return true;
