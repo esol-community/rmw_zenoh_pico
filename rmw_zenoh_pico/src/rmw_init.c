@@ -323,11 +323,12 @@ void rmw_zenoh_pico_debug_level_init(void)
   if((pathvar = getenv("RMW_ZNEOH_PICO_LOG")) == NULL)
     return;
 
-  if(strcmp(pathvar, "Z_LOG_DEBUG") == 0) {
+  rmw_zenoh_pico_debug_level = _Z_LOG_LVL_ERROR;
+  if(strncmp(pathvar, "Z_LOG_DEBUG", sizeof("Z_LOG_DEBUG")) == 0) {
     rmw_zenoh_pico_debug_level = _Z_LOG_LVL_DEBUG;
-  } else if (strcmp(pathvar, "Z_LOG_INFO") == 0) {
+  } else if (strncmp(pathvar, "Z_LOG_INFO", sizeof("Z_LOG_INFO")) == 0) {
     rmw_zenoh_pico_debug_level = _Z_LOG_LVL_INFO;
-  } else if (strcmp(pathvar, "Z_LOG_ERROR") == 0) {
+  } else if (strncmp(pathvar, "Z_LOG_ERROR", sizeof("Z_LOG_ERROR")) == 0) {
     rmw_zenoh_pico_debug_level = _Z_LOG_LVL_ERROR;
   }
 

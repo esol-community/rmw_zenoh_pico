@@ -1,4 +1,5 @@
 -DZENOH_LINUX
+-DZENOH_DEBUG_ENABLE
 -I./rmw_zenoh_pico/include
 -I./rmw_zenoh_pico/src
 -I../../../install/zenohpico/include

@@ -166,6 +166,11 @@ set_target_properties(${PROJECT_NAME} PROPERTIES
     YES
 )
 
+target_compile_definitions(${PROJECT_NAME}
+  PRIVATE
+  ZENOH_DEBUG_ENABLE
+)
+
 target_compile_options(${PROJECT_NAME}
   PRIVATE
     $<$<C_COMPILER_ID:GNU>:-Wall>
