@@ -42,7 +42,8 @@ extern "C"
     // Liveliness key for the node.
     _z_string_t token_key_;
 
-    z_owned_keyexpr_t token_;
+    // Liveliness token for the node.
+    z_owned_subscriber_t token_;
 
     // this node session
     ZenohPicoSession *session_;

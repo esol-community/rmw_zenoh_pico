@@ -17,6 +17,7 @@
 #include <stdio.h>
 #include <string.h>
 
+#include "rmw_zenoh_pico/rmw_zenoh_pico_logging.h"
 #include "rmw_zenoh_pico/rmw_zenoh_pico_macros.h"
 #include "rmw_zenoh_pico/liveliness/rmw_zenoh_pico_entity.h"
 #include "rmw_zenoh_pico/liveliness/rmw_zenoh_pico_liveliness.h"
@@ -25,6 +26,7 @@
 
 #include <rmw_zenoh_pico/rmw_zenoh_pico.h>
 
+static const char LIVELINESS_SPACE[] = "@/liveliness/";
 static const char ADMIN_SPACE[] = "@ros2_lv";
 static const char NODE_STR[] = "NN";
 static const char PUB_STR[] = "MP";
@@ -136,6 +138,12 @@ z_string_t generate_liveliness(ZenohPicoEntity *entity)
 
   // generate part of node
   if(entity->node_info_ != NULL) {
+
+    // append liveliness header
+    strcpy(buf, LIVELINESS_SPACE);
+    int offset = strlen(LIVELINESS_SPACE);
+    buf_ptr   += offset;
+    left_size -= offset;
 
     // append admin header
     APPEND_VALUE(ADMIN_SPACE, &buf_ptr, &left_size);
