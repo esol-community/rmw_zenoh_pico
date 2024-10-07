@@ -41,8 +41,6 @@ static inline void __z_log_prefix(const char *prefix, const char *func_name) {
 #define _Z_LOG_LVL_INFO  2
 #define _Z_LOG_LVL_DEBUG 3
 
-#define ZENOH_DEBUG_ENABLE
-
 extern void rmw_zenoh_pico_debug_level_inir(void);
 extern int rmw_zenoh_pico_debug_level_get(void);
 
