@@ -24,6 +24,11 @@
 #include <stdio.h>
 #include <unistd.h>
 
+#define USE_ROS_DOMAIN_ID
+#ifdef USE_ROS_DOMAIN_ID
+#define ROS_DOMAIN_ID 64
+#endif
+
 #define ARRAY_LEN 200
 
 #define RCCHECK(fn) {                                           \
@@ -68,6 +73,14 @@ int main(int argc, const char * const * argv)
 
   // create node
   rcl_node_t node;
+
+#ifdef USE_ROS_DOMAIN_ID
+  rcl_init_options_t init_options = rcl_get_zero_initialized_init_options();
+  rcl_init_options_init(&init_options, allocator);
+  RCCHECK(rcl_init_options_set_domain_id(&init_options, ROS_DOMAIN_ID));
+  RCCHECK(rclc_support_init_with_options(&support, 0, NULL, &init_options, &allocator));
+#endif
+
   RCCHECK(rclc_node_init_default(&node, "talker_node", "", &support));
 
   // create publisher
