@@ -1,3 +1,4 @@
+// -*- tab-width : 8 , c-indentation-style : bsd -*-
 /*
  * Copyright (C)
  *
@@ -50,6 +51,24 @@ int main(int argc, const char * const * argv)
 
 	// create node
 	rcl_node_t node;
+
+	char *domain_id_ptr;
+	if((domain_id_ptr = getenv("ROS_DOMAIN_ID")) != NULL){
+		char *endl;
+		int domain_id = strtol(domain_id_ptr, &endl, 10);
+
+		if(endl != '\0'){
+			rcl_init_options_t init_options = rcl_get_zero_initialized_init_options();
+			rcl_init_options_init(&init_options, allocator);
+			RCCHECK(rcl_init_options_set_domain_id(&init_options, domain_id));
+			RCCHECK(rclc_support_init_with_options(&support,
+							       0,
+							       NULL,
+							       &init_options,
+							       &allocator));
+		}
+	}
+
 	RCCHECK(rclc_node_init_default(&node, "listener_node", "", &support));
 
 	// create subscriber
