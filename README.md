@@ -85,7 +85,7 @@ using other repository:
 
 ### Download rmw_zenoh_pico package
 
-``` 
+``` console 
 % git clone <URL::rmw_zenoh_pico.git>
 % export RMW_ZENOH_PICO_PATH="$PWD/rmw_zenoh_pico"
 ``` 
@@ -94,7 +94,7 @@ the host_zenoh configuration on micro_ros_setup read rmw_zenoh_pico package from
 
 ### Create a workspace and download the micro-ROS tools 
 
-``` 
+``` console
 % mkdir microros
 % pushd microros
 % git clone -b $ROS_DISTRO https://github.com/micro-ROS/micro_ros_setup.git src/micro_ros_setup
@@ -109,22 +109,6 @@ the host_zenoh configuration on micro_ros_setup read rmw_zenoh_pico package from
 microros  rmw_zenoh_pico
 %
 ```
-
-The rmw_zenoh_pico package have patch for micro_ros_setup package. 
-This patch is append any zenoh-pico configration to config diretory on orignal micro_ros_setup package  
-
-### Update dependencies using rosdep
-
-``` 
-% sudo apt update && rosdep update
-% rosdep install --from-paths src --ignore-src -y
-% sudo apt-get install python3-pip
-% colcon build
-% source install/local_setup.bash
-%
-```
-
-As with other micro-ros-startups, colcon is used to set up the build environment.
 
 ## Creating a new firmware workspace
 
@@ -161,7 +145,7 @@ target environments:
 | /chatter  |
 
 ### build Linux target
-```
+``` console
 % pushd microros
 % ros2 run micro_ros_setup create_firmware_ws.sh zenoh host
 % source install/local_setup.bash
@@ -172,7 +156,7 @@ target environments:
 ```
 
 ### build Raspberry Pi target
-```
+``` console
 % pushd microros
 % ros2 run micro_ros_setup create_firmware_ws.sh zenoh raspbian bookworm_v12
 % ros2 run micro_ros_setup configure_firmware.sh listener -t unicast -i <zenohd ip> -p <zenohd port>
@@ -193,7 +177,8 @@ The raspios  configration for rmw_zenoh_pico have to set their ip address and po
 
 The raspios configration on this patch on rmw_zeno_pico package is support by rasberry pi 1/pico toolchaines (genrate to ELF32bit/EABI5).   
 If you want to use other rasberry pi target which is using 64bit environment, you have to change part of toolchaines URL in create.sh by manual.  
-```
+
+```console
 % cat micro_ros_setup/config/zenoh/raspbian/create.sh 
 #! /bin/bash
 
