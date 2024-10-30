@@ -5,6 +5,7 @@
   <version>0.0.0</version>
   <description>Implement the micro-ROS interface using Zenoh Pico by ZettaScale.</description>
   <maintainer email="v-yamazaki8668@esol.co.jp">Katsumi Yamazaki</maintainer>
+  <maintainer email="k-yokoyama@esol.co.jp">Koichiro Yokoyama</maintainer>
   <license>Apache License 2.0</license>
 
   <buildtool_depend>ament_cmake_ros</buildtool_depend>
