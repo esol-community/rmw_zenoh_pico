@@ -330,7 +330,7 @@ bool declaration_subscription_data(ZenohPicoSubData *sub_data)
 					 z_move(token_callback_),
 					 NULL);
   if (!z_check(sub_data->token_)) {
-    RMW_ZENOH_LOG_DEBUG("Unable to declare talken.");
+    RMW_ZENOH_LOG_DEBUG("Unable to declare token.");
     return false;
   }
 
