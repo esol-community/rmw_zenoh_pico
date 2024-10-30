@@ -228,7 +228,10 @@ The command execute on other terminal.
 2. Run the talker on rmw_zenoh
 
 ``` 
-% cd <directory in install rmw_zenoh> 
+$ cd <directory in install rmw_zenoh> 
+$ sudo apt-get install ros-$ROS_DISTRO-demo-nodes-py
+$ sudo apt-get install ros-$ROS_DISTRO-demo-nodes-cpp
+$ source /opt/ros/$ROS_DISTRO/local_setup.bash
 % source install/setup.bash
 % export RMW_IMPLEMENTATION=rmw_zenoh_cpp
 % ros2 run demo_nodes_cpp talker
