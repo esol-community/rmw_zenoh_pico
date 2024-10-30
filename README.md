@@ -219,7 +219,7 @@ The command execute on other terminal.
 
 1. Start the Zenoh router on rmw_zenoh
 
-``` 
+``` console
 % cd <directory in install rmw_zenoh> 
 % source install/setup.bash
 % ros2 run rmw_zenoh_cpp rmw_zenohd
@@ -227,7 +227,7 @@ The command execute on other terminal.
 
 2. Run the talker on rmw_zenoh
 
-``` 
+``` console
 $ cd <directory in install rmw_zenoh> 
 $ sudo apt-get install ros-$ROS_DISTRO-demo-nodes-py
 $ sudo apt-get install ros-$ROS_DISTRO-demo-nodes-cpp
@@ -241,7 +241,7 @@ $ source /opt/ros/$ROS_DISTRO/local_setup.bash
 
 1. Run the listener on rmw_zenoh_pico in microros
 
-``` 
+``` console
 % cd microros
 % source install/local_setup.bash
 % export RMW_IMPLEMENTATION=rmw_zenoh_pico
@@ -251,13 +251,13 @@ $ source /opt/ros/$ROS_DISTRO/local_setup.bash
 ### running Raspberry Pi target (on raspberry pi H/W)
 
 1. Copy microros application to raspberry pi 
-```
+``` console
 % cd microros
 % scp firmware/bin/listener <target raspberry pi>:~/.
 ```
 
 2. Run listen application
-```
+```console
 % ssh <target raspberry pi>
 % ./listener
 ```
@@ -273,7 +273,7 @@ Therefore, the ros2 daemon of already starting have to stop before the ros2 cli 
 
 1. get node name (When only the listener node is executed)
 
-``` 
+``` console
 % ros2 daemon stop
 The daemon has been stopped
 % source install/setup.bash
@@ -286,7 +286,7 @@ The daemon has been stopped
 ```
 
 2. get topic name (When only the listener node is executed)
-``` 
+``` console
 % ros2 daemon stop
 The daemon has been stopped
 % source install/setup.bash
