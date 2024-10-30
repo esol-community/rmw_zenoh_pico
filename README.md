@@ -163,7 +163,9 @@ target environments:
 ### build Linux target
 ```
 % pushd microros
-% ros2 run micro_ros_setup create_firmware_ws.sh host_zenoh
+% ros2 run micro_ros_setup create_firmware_ws.sh zenoh host
+% source install/local_setup.bash
+% ros2 run micro_ros_setup build_firmware.sh
 % file ./install/rmw_zenoh_pico/lib/rmw_zenoh_demos_rclc/listener/listener
 ./install/rmw_zenoh_pico/lib/rmw_zenoh_demos_rclc/listener/listener: ELF 64-bit LSB pie executable, x86-64, version 1 (SYSV), dynamically linked, interpreter /lib64/ld-linux-x86-64.so.2, BuildID[sha1]=2c0119cf4620f58fafa736594d3bba038e56e13a, for GNU/Linux 3.2.0, not stripped
 % popd
