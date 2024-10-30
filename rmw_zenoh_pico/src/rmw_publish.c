@@ -16,6 +16,8 @@
 
 static void set_ros2_header(uint8_t *msg_bytes)
 {
+// This magic code is said to be used to evaluate endianness.
+// How it is actually managed requires separate investigation.
   const uint8_t _header[] = {0x00, 0x01, 0x00, 0x00};
 
   memcpy(msg_bytes, _header, 4);
