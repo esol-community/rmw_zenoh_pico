@@ -81,22 +81,22 @@ using other repository:
 
 | repository      | branch         | sid                                      | url                                             |
 |-----------------|----------------|------------------------------------------|-------------------------------------------------|
-| micro_ros_setup | jazzy          | 9ae1ca79ca3cb5f8fbd3867d02a6e43686388f05 | https://github.com/micro-ROS/micro_ros_setup    |
-| zenoh-c         | release/0.11.0 | c8f6ca07f77d684a0ce4a8b31eae4c4a11c9bb58 | https://github.com/eclipse-zenoh/zenoh-c.git    |
-| zenoh-pico      | release/0.11.0 | a3ab7f79617c0076693852e68e75a50053463ae4 | https://github.com/eclipse-zenoh/zenoh-pico.git |
-| rmw_zenoh       | rolling        | 011cc79f564f7f4ab0e47e1604062c14c355546a | https://github.com/ros2/rmw_zenoh.git           |
-| zenoh           | main           | 2500e5a62d8940cbfbc36f27c07360f91ba28c2d | https://github.com/eclipse-zenoh/zenoh.git      |
+| micro_ros_setup | jazzy          | 9ae1ca79ca3cb5f8fbd3867d02a6e43686388f05 | <https://github.com/micro-ROS/micro_ros_setup>    |
+| zenoh-c         | release/0.11.0 | c8f6ca07f77d684a0ce4a8b31eae4c4a11c9bb58 | <https://github.com/eclipse-zenoh/zenoh-c.git>    |
+| zenoh-pico      | release/0.11.0 | a3ab7f79617c0076693852e68e75a50053463ae4 | <https://github.com/eclipse-zenoh/zenoh-pico.git> |
+| rmw_zenoh       | rolling        | 011cc79f564f7f4ab0e47e1604062c14c355546a | <https://github.com/ros2/rmw_zenoh.git>           |
+| zenoh           | main           | 2500e5a62d8940cbfbc36f27c07360f91ba28c2d | <https://github.com/eclipse-zenoh/zenoh.git>      |
 
 ### Download rmw_zenoh_pico package
 
-``` console 
+``` console
 $ git clone <URL::rmw_zenoh_pico.git>
 $ export RMW_ZENOH_PICO_PATH="$PWD/rmw_zenoh_pico"
-``` 
+```
 
 the host_zenoh configuration on micro_ros_setup read rmw_zenoh_pico package from path of RMW_ZENOH_PICO_PATH value.
 
-### Create a workspace and download the micro-ROS tools 
+### Create a workspace and download the micro-ROS tools
 
 ``` console
 $ mkdir microros
@@ -180,7 +180,7 @@ The raspios  configration for rmw_zenoh_pico have to set their ip address and po
 | zenoh ip   | address connect zenoh/zenohd | -i 10.0.30.10 |
 | zenoh port | port connect zenoh           | -p 7447       |
 
-The raspios configration on this patch on rmw_zeno_pico package is support by rasberry pi 1/pico toolchaines (genrate to ELF32bit/EABI5).   
+The raspios configration on this patch on rmw_zeno_pico package is support by rasberry pi 1/pico toolchaines (genrate to ELF32bit/EABI5).  
 If you want to use other rasberry pi target which is using 64bit environment, you have to change part of toolchaines URL in create.sh by manual.  
 
 ```console
@@ -200,7 +200,7 @@ pushd $FW_TARGETDIR/$DEV_WS_DIR >/dev/null
 
 see : <https://sourceforge.net/projects/raspberry-pi-cross-compilers/files/Raspberry%20Pi%20GCC%20Cross-Compiler%20Toolchains/>  
 
-### build RTOS target 
+### build RTOS target
 
 T.D.B
 
@@ -210,54 +210,54 @@ For sample details, see [Test](https://github.com/ros2/rmw_zenoh#test) in rmw_ze
 
 ### running common service on linux  
 
-The command execute on other terminal. 
+The command execute on other terminal.
 
 1. Start the Zenoh router on rmw_zenoh
 
-``` console
-$ cd <directory in install rmw_zenoh> 
-$ source install/setup.bash
-$ ros2 run rmw_zenoh_cpp rmw_zenohd
-```
+    ``` console
+    $ cd <directory in install rmw_zenoh> 
+    $ source install/setup.bash
+    $ ros2 run rmw_zenoh_cpp rmw_zenohd
+    ```
 
 2. Run the talker on rmw_zenoh
 
-``` console
-$ cd <directory in install rmw_zenoh> 
-$ sudo apt-get install ros-$ROS_DISTRO-demo-nodes-py
-$ sudo apt-get install ros-$ROS_DISTRO-demo-nodes-cpp
-$ source /opt/ros/$ROS_DISTRO/local_setup.bash
-$ source install/setup.bash
-$ export RMW_IMPLEMENTATION=rmw_zenoh_cpp
-$ ros2 run demo_nodes_cpp talker
-``` 
+    ``` console
+    $ cd <directory in install rmw_zenoh> 
+    $ sudo apt-get install ros-$ROS_DISTRO-demo-nodes-py
+    $ sudo apt-get install ros-$ROS_DISTRO-demo-nodes-cpp
+    $ source /opt/ros/$ROS_DISTRO/local_setup.bash
+    $ source install/setup.bash
+    $ export RMW_IMPLEMENTATION=rmw_zenoh_cpp
+    $ ros2 run demo_nodes_cpp talker
+    ``` 
 
-### running Linux target 
+### running Linux target
 
 1. Run the listener on rmw_zenoh_pico in microros
 
-``` console
-$ cd microros
-$ source install/local_setup.bash
-$ export RMW_IMPLEMENTATION=rmw_zenoh_pico
-$ ros2 run rmw_zenoh_demos_rclc listener
-``` 
+    ``` console
+    $ cd microros
+    $ source install/local_setup.bash
+    $ export RMW_IMPLEMENTATION=rmw_zenoh_pico
+    $ ros2 run rmw_zenoh_demos_rclc listener
+    ``` 
 
 ### running Raspberry Pi target (on raspberry pi H/W)
 
-1. Copy microros application to raspberry pi 
+1. Copy microros application to raspberry pi
 
-``` console
-$ cd microros
-$ scp firmware/bin/listener <target raspberry pi>:~/.
-```
+    ``` console
+    $ cd microros
+    $ scp firmware/bin/listener <target raspberry pi>:~/.
+    ```
 
 2. Run listen application
 
-```console
-$ ssh <target raspberry pi>
-$ ./listener
-```
+    ```console
+    $ ssh <target raspberry pi>
+    $ ./listener
+    ```
 
 ### running RTOS target
 
