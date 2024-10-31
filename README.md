@@ -3,6 +3,7 @@
 [![License](https://img.shields.io/badge/License-Apache%202.0-blue.svg)](https://opensource.org/licenses/Apache-2.0)
 
 ## Overview
+
 The rmw_zenoh_pico is implementation of rmw layer with zenoh_pico.
 This package is generated as part of [Micro-ROS project](https://micro.ros.org/) stack.
 
@@ -34,6 +35,7 @@ This package is able to connect [rmw_zenoh](https://github.com/ros2/rmw_zenoh) l
 ## Packages
 
 ### What is rmw_zenoh-pico ?
+
 - This package is implementation of the ROS 2 Middleware Abstraction Interface written by C.  
 - This package allows to generate applications using the same steps as microros product.  
 - This package provides a Middleware implementation for [zenho-pico](https://github.com/eclipse-zenoh/zenoh-pico) package.  
@@ -42,6 +44,7 @@ This package is able to connect [rmw_zenoh](https://github.com/ros2/rmw_zenoh) l
 - This package is defines the library interface used by upper layers in the ROS 2 stack, and that is implemented using zenoh protocol.
 
 ### configuration
+
 this package can be configred via CMake arguments.
 
 | Name                            | Description                                                  | Default      | config |
@@ -75,6 +78,7 @@ so, The rmw_zenoh_pico have to install microros product before build its.
 for example, if you want to generate a host environment for rmw_zenoh_pico, please refer to the [first_application_linux](https://micro.ros.org/docs/tutorials/core/first_application_linux/) document to install the host environment.  
 
 using other repository:
+
 | repository      | branch         | sid                                      | url                                             |
 |-----------------|----------------|------------------------------------------|-------------------------------------------------|
 | micro_ros_setup | jazzy          | 9ae1ca79ca3cb5f8fbd3867d02a6e43686388f05 | https://github.com/micro-ROS/micro_ros_setup    |
@@ -86,8 +90,8 @@ using other repository:
 ### Download rmw_zenoh_pico package
 
 ``` console 
-% git clone <URL::rmw_zenoh_pico.git>
-% export RMW_ZENOH_PICO_PATH="$PWD/rmw_zenoh_pico"
+$ git clone <URL::rmw_zenoh_pico.git>
+$ export RMW_ZENOH_PICO_PATH="$PWD/rmw_zenoh_pico"
 ``` 
 
 the host_zenoh configuration on micro_ros_setup read rmw_zenoh_pico package from path of RMW_ZENOH_PICO_PATH value.
@@ -95,19 +99,18 @@ the host_zenoh configuration on micro_ros_setup read rmw_zenoh_pico package from
 ### Create a workspace and download the micro-ROS tools 
 
 ``` console
-% mkdir microros
-% pushd microros
-% git clone -b $ROS_DISTRO https://github.com/micro-ROS/micro_ros_setup.git src/micro_ros_setup
-% cd src/micro_ros_setup
-% git checkout -b rmw_zenoh_pico
-% git am $RMW_ZENOH_PICO_PATH/extern/patches/micro_ros_setup/*
-% rosdep update && rosdep install --from-paths src --ignore-src -y
-% colcon build
-% source install/local_setup.bash
-% popd
-% ls
+$ mkdir microros
+$ pushd microros
+$ git clone -b $ROS_DISTRO https://github.com/micro-ROS/micro_ros_setup.git src/micro_ros_setup
+$ cd src/micro_ros_setup
+$ git checkout -b rmw_zenoh_pico
+$ git am $RMW_ZENOH_PICO_PATH/extern/patches/micro_ros_setup/*
+$ rosdep update && rosdep install --from-paths src --ignore-src -y
+$ colcon build
+$ source install/local_setup.bash
+$ popd
+$ ls
 microros  rmw_zenoh_pico
-%
 ```
 
 ## Creating a new firmware workspace
@@ -145,26 +148,28 @@ target environments:
 | /chatter  |
 
 ### build Linux target
+
 ``` console
-% pushd microros
-% ros2 run micro_ros_setup create_firmware_ws.sh zenoh host
-% source install/local_setup.bash
-% ros2 run micro_ros_setup build_firmware.sh
-% file ./install/rmw_zenoh_pico/lib/rmw_zenoh_demos_rclc/listener/listener
+$ pushd microros
+$ ros2 run micro_ros_setup create_firmware_ws.sh zenoh host
+$ source install/local_setup.bash
+$ ros2 run micro_ros_setup build_firmware.sh
+$ file ./install/rmw_zenoh_pico/lib/rmw_zenoh_demos_rclc/listener/listener
 ./install/rmw_zenoh_pico/lib/rmw_zenoh_demos_rclc/listener/listener: ELF 64-bit LSB pie executable, x86-64, version 1 (SYSV), dynamically linked, interpreter /lib64/ld-linux-x86-64.so.2, BuildID[sha1]=2c0119cf4620f58fafa736594d3bba038e56e13a, for GNU/Linux 3.2.0, not stripped
-% popd
+$ popd
 ```
 
 ### build Raspberry Pi target
+
 ``` console
-% pushd microros
-% ros2 run micro_ros_setup create_firmware_ws.sh zenoh raspbian bookworm_v12
-% ros2 run micro_ros_setup configure_firmware.sh listener -t unicast -i <zenohd ip> -p <zenohd port>
-% source install/local_setup.bash
-% ros2 run micro_ros_setup build_firmware.sh
-% file  firmware/bin/listener
+$ pushd microros
+$ ros2 run micro_ros_setup create_firmware_ws.sh zenoh raspbian bookworm_v12
+$ ros2 run micro_ros_setup configure_firmware.sh listener -t unicast -i <zenohd ip> -p <zenohd port>
+$ source install/local_setup.bash
+$ ros2 run micro_ros_setup build_firmware.sh
+$ file  firmware/bin/listener
 firmware/bin/listener: ELF 32-bit LSB executable, ARM, EABI5 version 1 (SYSV), dynamically linked, interpreter /lib/ld-linux-armhf.so.3, for GNU/Linux 3.2.0, with debug_info, not stripped
-% popd
+$ popd
 ```
 
 The znoh_pico in rmw_zeno_pico is executing by client mode. so the  rmw_zenoh_pico have to set connect zenoh/zenohd.  
@@ -179,7 +184,7 @@ The raspios configration on this patch on rmw_zeno_pico package is support by ra
 If you want to use other rasberry pi target which is using 64bit environment, you have to change part of toolchaines URL in create.sh by manual.  
 
 ```console
-% cat micro_ros_setup/config/zenoh/raspbian/create.sh 
+$ cat micro_ros_setup/config/zenoh/raspbian/create.sh 
 #! /bin/bash
 
 pushd $FW_TARGETDIR/$DEV_WS_DIR >/dev/null
@@ -193,23 +198,26 @@ pushd $FW_TARGETDIR/$DEV_WS_DIR >/dev/null
        :
 ```
 
-see : https://sourceforge.net/projects/raspberry-pi-cross-compilers/files/Raspberry%20Pi%20GCC%20Cross-Compiler%20Toolchains/  
+see : <https://sourceforge.net/projects/raspberry-pi-cross-compilers/files/Raspberry%20Pi%20GCC%20Cross-Compiler%20Toolchains/>  
 
 ### build RTOS target 
+
 T.D.B
 
 ## Running the micro-ROS app
+
 For sample details, see [Test](https://github.com/ros2/rmw_zenoh#test) in rmw_zenoh.
 
 ### running common service on linux  
+
 The command execute on other terminal. 
 
 1. Start the Zenoh router on rmw_zenoh
 
 ``` console
-% cd <directory in install rmw_zenoh> 
-% source install/setup.bash
-% ros2 run rmw_zenoh_cpp rmw_zenohd
+$ cd <directory in install rmw_zenoh> 
+$ source install/setup.bash
+$ ros2 run rmw_zenoh_cpp rmw_zenohd
 ```
 
 2. Run the talker on rmw_zenoh
@@ -219,9 +227,9 @@ $ cd <directory in install rmw_zenoh>
 $ sudo apt-get install ros-$ROS_DISTRO-demo-nodes-py
 $ sudo apt-get install ros-$ROS_DISTRO-demo-nodes-cpp
 $ source /opt/ros/$ROS_DISTRO/local_setup.bash
-% source install/setup.bash
-% export RMW_IMPLEMENTATION=rmw_zenoh_cpp
-% ros2 run demo_nodes_cpp talker
+$ source install/setup.bash
+$ export RMW_IMPLEMENTATION=rmw_zenoh_cpp
+$ ros2 run demo_nodes_cpp talker
 ``` 
 
 ### running Linux target 
@@ -229,27 +237,30 @@ $ source /opt/ros/$ROS_DISTRO/local_setup.bash
 1. Run the listener on rmw_zenoh_pico in microros
 
 ``` console
-% cd microros
-% source install/local_setup.bash
-% export RMW_IMPLEMENTATION=rmw_zenoh_pico
-% ros2 run rmw_zenoh_demos_rclc listener
+$ cd microros
+$ source install/local_setup.bash
+$ export RMW_IMPLEMENTATION=rmw_zenoh_pico
+$ ros2 run rmw_zenoh_demos_rclc listener
 ``` 
 
 ### running Raspberry Pi target (on raspberry pi H/W)
 
 1. Copy microros application to raspberry pi 
+
 ``` console
-% cd microros
-% scp firmware/bin/listener <target raspberry pi>:~/.
+$ cd microros
+$ scp firmware/bin/listener <target raspberry pi>:~/.
 ```
 
 2. Run listen application
+
 ```console
-% ssh <target raspberry pi>
-% ./listener
+$ ssh <target raspberry pi>
+$ ./listener
 ```
 
 ### running RTOS target
+
 T.D.B
 
 ### Name of node/topic on ROS2 (option)
@@ -260,32 +271,31 @@ Therefore, the ros2 daemon of already starting have to stop before the ros2 cli 
 
 1. get node name (When only the listener node is executed)
 
-``` console
-% ros2 daemon stop
-The daemon has been stopped
-% source install/setup.bash
-% export RMW_IMPLEMENTATION=rmw_zenoh_cpp
-% ros2 node list
-[INFO] [1728446929.812251213] [rmw_zenoh_cpp]: Successfully connected to a Zenoh router with id aebe653d2ff57b4ba1ef7b43c59b547.
-[WARN] [1728446931.353213030] [rmw_zenoh_cpp]: Received liveliness token to remove node /_ros2cli_361692 from the graph before all pub/subs/clients/services for this node have been removed. Removing all entities first...
-/listener_node
-%
-```
+    ``` console
+    $ ros2 daemon stop
+    The daemon has been stopped
+    $ source install/setup.bash
+    $ export RMW_IMPLEMENTATION=rmw_zenoh_cpp
+    $ ros2 node list
+    [INFO] [1728446929.812251213] [rmw_zenoh_cpp]: Successfully connected to a Zenoh router with id aebe653d2ff57b4ba1ef7b43c59b547.
+    [WARN] [1728446931.353213030] [rmw_zenoh_cpp]: Received liveliness token to remove node /_ros2cli_361692 from the graph before all pub/subs/clients/services for this node have been removed. Removing all entities first...
+    /listener_node
+    ```
 
 2. get topic name (When only the listener node is executed)
-``` console
-% ros2 daemon stop
-The daemon has been stopped
-% source install/setup.bash
-% export RMW_IMPLEMENTATION=rmw_zenoh_cpp
-% ros2 topic list
-[INFO] [1728446957.797293950] [rmw_zenoh_cpp]: Successfully connected to a Zenoh router with id aebe653d2ff57b4ba1ef7b43c59b547.
-[WARN] [1728446959.338124246] [rmw_zenoh_cpp]: Received liveliness token to remove node /_ros2cli_361735 from the graph before all pub/subs/clients/services for this node have been removed. Removing all entities first...
-/parameter_events
-/rosout
-/chatter
-%
-```
+
+    ``` console
+    $ ros2 daemon stop
+    The daemon has been stopped
+    $ source install/setup.bash
+    $ export RMW_IMPLEMENTATION=rmw_zenoh_cpp
+    $ ros2 topic list
+    [INFO] [1728446957.797293950] [rmw_zenoh_cpp]: Successfully connected to a Zenoh router with id aebe653d2ff57b4ba1ef7b43c59b547.
+    [WARN] [1728446959.338124246] [rmw_zenoh_cpp]: Received liveliness token to remove node /_ros2cli_361735 from the graph before all pub/subs/clients/services for this node have been removed. Removing all entities first...
+    /parameter_events
+    /rosout
+    /chatter
+    ```
 
 The new ros2 daemon started by ros2 cli exits when this command exits.  
 At this time, the rmw zenoh middleware outputs a few messages.  
@@ -315,7 +325,7 @@ The rmw_zenoh_pico is using zenoh pico package. however, the rmw_zenoh_pico with
 
 1. How to share liveliness  information data.  
 The rmw_zenoh pico can use some ros2 cli commands.However, this implementation is provisional.  
-The rmw_zenoh is controlled by liveliness information which is generate keyexpr data by z_declare_keyexpr(). And there information save resource data on each internal memory.The rmw zenoh is execute on p2p mode of zenoh.this p2p mode is able to exchange when zenoh peer connect to other peer.   
+The rmw_zenoh is controlled by liveliness information which is generate keyexpr data by z_declare_keyexpr(). And there information save resource data on each internal memory.The rmw zenoh is execute on p2p mode of zenoh.this p2p mode is able to exchange when zenoh peer connect to other peer.  
 On the other hand, rmw_zenoh_pico connects to the zenoh network in client mode.
 The zenohd does not forward keyexpr data. In client mode, there is no way to exchange internal resource keyexpr data with other peers because no P2P connection is performed.  
 Currently, the rmw_zenoh_pico works around this problem by creating a new subscribe key for liveliness information.
