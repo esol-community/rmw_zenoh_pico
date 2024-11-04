@@ -151,7 +151,7 @@ bool declaration_publisher_data(ZenohPicoPubData *pub_data)
 					 z_move(token_callback_),
 					 NULL);
   if (!z_check(pub_data->token_)) {
-    RMW_ZENOH_LOG_DEBUG("Unable to declare tolken.");
+    RMW_ZENOH_LOG_DEBUG("Unable to declare token.");
     return false;
   }
 
