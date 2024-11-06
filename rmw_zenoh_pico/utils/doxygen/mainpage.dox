@@ -1,0 +1,9 @@
+/*!
+ * @mainpage rmw zenoh-pico Client.
+ * <div id="mainpage" style="width:95%;text-align:justify;text-justify:inter-word">
+ * This layer is the ROS 2 Middleware Abstraction Interface written in C.
+ * This package provides a middleware implementation for zenoh-pico (rmw layer).
+ * This library defines the interface used by upper layers in the ROS 2 stack, and that is implemented using zenoh middleware in the lower layers.
+</div>
+*
+ */

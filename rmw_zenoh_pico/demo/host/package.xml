@@ -1,0 +1,29 @@
+<?xml version="1.0"?>
+<?xml-model href="http://download.ros.org/schema/package_format3.xsd" schematypens="http://www.w3.org/2001/XMLSchema"?>
+<package format="3">
+  <name>rmw_zenoh_demos_rclc</name>
+  <version>0.0.0</version>
+  <description>Examples using RCL+RCLC API on rmw_zenoh_pico</description>
+  <maintainer email="v-yamazaki8668@esol.co.jp">Katsumi Yamazaki</maintainer>
+  <maintainer email="k-yokoyama@esol.co.jp">Koichiro Yokoyama</maintainer>
+  <license>Apache-2.0</license>
+
+  <buildtool_depend>ament_cmake</buildtool_depend>
+
+  <depend>rcl</depend>
+  <depend>rclc</depend>
+  <depend>rclc_parameter</depend>
+  <depend>rcl_interfaces</depend>
+  <depend>std_msgs</depend>
+  <depend>example_interfaces</depend>
+  <depend>complex_msgs</depend>
+  <depend>sensor_msgs</depend>
+  <depend>visualization_msgs</depend>
+  <depend>builtin_interfaces</depend>
+  <depend>micro_ros_utilities</depend>
+
+  <export>
+    <build_type>ament_cmake</build_type>
+  </export>
+
+</package>

@@ -1,0 +1,158 @@
+From 03993a420d5c8926418b03600cd1088fa52c0bf0 Mon Sep 17 00:00:00 2001
+From: Katsumi Yamazaki <v-yamazaki8668@esol.co.jp>
+Date: Wed, 4 Sep 2024 14:46:14 +0900
+Subject: [PATCH 2/5] change directory place for config files.
+
+---
+ config/{host_zenoh => zenoh}/client_ros2_packages.txt         | 0
+ config/{host_zenoh => zenoh}/dev_ros2_packages.txt            | 0
+ config/{host_zenoh => zenoh}/dev_uros_packages.repos          | 0
+ config/{host_zenoh/generic => zenoh/host}/build.sh            | 0
+ .../generic => zenoh/host}/client-host-colcon.meta            | 0
+ .../generic => zenoh/host}/client_host_packages.repos         | 2 +-
+ config/{host_zenoh/generic => zenoh/host}/create.sh           | 4 +++-
+ config/{host_zenoh/generic => zenoh/host}/flash.sh            | 0
+ config/{host_zenoh/generic => zenoh/host}/package.xml         | 0
+ ...append-Wno-missing-field-initializers-of-build-optio.patch | 0
+ .../patches/zenohpico/0001-change-package-name.patch          | 0
+ scripts/build_firmware.sh                                     | 2 +-
+ scripts/clean_env.sh                                          | 2 +-
+ scripts/create_firmware_ws.sh                                 | 4 ++--
+ 14 files changed, 8 insertions(+), 6 deletions(-)
+ rename config/{host_zenoh => zenoh}/client_ros2_packages.txt (100%)
+ rename config/{host_zenoh => zenoh}/dev_ros2_packages.txt (100%)
+ rename config/{host_zenoh => zenoh}/dev_uros_packages.repos (100%)
+ rename config/{host_zenoh/generic => zenoh/host}/build.sh (100%)
+ rename config/{host_zenoh/generic => zenoh/host}/client-host-colcon.meta (100%)
+ rename config/{host_zenoh/generic => zenoh/host}/client_host_packages.repos (98%)
+ rename config/{host_zenoh/generic => zenoh/host}/create.sh (80%)
+ rename config/{host_zenoh/generic => zenoh/host}/flash.sh (100%)
+ rename config/{host_zenoh/generic => zenoh/host}/package.xml (100%)
+ rename config/{host_zenoh => zenoh}/patches/rosidl_typesupport_microxrcedds/0001-append-Wno-missing-field-initializers-of-build-optio.patch (100%)
+ rename config/{host_zenoh => zenoh}/patches/zenohpico/0001-change-package-name.patch (100%)
+
+diff --git a/config/host_zenoh/client_ros2_packages.txt b/config/zenoh/client_ros2_packages.txt
+similarity index 100%
+rename from config/host_zenoh/client_ros2_packages.txt
+rename to config/zenoh/client_ros2_packages.txt
+diff --git a/config/host_zenoh/dev_ros2_packages.txt b/config/zenoh/dev_ros2_packages.txt
+similarity index 100%
+rename from config/host_zenoh/dev_ros2_packages.txt
+rename to config/zenoh/dev_ros2_packages.txt
+diff --git a/config/host_zenoh/dev_uros_packages.repos b/config/zenoh/dev_uros_packages.repos
+similarity index 100%
+rename from config/host_zenoh/dev_uros_packages.repos
+rename to config/zenoh/dev_uros_packages.repos
+diff --git a/config/host_zenoh/generic/build.sh b/config/zenoh/host/build.sh
+similarity index 100%
+rename from config/host_zenoh/generic/build.sh
+rename to config/zenoh/host/build.sh
+diff --git a/config/host_zenoh/generic/client-host-colcon.meta b/config/zenoh/host/client-host-colcon.meta
+similarity index 100%
+rename from config/host_zenoh/generic/client-host-colcon.meta
+rename to config/zenoh/host/client-host-colcon.meta
+diff --git a/config/host_zenoh/generic/client_host_packages.repos b/config/zenoh/host/client_host_packages.repos
+similarity index 98%
+rename from config/host_zenoh/generic/client_host_packages.repos
+rename to config/zenoh/host/client_host_packages.repos
+index b0835c9..3fa8687 100644
+--- a/config/host_zenoh/generic/client_host_packages.repos
++++ b/config/zenoh/host/client_host_packages.repos
+@@ -60,4 +60,4 @@ repositories:
+   uros/zenohpico:
+     type: git
+     url: https://github.com/eclipse-zenoh/zenoh-pico.git
+-    version: release/0.11.0
++    version: 0.11.0
+diff --git a/config/host_zenoh/generic/create.sh b/config/zenoh/host/create.sh
+similarity index 80%
+rename from config/host_zenoh/generic/create.sh
+rename to config/zenoh/host/create.sh
+index 084aaa8..743efa6 100755
+--- a/config/host_zenoh/generic/create.sh
++++ b/config/zenoh/host/create.sh
+@@ -1,6 +1,8 @@
+ # populate the workspace
+ mkdir -p src
+ 
++echo ros2 run micro_ros_setup create_ws.sh src $PREFIX/config/$RTOS/client_ros2_packages.txt $PREFIX/config/$RTOS/$PLATFORM/client_host_packages.repos
++
+ ros2 run micro_ros_setup create_ws.sh src $PREFIX/config/$RTOS/client_ros2_packages.txt $PREFIX/config/$RTOS/$PLATFORM/client_host_packages.repos
+ 
+ # add appropriate colcon.meta
+@@ -17,7 +19,7 @@ if [ ! -v RMW_ZENOH_PICO_PATH ] ; then
+ fi
+ 
+ if [ ! -d src/uros/rmw_zenoh_pico ] ; then
+-    git clone $RMW_ZENOH_PICO_PATH -b master src/uros/rmw_zenoh_pico
++    git clone $RMW_ZENOH_PICO_PATH -b develop src/uros/rmw_zenoh_pico
+ fi
+ 
+ # local patches (2024.08.29)
+diff --git a/config/host_zenoh/generic/flash.sh b/config/zenoh/host/flash.sh
+similarity index 100%
+rename from config/host_zenoh/generic/flash.sh
+rename to config/zenoh/host/flash.sh
+diff --git a/config/host_zenoh/generic/package.xml b/config/zenoh/host/package.xml
+similarity index 100%
+rename from config/host_zenoh/generic/package.xml
+rename to config/zenoh/host/package.xml
+diff --git a/config/host_zenoh/patches/rosidl_typesupport_microxrcedds/0001-append-Wno-missing-field-initializers-of-build-optio.patch b/config/zenoh/patches/rosidl_typesupport_microxrcedds/0001-append-Wno-missing-field-initializers-of-build-optio.patch
+similarity index 100%
+rename from config/host_zenoh/patches/rosidl_typesupport_microxrcedds/0001-append-Wno-missing-field-initializers-of-build-optio.patch
+rename to config/zenoh/patches/rosidl_typesupport_microxrcedds/0001-append-Wno-missing-field-initializers-of-build-optio.patch
+diff --git a/config/host_zenoh/patches/zenohpico/0001-change-package-name.patch b/config/zenoh/patches/zenohpico/0001-change-package-name.patch
+similarity index 100%
+rename from config/host_zenoh/patches/zenohpico/0001-change-package-name.patch
+rename to config/zenoh/patches/zenohpico/0001-change-package-name.patch
+diff --git a/scripts/build_firmware.sh b/scripts/build_firmware.sh
+index 5a3e3ab..bab11b6 100755
+--- a/scripts/build_firmware.sh
++++ b/scripts/build_firmware.sh
+@@ -60,7 +60,7 @@ fi
+ . $(dirname $0)/clean_env.sh
+ 
+ # source dev_ws
+-if [[ "$RTOS" != "host"* ]]; then
++if [ "$RTOS" != "host" ] && [ "$PLATFORM" != "host" ] ; then
+     set +o nounset
+     . $FW_TARGETDIR/dev_ws/install/setup.bash
+     set -o nounset
+diff --git a/scripts/clean_env.sh b/scripts/clean_env.sh
+index 5e8293a..852e615 100644
+--- a/scripts/clean_env.sh
++++ b/scripts/clean_env.sh
+@@ -14,7 +14,7 @@ function clean {
+       grep -v -E "($(echo $PREFIXES_TO_CLEAN | sed 's/:/\|/g'))" ) | sed 's/ /:/g' )
+ }
+ 
+-if [[ "$RTOS" == "host"* ]]; then
++if [ "$RTOS" == "host" ] || [ "$PLATFORM" == "host" ] ; then
+   echo "Compiling for host environment: not cleaning path"
+ else
+   echo "Crosscompiled environment: cleaning path"
+diff --git a/scripts/create_firmware_ws.sh b/scripts/create_firmware_ws.sh
+index 061a4f2..393c608 100755
+--- a/scripts/create_firmware_ws.sh
++++ b/scripts/create_firmware_ws.sh
+@@ -86,7 +86,7 @@ pushd $FW_TARGETDIR >/dev/null
+     # Creating dev directory
+     mkdir $DEV_WS_DIR
+ 
+-    if [[ "$RTOS" != "host"* ]]; then
++    if [ "$RTOS" != "host" ] && [ "$PLATFORM" != "host" ] ; then
+         ros2 run micro_ros_setup create_ws.sh $DEV_WS_DIR $PREFIX/config/$RTOS/dev_ros2_packages.txt \
+             $PREFIX/config/$RTOS/dev_uros_packages.repos
+         rosdep install --os=ubuntu:jammy -y --from-paths $DEV_WS_DIR -i $DEV_WS_DIR --rosdistro $ROS_DISTRO --skip-keys="$SKIP"
+@@ -100,7 +100,7 @@ popd >/dev/null
+ 
+ # build the dev_ws
+ . $(dirname $0)/clean_env.sh
+-if [[ "$RTOS" != "host"* ]]; then
++if [ "$RTOS" != "host" ] && [ "$PLATFORM" != "host" ] ; then
+     pushd $FW_TARGETDIR/$DEV_WS_DIR >/dev/null
+         colcon build
+         set +o nounset
+-- 
+2.43.0
+
