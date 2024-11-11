@@ -49,15 +49,16 @@ this package can be configred via CMake arguments.
 
 | Name                            | Description                                                  | Default      | config |
 |---------------------------------|--------------------------------------------------------------|--------------|--------|
-| RMW_ZENOH_PICO_TRANSPORT        | Sets zenoh pico transport to use. (unicast , serial)         | unicast      | OK     |
 | RMW_ZENOH_PICO_TRANSPORT_MODE   | zenoh transport connect mode                                 | client       | OK     |
 | RMW_ZENOH_PICO_CONNECT          | Sets the scout address.                                      | 127.0.0.1    | OK     |
 | RMW_ZENOH_PICO_CONNECT_PORT     | Sets the scout port.                                         | 7447         | OK     |
 | RMW_ZENOH_PICO_LISTEN           | Sets the listen address.                                     | 127.0.0.1    |        |
 | RMW_ZENOH_PICO_LISTEN_PORT      | Sets the listen port.                                        | -1           |        |
-| RMW_ZENOH_PICO_SERIAL_DEVICE    | Sets the agent serial port.                                  | /dev/ttyAMA0 | OK     |
+| RMW_ZENOH_PICO_SERIAL_DEVICE    | Sets the agent serial port.*1                                | /dev/ttyAMA0 | OK     |
 | RMW_ZENOH_PICO_MAX_LINENESS_LEN | This value sets the number of max liveliness resource length | 256          |        |
 | RMW_ZENOH_PICO_C_STANDARD       | Version of the C language used to build the library          | 99           |        |
+
+*1 support next future.
 
 ## Support rmw Functions
 
@@ -99,6 +100,7 @@ the host_zenoh configuration on micro_ros_setup read rmw_zenoh_pico package from
 ### Create a workspace and download the micro-ROS tools
 
 ``` console
+$ unset RMW_IMPLEMENTATION 
 $ mkdir microros
 $ pushd microros
 $ git clone -b $ROS_DISTRO https://github.com/micro-ROS/micro_ros_setup.git src/micro_ros_setup
@@ -112,6 +114,10 @@ $ popd
 $ ls
 microros  rmw_zenoh_pico
 ```
+
+SUPPLEMENT:
+1. The rmw_zenoh_pico need part of any library which is used by get hash value in the fastdds library. Therefore, the value of RMW_IMPLEMENTATION should not be set before building rmw_zenoh_pico if you use customize rmw_middleware (ex. cyclonedds,,,).
+2. The rmw_zenoh_pico have to add patch to product of miro_ros_setup. If you need the patched product, you can clone the branch of rmw_zenoh_pico from [mirror of micro_ros_setup](https://github.com/esol-community/micro_ros_setup).
 
 ## Creating a new firmware workspace
 
