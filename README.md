@@ -4,20 +4,20 @@
 
 ## Overview
 
-The rmw_zenoh_pico is implementation of rmw layer with zenoh_pico.
-This package is generated as part of [Micro-ROS project](https://micro.ros.org/) stack.
+The rmw_zenoh_pico is the implementation of the rmw layer with zenoh_pico.
+This package is generated using the [Micro-ROS project](https://micro.ros.org/) stack.
 
 This package provides the same future as the [RMW Micro XRCE-DDS implementation](https://github.com/micro-ROS/rmw_microxrcedds).
 
-This package is able to connect [rmw_zenoh](https://github.com/ros2/rmw_zenoh) layer which implementation based on Zenoh that is written using the zenoh-c bindings by ros community.
+This package is able to connect the [rmw_zenoh](https://github.com/ros2/rmw_zenoh) layer, whose implementation is based on Zenoh and is written using the zenoh-c bindings by the ROS community.
 
 ```plantuml
 @startditaa -E
-    rmw_zenoh_pico             rmw_zenoh	  
+    rmw_zenoh_pico             rmw_zenoh      
   +----------------+        +-------------+
   |    ROS APP     |        |   ROS APP   | 
   +----------------+        +-------------+
-  |      RCLc      |        |   RCLcpp    |
+  |      rclc      |        |   rclcpp    |
   +----------------+        +-------------+
   |    rmw API     |        |   rmw API   |
   +----------------+        +-------------+
@@ -25,7 +25,7 @@ This package is able to connect [rmw_zenoh](https://github.com/ros2/rmw_zenoh) l
   +----------------+        +-------------+
   |   zenoh pico   |<------>|    zenoh    |
   +----------------+        +-------------+
-  |    Posix API   |        |  Posix API  |
+  |    POSIX API   |        |  POSIX API  |
   +----------------+        +-------------+
   |    RTOS/Linux  |        |    Linux    |
   +----------------+        +-------------+
@@ -34,52 +34,55 @@ This package is able to connect [rmw_zenoh](https://github.com/ros2/rmw_zenoh) l
 
 ## Packages
 
-### What is rmw_zenoh-pico ?
+### What is rmw_zenoh_pico ?
 
-- This package is implementation of the ROS 2 Middleware Abstraction Interface written by C.  
-- This package allows to generate applications using the same steps as microros product.  
-- This package provides a Middleware implementation for [zenho-pico](https://github.com/eclipse-zenoh/zenoh-pico) package.  
-- This package is implemented by replacing XRCE-DDS on microros with zeno-pico.  
-- This package is implementation wraps from zenoh-pico api and zenoh-pico internal utilities(z_sting, z_mutex,,,).   
-- This package is defines the library interface used by upper layers in the ROS 2 stack, and that is implemented using zenoh protocol.
+- Implementation of the ROS 2 middleware abstraction interface written by C  
+- Generate micro-ROS applications using zenoh-pico  
+- A middleware implementation for [zenoh-pico](https://github.com/eclipse-zenoh/zenoh-pico) package  
+- Replacement XRCE-DDS on micro-ROS with zenoh-pico  
+- Wrapper of zenoh-pico API and zenoh-pico internal utilities(z_sting, z_mutex, etc.)  
+- The reference library implementation for the Zenoh protocol used from upper layers in the ROS 2 stack  
 
-### configuration
+### Configuration
 
-this package can be configred via CMake arguments.
+This package can be configured via CMake arguments.
 
-| Name                            | Description                                                  | Default      | config |
+| Name                            | Description                                                  | Default      | Config |
 |---------------------------------|--------------------------------------------------------------|--------------|--------|
-| RMW_ZENOH_PICO_TRANSPORT        | Sets zenoh pico transport to use. (unicast , serial)         | unicast      | OK     |
-| RMW_ZENOH_PICO_TRANSPORT_MODE   | zenoh transport connect mode                                 | client       | OK     |
+| RMW_ZENOH_PICO_TRANSPORT        | Sets zenoh-pico transport to use (unicast, serial)           | unicast      | OK     |
+| RMW_ZENOH_PICO_TRANSPORT_MODE   | Sets Zenoh transport connection mode                         | client       | OK     |
 | RMW_ZENOH_PICO_CONNECT          | Sets the scout address.                                      | 127.0.0.1    | OK     |
 | RMW_ZENOH_PICO_CONNECT_PORT     | Sets the scout port.                                         | 7447         | OK     |
 | RMW_ZENOH_PICO_LISTEN           | Sets the listen address.                                     | 127.0.0.1    |        |
 | RMW_ZENOH_PICO_LISTEN_PORT      | Sets the listen port.                                        | -1           |        |
 | RMW_ZENOH_PICO_SERIAL_DEVICE    | Sets the agent serial port.                                  | /dev/ttyAMA0 | OK     |
+| RMW_ZENOH_PICO_SERIAL_DEVICE    | Sets the agent serial port.*1                                | /dev/ttyAMA0 | OK     |
 | RMW_ZENOH_PICO_MAX_LINENESS_LEN | This value sets the number of max liveliness resource length | 256          |        |
 | RMW_ZENOH_PICO_C_STANDARD       | Version of the C language used to build the library          | 99           |        |
 
+*1 Will be supported in the future
+
 ## Support rmw Functions
 
-The support number of rmw api in rmw_zenoh_pico is less than number rmw_zenoh and rmw_microxrcedds_c, yet.
-this [list](./rmw_zenoh_pico_rmw_list.md) is support of rmw_zenoh_pico.
+The rmw API for rmw_zenoh_pico is not currently as well supported as rmw_zenoh and rmw_microxrcedds_c.
+This [list](./rmw_zenoh_pico_rmw_list.md) is support of rmw_zenoh_pico.
 
-ATTENTION:
-The prototype implementation of rmw_zneoh_pico does not yet support graph information (gid).  
-Therefore, this implementation only supports pub/sub connections. Other connection types (server/client, node information, etc.) are not supported, yet.  
+> [!IMPORTANT]
+> The prototype implementation of rmw_zenoh_pico does not yet support graph information (gid).  
+> Therefore, this implementation only supports pub/sub connections. Other connection types (server/client, node information, etc.) are not yet supported.  
+> 
+> For rmw_zenoh_pico to support gid, several [issues](#known-issueslimitations) should be considered.   
+> The rmw_zenoh_pico would like to support zenoh_pico and rmw_zenoh along with future updates from the ROS community.  
 
-In order for rmw_zenoh_pico to support gid, several [issues](#known-issueslimitations) need to be considered.   
-the rmw_zenoh_pico would like to support zenoh_pico and rmw_zenoh along with updates from the ros community in the future.  
+## Installing and build for rmw_zenoh_pico with the micro-ROS system
 
-## Installing and build for rmw_zenoh_pico with the microros system
+The rmw_zenoh_pico is used instead of the XRCE-DDS layer in the micro-ROS product.  
+The rmw_zenoh_pico has to install the micro-ROS product before building it.  
+For example, if you want to generate a host environment for rmw_zenoh_pico, please refer to the [first_application_linux](https://micro.ros.org/docs/tutorials/core/first_application_linux/) document to install the host environment.  
 
-The rmw_zenoh_pico is used instead of the XRCE-DDS layer in the micro-ros product.  
-so, The rmw_zenoh_pico have to install microros product before build its. 
-for example, if you want to generate a host environment for rmw_zenoh_pico, please refer to the [first_application_linux](https://micro.ros.org/docs/tutorials/core/first_application_linux/) document to install the host environment.  
+Table: Related repositories
 
-using other repository:
-
-| repository      | branch         | sid                                      | url                                             |
+| Repository      | Branch         | SID                                      | URL                                             |
 |-----------------|----------------|------------------------------------------|-------------------------------------------------|
 | micro_ros_setup | jazzy          | 9ae1ca79ca3cb5f8fbd3867d02a6e43686388f05 | <https://github.com/micro-ROS/micro_ros_setup>    |
 | zenoh-c         | release/0.11.0 | c8f6ca07f77d684a0ce4a8b31eae4c4a11c9bb58 | <https://github.com/eclipse-zenoh/zenoh-c.git>    |
@@ -94,11 +97,12 @@ $ git clone <URL::rmw_zenoh_pico.git>
 $ export RMW_ZENOH_PICO_PATH="$PWD/rmw_zenoh_pico"
 ```
 
-the host_zenoh configuration on micro_ros_setup read rmw_zenoh_pico package from path of RMW_ZENOH_PICO_PATH value.
+The host_zenoh configuration on micro_ros_setup read rmw_zenoh_pico package from path of RMW_ZENOH_PICO_PATH value.
 
 ### Create a workspace and download the micro-ROS tools
 
 ``` console
+$ unset RMW_IMPLEMENTATION 
 $ mkdir microros
 $ pushd microros
 $ git clone -b $ROS_DISTRO https://github.com/micro-ROS/micro_ros_setup.git src/micro_ros_setup
@@ -113,12 +117,19 @@ $ ls
 microros  rmw_zenoh_pico
 ```
 
+> [!NOTE]
+> 1. The rmw_zenoh_pico need part of any library which is used by get hash value in the fastdds library.
+>    Therefore, the value of RMW_IMPLEMENTATION should not be set before building rmw_zenoh_pico if you use customize rmw_middleware (ex. cyclonedds).
+> 2. The rmw_zenoh_pico have to add patch to product of miro_ros_setup.
+>    If you need the patched product, you can clone the branch of rmw_zenoh_pico from [mirror of micro_ros_setup](https://github.com/esol-community/micro_ros_setup).
+
 ## Creating a new firmware workspace
 
-The rmw_zenoh_pico have any demo program.  
-In this session, we will introduce a sample communication example between rmw_zenoh_pico and zenoh_pico.
+The rmw_zenoh_pico has demo programs.  
+This section introduces a sample communication example between rmw_zenoh_pico and zenoh_pico.
 
-target connection summary :
+Target connection summary:
+
 ```plantuml
 @startditaa -E
 +------------+                                  +------------------+
@@ -130,15 +141,15 @@ target connection summary :
 @endditaa
 ```
 
-target environments:  
+Target environments:  
 
-| target                                      | ip address |
+| Target                                      | IP address |
 |---------------------------------------------|------------|
-| linux target (local connect) / zenohd       | localhost  |
-| linux target (external connection) / zenohd | 10.0.30.10 |
-| rasberry-pi target                          | 10.0.30.50 |
+| Linux target (local connect) / zenohd       | localhost  |
+| Linux target (external connection) / zenohd | 10.0.30.10 |
+| Raspberry-pi target                         | 10.0.30.50 |
 
-| type of rmw    | ros application name | node name      |
+| Type of rmw    | ROS application name | Node name      |
 |----------------|----------------------|----------------|
 | rmw_zenoh      | talker               | /talker        |
 | rmw_zenoh_pico | listener             | /listener_node |
@@ -147,7 +158,7 @@ target environments:
 |-----------|
 | /chatter  |
 
-### build Linux target
+### Build Linux target
 
 ``` console
 $ pushd microros
@@ -159,7 +170,7 @@ $ file ./install/rmw_zenoh_pico/lib/rmw_zenoh_demos_rclc/listener/listener
 $ popd
 ```
 
-### build Raspberry Pi target
+### Build Raspberry Pi target
 
 ``` console
 $ pushd microros
@@ -167,21 +178,21 @@ $ ros2 run micro_ros_setup create_firmware_ws.sh zenoh raspbian bookworm_v12
 $ ros2 run micro_ros_setup configure_firmware.sh listener -t unicast -i <zenohd ip> -p <zenohd port>
 $ source install/local_setup.bash
 $ ros2 run micro_ros_setup build_firmware.sh
-$ file  firmware/bin/listener
-firmware/bin/listener: ELF 32-bit LSB executable, ARM, EABI5 version 1 (SYSV), dynamically linked, interpreter /lib/ld-linux-armhf.so.3, for GNU/Linux 3.2.0, with debug_info, not stripped
+$ file ./firmware/bin/listener
+./firmware/bin/listener: ELF 32-bit LSB executable, ARM, EABI5 version 1 (SYSV), dynamically linked, interpreter /lib/ld-linux-armhf.so.3, for GNU/Linux 3.2.0, with debug_info, not stripped
 $ popd
 ```
 
-The znoh_pico in rmw_zeno_pico is executing by client mode. so the  rmw_zenoh_pico have to set connect zenoh/zenohd.  
-The raspios  configration for rmw_zenoh_pico have to set their ip address and port when execute configure_firmware.  
+The zenoh_pico in rmw_zenoh_pico is executing in client mode, and the connection has to be set to zenoh/zenohd.  
+The Raspberry Pi OS configuration for rmw_zenoh_pico has to set their IP address and port when executing configure_firmware.  
 
-| name       | mean                         | example       |
+| Name       | Mean                         | Example       |
 |------------|------------------------------|---------------|
 | zenoh ip   | address connect zenoh/zenohd | -i 10.0.30.10 |
 | zenoh port | port connect zenoh           | -p 7447       |
 
-The raspios configration on this patch on rmw_zeno_pico package is support by rasberry pi 1/pico toolchaines (genrate to ELF32bit/EABI5).  
-If you want to use other rasberry pi target which is using 64bit environment, you have to change part of toolchaines URL in create.sh by manual.  
+The Raspberry Pi OS configuration on this patch on the rmw_zeno_pico package used Raspberry Pi 1 and Raspberry Pi Pico toolchains (ELF32bit/EABI5).  
+If you want to use another Raspberry Pi target, which is a 64-bit environment, you have to change part of the toolchain URL in create.sh manually.  
 
 ```console
 $ cat micro_ros_setup/config/zenoh/raspbian/create.sh 
@@ -189,8 +200,8 @@ $ cat micro_ros_setup/config/zenoh/raspbian/create.sh
 
 pushd $FW_TARGETDIR/$DEV_WS_DIR >/dev/null
     if [ $OPTION == "bookworm_v12" ]; then
-        TOOLCHAIN_URL="https://..."              /* change URL of cross-complile toolchain */
-                                                 /* for match target raspios environment  */
+        TOOLCHAIN_URL="https://..."              /* Change URL of cross-compile toolchain */
+                                                 /* For match target Raspberry Pi OS environment */
     else
         echo "Platform not supported."
         exit 1
@@ -198,9 +209,9 @@ pushd $FW_TARGETDIR/$DEV_WS_DIR >/dev/null
        :
 ```
 
-see : <https://sourceforge.net/projects/raspberry-pi-cross-compilers/files/Raspberry%20Pi%20GCC%20Cross-Compiler%20Toolchains/>  
+See: <https://sourceforge.net/projects/raspberry-pi-cross-compilers/files/Raspberry%20Pi%20GCC%20Cross-Compiler%20Toolchains/>  
 
-### build RTOS target
+### Build RTOS target
 
 T.D.B
 
@@ -208,9 +219,9 @@ T.D.B
 
 For sample details, see [Test](https://github.com/ros2/rmw_zenoh#test) in rmw_zenoh.
 
-### running common service on linux  
+### Running common service on Linux  
 
-The command execute on other terminal.
+The following commands are executed on another terminal.
 
 1. Start the Zenoh router on rmw_zenoh
 
@@ -232,7 +243,7 @@ The command execute on other terminal.
     $ ros2 run demo_nodes_cpp talker
     ``` 
 
-### running Linux target
+### Running Linux target
 
 1. Run the listener on rmw_zenoh_pico in microros
 
@@ -243,33 +254,32 @@ The command execute on other terminal.
     $ ros2 run rmw_zenoh_demos_rclc listener
     ``` 
 
-### running Raspberry Pi target (on raspberry pi H/W)
+### Running Raspberry Pi target (on Raspberry Pi H/W)
 
-1. Copy microros application to raspberry pi
+1. Copy the micro-ROS application to Raspberry Pi
 
     ``` console
     $ cd microros
     $ scp firmware/bin/listener <target raspberry pi>:~/.
     ```
 
-2. Run listen application
+2. Listen application
 
     ```console
     $ ssh <target raspberry pi>
     $ ./listener
     ```
 
-### running RTOS target
+### Running RTOS target
 
 T.D.B
 
-### Name of node/topic on ROS2 (option)
+### Name of node/topic on ROS 2 (option)
 
-The ros2 cli commands is start new ros2 daemon task when there command execute.  
-And if the ros2 daemon start already, ros2 cli is use its daemon internal data which save on cache.  
-Therefore, the ros2 daemon of already starting have to stop before the ros2 cli commands execute.  
+The ROS 2 CLI command starts a new ROS 2 daemon task, and the daemon caches data.  
+If the ROS 2 daemon is already running, it must be stopped before executing ROS 2 CLI commands. 
 
-1. get node name (When only the listener node is executed)
+1. Get the node name if the listener node is executed
 
     ``` console
     $ ros2 daemon stop
@@ -282,7 +292,7 @@ Therefore, the ros2 daemon of already starting have to stop before the ros2 cli 
     /listener_node
     ```
 
-2. get topic name (When only the listener node is executed)
+2. Get the topic name if the listener node is executed
 
     ``` console
     $ ros2 daemon stop
@@ -297,45 +307,45 @@ Therefore, the ros2 daemon of already starting have to stop before the ros2 cli 
     /chatter
     ```
 
-The new ros2 daemon started by ros2 cli exits when this command exits.  
-At this time, the rmw zenoh middleware outputs a few messages.  
-this message change your build/execute environment.  
+The new ROS 2 daemon started by ROS 2 CLI exits when this command exits.  
+At this time, the rmw_zenoh middleware outputs a few messages.
+This message will change depending on your build/execute environment.  
 
 ## Purpose of the Project
 
-This software is not ready for production use. It has neither been developed nor
-tested for a specific use case. However, the license conditions of the
-applicable Open Source licenses allow you to adapt the software to your needs.
-Before using it in a safety relevant setting, make sure that the software
-fulfills your requirements and adjust it according to any applicable safety
-standards, e.g., ISO 26262.
+This software is not ready for production use.
+It has neither been developed nor tested for a specific use case.  
+However, the license conditions of the applicable open-source licenses allow you to adapt the software to your needs.
+Before using it in a safety-relevant setting, ensure the software fulfills your requirements and adjusts them according to applicable safety standards, e.g., ISO 26262.
 
 ## License
 
 This repository is open-sourced under the Apache-2.0 license. See the [LICENSE](LICENSE) file for details.
 
-For a list of other open-source components included in this repository,
-see the file [3rd-party-licenses.txt](3rd-party-licenses.txt).
+For a list of other open-source components included in this repository, see the file [3rd-party-licenses.txt](3rd-party-licenses.txt).
 
 ## Known Issues/Limitations
 
-1. The pub/sub message from rmw_zenoh_pico do not using attempt data.  
-The rmw_zenoh is using zenoh package. and the message from rmw_zenoh append additional data on attempt future with zenoh. the additional data on rmw_zenoh is "gid", "sequence_number" and "source_timestamp".  
-The rmw_zenoh_pico is using zenoh pico package. however, the rmw_zenoh_pico with zenoh-pico is not able to exchange the attempt data. Therefore, rmw_zenoh_pico does not yet support the full RMW API except for working communication between subscribers and publishers.  
+1. The pub/sub message from rmw_zenoh_pico does not use attempt data.  
+The rmw_zenoh is using Zenoh package, and the message from rmw_zenoh append additional data on future attempts with Zenoh.  
+The additional data on rmw_zenoh is "gid", "sequence_number" and "source_timestamp".  
+The rmw_zenoh_pico is using zenoh pico package. However, the rmw_zenoh_pico with zenoh-pico cannot exchange the attempt data.  
+Therefore, rmw_zenoh_pico does not yet support the full RMW API except for working communication between subscribers and publishers.
 
-1. How to share liveliness  information data.  
-The rmw_zenoh pico can use some ros2 cli commands.However, this implementation is provisional.  
-The rmw_zenoh is controlled by liveliness information which is generate keyexpr data by z_declare_keyexpr(). And there information save resource data on each internal memory.The rmw zenoh is execute on p2p mode of zenoh.this p2p mode is able to exchange when zenoh peer connect to other peer.  
-On the other hand, rmw_zenoh_pico connects to the zenoh network in client mode.
+1. How to share liveliness information data.  
+The rmw_zenoh pico can use some ROS 2 CLI commands. However, this implementation is provisional.  
+The rmw_zenoh is controlled by liveliness information, which generates keyexpr data by `z_declare_keyexpr()`.
+And their information saves resource data in each internal memory.  
+The rmw_zenoh is executed in the Zenoh P2P mode. This P2P mode can be exchanged when a Zenoh peer connects to another peer.  
+Conversely, rmw_zenoh_pico connects to the Zenoh network in client mode.
 The zenohd does not forward keyexpr data. In client mode, there is no way to exchange internal resource keyexpr data with other peers because no P2P connection is performed.  
-Currently, the rmw_zenoh_pico works around this problem by creating a new subscribe key for liveliness information.
-this new subscribe key is used only this future.  
-We feel that this implementation is not very suitable for poor MPCs and upper layer applications. And if we find a more effective way to approach this issues, we will need to change this implementation.  
+Currently, the rmw_zenoh_pico works around this problem by creating a new subscribe key for liveliness information. This new subscribe key is used only in the future.  
+We feel that this implementation is not very suitable for poor MPCs and upper-layer applications. And if we find a more effective way to approach this issue, we will need to change this implementation.  
 
-1. The rmw_zenoh_pico using malloc() system futures when there need new memory region.  
-The XRCE-DDS implementation have simple memory futures into own layer.  
-This memory futures is designed to run ros communication for small resource system.
-Now, the rmw_zenoh rayer is able to execute on linux system which have memory subsystem for large system with zenoh.  
-The zenoh-pico is designed for small resource system. however, the zenoh-pico memory is compiling into own system and it is not designed to use same data area with upside layer which is rmw_zenoh_pico.  
-If you use rmw_zeno_pico on a small resource system with any RTOS, you might need to add some customizations for zenoh-pico and rmw_zenoh_pico.  
-
+1. The rmw_zenoh_pico using malloc() system futures when there is a new memory region.  
+The XRCE-DDS implementation has simple memory futures in its layer.
+This memory future is designed to run ROS 2 communication for small resource systems.  
+The rmw_zenoh layer can execute on a Linux system with a memory subsystem for a large system with Zenoh.  
+The zenoh-pico is designed for small resource systems.  
+However, the zenoh-pico memory is compiling into its system, and it is not designed to use the same data area with an upside layer, which is rmw_zenoh_pico.  
+If you use rmw_zeno_pico on a small resource system with any RTOS, you might need to add some customizations for zenoh-pico and rmw_zenoh_pico.
