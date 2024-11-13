@@ -71,31 +71,15 @@ Table: Related repositories
 | rmw_zenoh       | rolling        | 011cc79f564f7f4ab0e47e1604062c14c355546a | <https://github.com/ros2/rmw_zenoh.git>           |
 | zenoh           | main           | 2500e5a62d8940cbfbc36f27c07360f91ba28c2d | <https://github.com/eclipse-zenoh/zenoh.git>      |
 
-### Download rmw_zenoh_pico package
-
-``` console
-$ git clone <URL::rmw_zenoh_pico.git>
-$ export RMW_ZENOH_PICO_PATH="$PWD/rmw_zenoh_pico"
-```
-
-The host_zenoh configuration on micro_ros_setup read rmw_zenoh_pico package from path of RMW_ZENOH_PICO_PATH value.
-
 ### Create a workspace and download the micro-ROS tools
 
-``` console
-$ unset RMW_IMPLEMENTATION 
-$ mkdir microros
-$ pushd microros
-$ git clone -b $ROS_DISTRO https://github.com/micro-ROS/micro_ros_setup.git src/micro_ros_setup
-$ cd src/micro_ros_setup
-$ git checkout -b rmw_zenoh_pico
-$ git am $RMW_ZENOH_PICO_PATH/extern/patches/micro_ros_setup/*
-$ rosdep update && rosdep install --from-paths src --ignore-src -y
-$ colcon build
-$ source install/local_setup.bash
-$ popd
-$ ls
-microros  rmw_zenoh_pico
+``` bash
+unset RMW_IMPLEMENTATION 
+mkdir uros_ws && cd uros_ws
+git clone -b rmw_zenoh_pico https://github.com/esol-community/micro_ros_setup src/micro_ros_setup
+rosdep update && rosdep install --from-paths src --ignore-src -y
+colcon build
+source install/local_setup.bash
 ```
 
 > [!NOTE]
@@ -133,27 +117,25 @@ Target environments:
 
 ### Build Linux target
 
-``` console
-$ pushd microros
-$ ros2 run micro_ros_setup create_firmware_ws.sh zenoh host
-$ source install/local_setup.bash
-$ ros2 run micro_ros_setup build_firmware.sh
-$ file ./install/rmw_zenoh_pico/lib/rmw_zenoh_demos_rclc/listener/listener
-./install/rmw_zenoh_pico/lib/rmw_zenoh_demos_rclc/listener/listener: ELF 64-bit LSB pie executable, x86-64, version 1 (SYSV), dynamically linked, interpreter /lib64/ld-linux-x86-64.so.2, BuildID[sha1]=2c0119cf4620f58fafa736594d3bba038e56e13a, for GNU/Linux 3.2.0, not stripped
-$ popd
+``` bash
+# cd uros_ws
+ros2 run micro_ros_setup create_firmware_ws.sh zenoh host
+source install/local_setup.bash
+ros2 run micro_ros_setup build_firmware.sh
+file ./install/rmw_zenoh_pico/lib/rmw_zenoh_demos_rclc/listener/listener
+# ./install/rmw_zenoh_pico/lib/rmw_zenoh_demos_rclc/listener/listener: ELF 64-bit LSB pie executable, x86-64, version 1 (SYSV), dynamically linked, interpreter /lib64/ld-linux-x86-64.so.2, BuildID[sha1]=2c0119cf4620f58fafa736594d3bba038e56e13a, for GNU/Linux 3.2.0, not stripped
 ```
 
 ### Build Raspberry Pi target
 
-``` console
-$ pushd microros
-$ ros2 run micro_ros_setup create_firmware_ws.sh zenoh raspbian bookworm_v12
-$ ros2 run micro_ros_setup configure_firmware.sh listener -t unicast -i <zenohd ip> -p <zenohd port>
-$ source install/local_setup.bash
-$ ros2 run micro_ros_setup build_firmware.sh
-$ file ./firmware/bin/listener
-./firmware/bin/listener: ELF 32-bit LSB executable, ARM, EABI5 version 1 (SYSV), dynamically linked, interpreter /lib/ld-linux-armhf.so.3, for GNU/Linux 3.2.0, with debug_info, not stripped
-$ popd
+``` bash
+# cd uros_ws
+ros2 run micro_ros_setup create_firmware_ws.sh zenoh raspbian bookworm_v12
+ros2 run micro_ros_setup configure_firmware.sh listener -t unicast -i <zenohd ip> -p <zenohd port>
+source install/local_setup.bash
+ros2 run micro_ros_setup build_firmware.sh
+file ./firmware/bin/listener
+# ./firmware/bin/listener: ELF 32-bit LSB executable, ARM, EABI5 version 1 (SYSV), dynamically linked, interpreter /lib/ld-linux-armhf.so.3, for GNU/Linux 3.2.0, with debug_info, not stripped
 ```
 
 The zenoh_pico in rmw_zenoh_pico is executing in client mode, and the connection has to be set to zenoh/zenohd.  
@@ -194,53 +176,53 @@ For sample details, see [Test](https://github.com/ros2/rmw_zenoh#test) in rmw_ze
 
 ### Running common service on Linux  
 
-The following commands are executed on another terminal.
+The following commands are executed on another terminal, respectively.
 
 1. Start the Zenoh router on rmw_zenoh
 
-    ``` console
-    $ cd <directory in install rmw_zenoh> 
-    $ source install/setup.bash
-    $ ros2 run rmw_zenoh_cpp rmw_zenohd
+    ``` bash
+    # cd <directory in install rmw_zenoh> 
+    source install/setup.bash
+    ros2 run rmw_zenoh_cpp rmw_zenohd
     ```
 
 2. Run the talker on rmw_zenoh
 
-    ``` console
-    $ cd <directory in install rmw_zenoh> 
-    $ sudo apt-get install ros-$ROS_DISTRO-demo-nodes-py
-    $ sudo apt-get install ros-$ROS_DISTRO-demo-nodes-cpp
-    $ source /opt/ros/$ROS_DISTRO/local_setup.bash
-    $ source install/setup.bash
-    $ export RMW_IMPLEMENTATION=rmw_zenoh_cpp
-    $ ros2 run demo_nodes_cpp talker
+    ``` bash
+    # cd <directory in install rmw_zenoh> 
+    sudo apt-get install ros-$ROS_DISTRO-demo-nodes-py
+    sudo apt-get install ros-$ROS_DISTRO-demo-nodes-cpp
+    source /opt/ros/$ROS_DISTRO/local_setup.bash
+    source install/setup.bash
+    export RMW_IMPLEMENTATION=rmw_zenoh_cpp
+    ros2 run demo_nodes_cpp talker
     ``` 
 
 ### Running Linux target
 
 1. Run the listener on rmw_zenoh_pico in microros
 
-    ``` console
-    $ cd microros
-    $ source install/local_setup.bash
-    $ export RMW_IMPLEMENTATION=rmw_zenoh_pico
-    $ ros2 run rmw_zenoh_demos_rclc listener
+    ``` bash
+    # cd uros_ws
+    source install/local_setup.bash
+    export RMW_IMPLEMENTATION=rmw_zenoh_pico
+    ros2 run rmw_zenoh_demos_rclc listener
     ``` 
 
 ### Running Raspberry Pi target (on Raspberry Pi H/W)
 
 1. Copy the micro-ROS application to Raspberry Pi
 
-    ``` console
-    $ cd microros
-    $ scp firmware/bin/listener <target raspberry pi>:~/.
+    ``` bash
+    # cd uros_ws
+    scp firmware/bin/listener <target raspberry pi>:~/.
     ```
 
 2. Listen application
 
-    ```console
-    $ ssh <target raspberry pi>
-    $ ./listener
+    ```bash
+    ssh <target raspberry pi>
+    ./listener
     ```
 
 ### Running RTOS target
@@ -254,30 +236,30 @@ If the ROS 2 daemon is already running, it must be stopped before executing ROS 
 
 1. Get the node name if the listener node is executed
 
-    ``` console
-    $ ros2 daemon stop
-    The daemon has been stopped
-    $ source install/setup.bash
-    $ export RMW_IMPLEMENTATION=rmw_zenoh_cpp
-    $ ros2 node list
-    [INFO] [1728446929.812251213] [rmw_zenoh_cpp]: Successfully connected to a Zenoh router with id aebe653d2ff57b4ba1ef7b43c59b547.
-    [WARN] [1728446931.353213030] [rmw_zenoh_cpp]: Received liveliness token to remove node /_ros2cli_361692 from the graph before all pub/subs/clients/services for this node have been removed. Removing all entities first...
-    /listener_node
+    ``` bash
+    ros2 daemon stop
+    # The daemon has been stopped
+    source install/setup.bash
+    export RMW_IMPLEMENTATION=rmw_zenoh_cpp
+    ros2 node list
+    # [INFO] [1728446929.812251213] [rmw_zenoh_cpp]: Successfully connected to a Zenoh router with id aebe653d2ff57b4ba1ef7b43c59b547.
+    # [WARN] [1728446931.353213030] [rmw_zenoh_cpp]: Received liveliness token to remove node /_ros2cli_361692 from the graph before all pub/subs/clients/services for this node have been removed. Removing all entities first...
+    # /listener_node
     ```
 
 2. Get the topic name if the listener node is executed
 
-    ``` console
-    $ ros2 daemon stop
-    The daemon has been stopped
-    $ source install/setup.bash
-    $ export RMW_IMPLEMENTATION=rmw_zenoh_cpp
-    $ ros2 topic list
-    [INFO] [1728446957.797293950] [rmw_zenoh_cpp]: Successfully connected to a Zenoh router with id aebe653d2ff57b4ba1ef7b43c59b547.
-    [WARN] [1728446959.338124246] [rmw_zenoh_cpp]: Received liveliness token to remove node /_ros2cli_361735 from the graph before all pub/subs/clients/services for this node have been removed. Removing all entities first...
-    /parameter_events
-    /rosout
-    /chatter
+    ``` bash
+    ros2 daemon stop
+    # The daemon has been stopped
+    source install/setup.bash
+    export RMW_IMPLEMENTATION=rmw_zenoh_cpp
+    ros2 topic list
+    # [INFO] [1728446957.797293950] [rmw_zenoh_cpp]: Successfully connected to a Zenoh router with id aebe653d2ff57b4ba1ef7b43c59b547.
+    # [WARN] [1728446959.338124246] [rmw_zenoh_cpp]: Received liveliness token to remove node /_ros2cli_361735 from the graph before all pub/subs/clients/services for this node have been removed. Removing all entities first...
+    # /parameter_events
+    # /rosout
+    # /chatter
     ```
 
 The new ROS 2 daemon started by ROS 2 CLI exits when this command exits.  
