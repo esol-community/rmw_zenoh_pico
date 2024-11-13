@@ -11,26 +11,7 @@ This package provides the same future as the [RMW Micro XRCE-DDS implementation]
 
 This package is able to connect the [rmw_zenoh](https://github.com/ros2/rmw_zenoh) layer, whose implementation is based on Zenoh and is written using the zenoh-c bindings by the ROS community.
 
-```plantuml
-@startditaa -E
-    rmw_zenoh_pico             rmw_zenoh      
-  +----------------+        +-------------+
-  |    ROS APP     |        |   ROS APP   | 
-  +----------------+        +-------------+
-  |      rclc      |        |   rclcpp    |
-  +----------------+        +-------------+
-  |    rmw API     |        |   rmw API   |
-  +----------------+        +-------------+
-  | rmw_zenoh-pico |        |  rmw_zenoh  |
-  +----------------+        +-------------+
-  |   zenoh pico   |<------>|    zenoh    |
-  +----------------+        +-------------+
-  |    POSIX API   |        |  POSIX API  |
-  +----------------+        +-------------+
-  |    RTOS/Linux  |        |    Linux    |
-  +----------------+        +-------------+
-@endditaa
-```
+![stack_diag.svg](./images/stack_diag.svg)
 
 ## Packages
 
@@ -70,7 +51,7 @@ This [list](./rmw_zenoh_pico_rmw_list.md) is support of rmw_zenoh_pico.
 > [!IMPORTANT]
 > The prototype implementation of rmw_zenoh_pico does not yet support graph information (gid).  
 > Therefore, this implementation only supports pub/sub connections. Other connection types (server/client, node information, etc.) are not yet supported.  
-> 
+>
 > For rmw_zenoh_pico to support gid, several [issues](#known-issueslimitations) should be considered.   
 > The rmw_zenoh_pico would like to support zenoh_pico and rmw_zenoh along with future updates from the ROS community.  
 
@@ -118,6 +99,7 @@ microros  rmw_zenoh_pico
 ```
 
 > [!NOTE]
+>
 > 1. The rmw_zenoh_pico need part of any library which is used by get hash value in the fastdds library.
 >    Therefore, the value of RMW_IMPLEMENTATION should not be set before building rmw_zenoh_pico if you use customize rmw_middleware (ex. cyclonedds).
 > 2. The rmw_zenoh_pico have to add patch to product of miro_ros_setup.
@@ -130,16 +112,7 @@ This section introduces a sample communication example between rmw_zenoh_pico an
 
 Target connection summary:
 
-```plantuml
-@startditaa -E
-+------------+                                  +------------------+
-| rclcpp app |                                  | rclc app         |
-| (/talker)  |                                  | (/listener_node) |
-+------------+  /chatter  +--------+  /chatter  +------------------+
-| rmw_zenoh  | <--------> | zenohd | <--------> | rmw_zenoh_pico   |
-+------------+            +--------+            +------------------+
-@endditaa
-```
+![network_diag.svg](./images/network_diag.svg)
 
 Target environments:  
 
