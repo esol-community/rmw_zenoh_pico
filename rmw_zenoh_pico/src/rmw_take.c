@@ -14,9 +14,8 @@
 
 #include <rmw/rmw.h>
 #include <rmw/event.h>
-#include <rmw_microxrcedds_c/rmw_c_macros.h>
+#include <rmw_zenoh_pico/rmw_c_macros.h>
 
-#include "./rmw_microros_internal/utils.h"
 #include "./rmw_microros_internal/error_handling_internal.h"
 
 rmw_ret_t
@@ -46,46 +45,6 @@ rmw_take_with_info(
 
   if (taken != NULL) {
     *taken = false;
-  }
-
-  rmw_uxrce_subscription_t * custom_subscription = (rmw_uxrce_subscription_t *)subscription->data;
-
-  rmw_uxrce_clean_expired_static_input_buffer();
-
-  UXR_LOCK(&static_buffer_memory.mutex);
-
-  // Find first related item in static buffer memory pool
-  rmw_uxrce_mempool_item_t * static_buffer_item = rmw_uxrce_find_static_input_buffer_by_owner(
-    (void *) custom_subscription);
-  if (static_buffer_item == NULL) {
-    UXR_UNLOCK(&static_buffer_memory.mutex);
-    return RMW_RET_ERROR;
-  }
-
-  rmw_uxrce_static_input_buffer_t * static_buffer =
-    (rmw_uxrce_static_input_buffer_t *)static_buffer_item->data;
-
-  ucdrBuffer temp_buffer;
-  ucdr_init_buffer(
-    &temp_buffer,
-    static_buffer->buffer,
-    static_buffer->length);
-
-  bool deserialize_rv = custom_subscription->type_support_callbacks->cdr_deserialize(
-    &temp_buffer,
-    ros_message);
-
-  put_memory(&static_buffer_memory, static_buffer_item);
-
-  UXR_UNLOCK(&static_buffer_memory.mutex);
-
-  if (taken != NULL) {
-    *taken = deserialize_rv;
-  }
-
-  if (!deserialize_rv) {
-    RMW_UROS_TRACE_MESSAGE("Typesupport desserialize error.")
-    return RMW_RET_ERROR;
   }
 
   return RMW_RET_OK;

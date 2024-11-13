@@ -12,6 +12,7 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
+#include <rmw/rmw.h>
 #include <rmw/event.h>
 
 #include "./rmw_microros_internal/error_handling_internal.h"

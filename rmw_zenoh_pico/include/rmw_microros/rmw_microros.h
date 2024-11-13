@@ -15,25 +15,11 @@
 #ifndef RMW_MICROROS__RMW_MICROROS_H_
 #define RMW_MICROROS__RMW_MICROROS_H_
 
-#include <rmw_microxrcedds_c/config.h>
+#include <rmw_zenoh_pico/config.h>
 
 #include <rmw/rmw.h>
 #include <rmw/ret_types.h>
 #include <rmw/init_options.h>
-
-#include <rmw_microros/continous_serialization.h>
-#include <rmw_microros/init_options.h>
-#include <rmw_microros/time_sync.h>
-#include <rmw_microros/ping.h>
-#include <rmw_microros/timing.h>
-
-#if defined(RMW_UXRCE_TRANSPORT_UDP) || defined(RMW_UXRCE_TRANSPORT_TCP)
-#include <rmw_microros/discovery.h>
-#endif  // RMW_UXRCE_TRANSPORT_UDP
-
-#ifdef RMW_UXRCE_TRANSPORT_CUSTOM
-#include <rmw_microros/custom_transport.h>
-#endif  // RMW_UXRCE_TRANSPORT_CUSTOM
 
 #ifdef RMW_UROS_ERROR_HANDLING
 #include <rmw_microros/error_handling.h>
@@ -52,24 +38,24 @@ extern "C"
 #define MAX_PORT_LEN         5
 #define MAX_SERIAL_DEVICE    50
 
-typedef struct rmw_uxrce_transport_params_t
+typedef struct rmw_zenoh_pico_transport_params_t
 {
-#if defined(RMW_UXRCE_TRANSPORT_SERIAL)
+#if defined(RMW_ZENOH_PICO_TRANSPORT_SERIAL)
   char serial_device[MAX_SERIAL_DEVICE];
-#elif defined(RMW_UXRCE_TRANSPORT_UDP) || defined(RMW_UXRCE_TRANSPORT_TCP)
-  char agent_address[MAX_IP_LEN];
-  char agent_port[MAX_PORT_LEN];
-#elif defined(RMW_UXRCE_TRANSPORT_CUSTOM)
+#elif defined(RMW_ZENOH_PICO_TRANSPORT_TCP)
+  char session_address[MAX_IP_LEN];
+  char session_port[MAX_PORT_LEN];
+  bool enable_mcast;
+#elif defined(RMW_RMW_ZENOH_PICO_TRANSPORT_CUSTOM)
   bool framing;
   void * args;
   open_custom_func open_cb;
   close_custom_func close_cb;
   write_custom_func write_cb;
   read_custom_func read_cb;
-#endif  // if defined(RMW_UXRCE_TRANSPORT_SERIAL)
+#endif  // if defined(RMW_RMW_ZENOH_PICO_TRANSPORT_SERIAL)
   uint32_t client_key;
-} rmw_uxrce_transport_params_t;
-
+} rmw_zenoh_pico_transport_params_t;
 
 #if defined(__cplusplus)
 }
