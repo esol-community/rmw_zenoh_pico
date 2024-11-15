@@ -79,14 +79,13 @@ mkdir uros_ws && cd uros_ws
 git clone -b rmw_zenoh_pico https://github.com/esol-community/micro_ros_setup src/micro_ros_setup
 rosdep update && rosdep install --from-paths src --ignore-src -y
 colcon build
-source install/local_setup.bash
 ```
 
 > [!NOTE]
 >
 > 1. The rmw_zenoh_pico need part of any library which is used by get hash value in the fastdds library.
 >    Therefore, the value of RMW_IMPLEMENTATION should not be set before building rmw_zenoh_pico if you use customize rmw_middleware (ex. cyclonedds).
-> 2. The rmw_zenoh_pico have to add patch to product of miro_ros_setup.
+> 2. The rmw_zenoh_pico have to add patch to product of micro_ros_setup.
 >    If you need the patched product, you can clone the branch of rmw_zenoh_pico from [mirror of micro_ros_setup](https://github.com/esol-community/micro_ros_setup).
 
 ## Creating a new firmware workspace
@@ -119,6 +118,7 @@ Target environments:
 
 ``` bash
 # cd uros_ws
+source install/local_setup.bash
 ros2 run micro_ros_setup create_firmware_ws.sh zenoh host
 source install/local_setup.bash
 ros2 run micro_ros_setup build_firmware.sh
@@ -130,6 +130,7 @@ file ./install/rmw_zenoh_pico/lib/rmw_zenoh_demos_rclc/listener/listener
 
 ``` bash
 # cd uros_ws
+source install/local_setup.bash
 ros2 run micro_ros_setup create_firmware_ws.sh zenoh raspbian bookworm_v12
 ros2 run micro_ros_setup configure_firmware.sh listener -t unicast -i <zenohd ip> -p <zenohd port>
 source install/local_setup.bash
