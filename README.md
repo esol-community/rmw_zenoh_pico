@@ -172,7 +172,7 @@ T.D.B
 
 ## Running the micro-ROS app
 
-For sample details, see [Test](https://github.com/ros2/rmw_zenoh#test) in rmw_zenoh.
+For sample details, see [Setup](https://github.com/ros2/rmw_zenoh#setup) in the rmw_zenoh repository.
 
 ### Running common service on Linux  
 
