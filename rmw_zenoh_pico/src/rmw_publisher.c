@@ -15,7 +15,6 @@
 
 #include "rmw/ret_types.h"
 #include "rmw/types.h"
-#include "rmw_zenoh_pico/liveliness/rmw_zenoh_pico_entity.h"
 #include "zenoh-pico/api/macros.h"
 #include "zenoh-pico/api/primitives.h"
 #include "zenoh-pico/api/types.h"
@@ -30,15 +29,15 @@
 
 #include <rmw_zenoh_pico/rmw_zenoh_pico.h>
 
-z_mutex_t mutex_ZenohPicoPubData;
+z_owned_mutex_t mutex_ZenohPicoPubData;
 
 ZenohPicoPubData * zenoh_pico_generate_publisher_data(
   size_t pub_id,
   ZenohPicoNodeData *node,
   ZenohPicoEntity *entity,
+  const rmw_qos_profile_t *qos_profile,
   const rosidl_message_type_support_t * type_support,
-  const message_type_support_callbacks_t *callbacks,
-  rmw_qos_profile_t *qos_profile)
+  const message_type_support_callbacks_t *callbacks)
 {
   if((node == NULL) || (entity == NULL))
     return NULL;
@@ -50,7 +49,7 @@ ZenohPicoPubData * zenoh_pico_generate_publisher_data(
     "failed to allocate struct for the ZenohPicoPubData",
     return NULL);
 
-  pub_data->id         = pub_id;
+  pub_data->id          = pub_id;
   pub_data->node	= node;
   pub_data->entity	= entity;
 
@@ -61,15 +60,28 @@ ZenohPicoPubData * zenoh_pico_generate_publisher_data(
   ZenohPicoTopicInfo *topic_info = entity->topic_info;
 
   // generate key from entity data
-  pub_data->token_key = generate_liveliness(entity);
+  z_string_empty(&pub_data->token_key);
+  generate_liveliness(entity, &pub_data->token_key);
 
   // generate topic key
-  pub_data->topic_key = ros_topic_name_to_zenoh_key(Z_STRING_VAL(node_info->domain),
-						     Z_STRING_VAL(topic_info->name),
-						     Z_STRING_VAL(topic_info->type),
-						     Z_STRING_VAL(topic_info->hash));
+  z_string_empty(&pub_data->topic_key);
+  ros_topic_name_to_zenoh_key(z_loan(node_info->domain),
+			      z_loan(topic_info->name),
+			      z_loan(topic_info->type),
+			      z_loan(topic_info->hash),
+			      &pub_data->topic_key);
 
   return pub_data;
+}
+
+static bool undeclaration_publisher_data(ZenohPicoPubData *pub_data)
+{
+  RMW_ZENOH_FUNC_ENTRY();
+
+  z_undeclare_subscriber(z_move(pub_data->token));
+  z_undeclare_publisher(z_move(pub_data->publisher));
+
+  return true;
 }
 
 bool zenoh_pico_destroy_publisher_data(ZenohPicoPubData *pub_data)
@@ -78,8 +90,8 @@ bool zenoh_pico_destroy_publisher_data(ZenohPicoPubData *pub_data)
 
   (void)undeclaration_publisher_data(pub_data);
 
-  Z_STRING_FREE(pub_data->token_key);
-  Z_STRING_FREE(pub_data->topic_key);
+  z_drop(z_move(pub_data->token_key));
+  z_drop(z_move(pub_data->topic_key));
 
   if(pub_data->node != NULL){
     zenoh_pico_destroy_node_data(pub_data->node);
@@ -111,7 +123,7 @@ void zenoh_pico_debug_publisher_data(ZenohPicoPubData *pub_data)
   zenoh_pico_debug_entity(pub_data->entity);
 }
 
-static void _token_handler(const z_sample_t *sample, void *ctx) {
+static void _token_handler(z_loaned_sample_t *sample, void *ctx) {
   RMW_ZENOH_FUNC_ENTRY();
 
   ZenohPicoPubData *pub_data = (ZenohPicoPubData *)ctx;
@@ -125,7 +137,8 @@ bool declaration_publisher_data(ZenohPicoPubData *pub_data)
 
   ZenohPicoSession *session = pub_data->node->session;
 
-  z_publisher_options_t options = z_publisher_options_default();
+  z_publisher_options_t options;
+  z_publisher_options_default(&options);
   options.congestion_control = Z_CONGESTION_CONTROL_DROP;
   if(pub_data->adapted_qos_profile.history == RMW_QOS_POLICY_HISTORY_KEEP_ALL &&
      pub_data->adapted_qos_profile.reliability == RMW_QOS_POLICY_RELIABILITY_RELIABLE)
@@ -133,41 +146,35 @@ bool declaration_publisher_data(ZenohPicoPubData *pub_data)
       options.congestion_control = Z_CONGESTION_CONTROL_BLOCK;
     }
 
-  pub_data->publisher = z_declare_publisher(z_loan(session->session),
-					     z_keyexpr(pub_data->topic_key.val),
-					     &options);
-  if(!z_check(pub_data->publisher)) {
-    RMW_ZENOH_LOG_DEBUG("Unable to declare publisher.");
-    return false;
+  {
+    z_view_keyexpr_t ke;
+    const z_loaned_string_t *keyexpr = z_loan(pub_data->topic_key);
+    z_view_keyexpr_from_substr(&ke, z_string_data(keyexpr), z_string_len(keyexpr));
+    if(z_declare_publisher(z_loan(session->session),
+			   &pub_data->publisher,
+			   z_loan(ke),
+			   &options) < 0){
+      RMW_ZENOH_LOG_INFO("Unable to declare publisher.");
+      return false;
+    }
   }
 
-  // liveliness tokendeclare
-  const char *keyexpr = Z_STRING_VAL(pub_data->token_key);
-  RMW_ZENOH_LOG_DEBUG("Declaring subscriber key expression '%s'...", keyexpr);
+  {
+    // liveliness token declare
+    z_owned_closure_sample_t token_callback;
+    z_closure(&token_callback, _token_handler, NULL, (void *)pub_data);
 
-  z_owned_closure_sample_t token_callback_ = z_closure(_token_handler, 0, (void *)pub_data);
-  pub_data->token = z_declare_subscriber(z_loan(session->session),
-					 z_keyexpr(keyexpr),
-					 z_move(token_callback_),
-					 NULL);
-  if (!z_check(pub_data->token)) {
-    RMW_ZENOH_LOG_DEBUG("Unable to declare token.");
-    return false;
-  }
-
-  return true;
-}
-
-bool undeclaration_publisher_data(ZenohPicoPubData *pub_data)
-{
-  RMW_ZENOH_FUNC_ENTRY();
-
-  if (z_check(pub_data->token)) {
-    z_undeclare_subscriber(z_move(pub_data->token));
-  }
-
-  if (z_check(pub_data->publisher)) {
-    z_undeclare_publisher(z_move(pub_data->publisher));
+    z_view_keyexpr_t ke;
+    const z_loaned_string_t *keyexpr = z_loan(pub_data->token_key);
+    z_view_keyexpr_from_substr(&ke, z_string_data(keyexpr), z_string_len(keyexpr));
+    if(z_declare_subscriber(z_loan(session->session),
+			    &pub_data->token,
+			    z_loan(ke),
+			    z_move(token_callback),
+			    NULL) < 0){
+      RMW_ZENOH_LOG_INFO("Unable to declare token.");
+      return false;
+    }
   }
 
   return true;
@@ -185,8 +192,10 @@ static rmw_publisher_t *_rmw_publisher_generate(rmw_context_t *context,
     "failed to allocate memory for the publisher",
     return NULL);
 
+  const z_loaned_string_t *_name = z_loan(pub_data->entity->topic_info->name);
+
   rmw_publisher->implementation_identifier	= rmw_get_implementation_identifier();
-  rmw_publisher->topic_name			= Z_STRING_VAL(pub_data->entity->topic_info->name);
+  rmw_publisher->topic_name                     = zenoh_pico_string_clone(_name);
   rmw_publisher->can_loan_messages		= false;
   rmw_publisher->data				= (void *)pub_data;
 
@@ -208,6 +217,7 @@ static rmw_ret_t _rmw_publisher_destroy(rmw_publisher_t * pub)
     zenoh_pico_destroy_publisher_data(pub_data);
   }
 
+  Z_FREE(pub->topic_name);
   Z_FREE(pub);
 
   return RMW_RET_OK;
@@ -316,49 +326,47 @@ rmw_create_publisher(
   const rosidl_type_hash_t * type_hash = type_support->get_type_hash_func(type_support);
 
   // convert hash
-  _z_string_t _hash_data = convert_hash(type_hash);
-  RMW_ZENOH_LOG_INFO("%s : hash = [%s][%s]", __func__, topic_name, _hash_data.val);
+  z_owned_string_t _hash_data;
+  convert_hash(type_hash, &_hash_data);
+  RMW_ZENOH_LOG_INFO("hash = [%s][%.*s]", topic_name,
+		     Z_STRING_LEN(_hash_data),
+		     Z_STRING_VAL(_hash_data));
 
   // generate message type
   const message_type_support_callbacks_t *callbacks
     = (const message_type_support_callbacks_t *)(type_support->data);
 
-  z_string_t _type_name = convert_message_type(callbacks);
-  RMW_ZENOH_LOG_INFO("%s : type name = [%s]", __func__, _type_name.val);
+  z_owned_string_t _type_name;
+  convert_message_type(callbacks, &_type_name);
+  RMW_ZENOH_LOG_INFO("type_name = [%.*s]",
+		     Z_STRING_LEN(_type_name),
+		     Z_STRING_VAL(_type_name));
 
-  // generate Qos
-  // rmw_qos_profile_t _qos_profile = *qos_profile;
-  rmw_qos_profile_t _qos_profile;
-  memset(&_qos_profile, 0, sizeof(_qos_profile));
-  test_qos_profile(&_qos_profile);
-
-  z_string_t qos_key = qos_to_keyexpr(&_qos_profile);
-  RMW_ZENOH_LOG_INFO("%s : qos = [%s]", __func__, qos_key.val);
-
-  _z_string_t _topic_name = _z_string_make(topic_name);
-  ZenohPicoTopicInfo *_topic_info = zenoh_pico_generate_topic_info(&_topic_name,
-								   &_type_name,
-								   &_hash_data,
-								   &qos_key);
+  ZenohPicoTopicInfo *_topic_info = zenoh_pico_generate_topic_info(topic_name,
+								   qos_profile,
+								   z_loan(_type_name),
+								   z_loan(_hash_data));
   // clone node_info
   ZenohPicoNodeInfo *_node_info = zenoh_pico_clone_node_info(node_data->entity->node_info);
 
   // generate entity data
   size_t _entity_id = zenoh_pico_get_next_entity_id();
   ZenohPicoSession *_session = node_data->session;
-  ZenohPicoEntity *_entity = zenoh_pico_generate_entity( z_info_zid(z_loan(_session->session)),
+  z_id_t _zid = z_info_zid(z_loan(_session->session));
+  ZenohPicoEntity *_entity = zenoh_pico_generate_entity( &_zid,
 							 _entity_id,
 							 node_data->id,
 							 Publisher,
 							 _node_info,
 							 _topic_info);
+
   ZenohPicoNodeData *_node = zenoh_pico_loan_node_data(node_data);
   ZenohPicoPubData *_pub_data = zenoh_pico_generate_publisher_data(_entity_id,
 								   _node,
 								   _entity,
+								   qos_profile,
 								   type_support,
-								   callbacks,
-								   &_qos_profile);
+								   callbacks);
   if(rmw_zenoh_pico_debug_level_get() == _Z_LOG_LVL_DEBUG){
     zenoh_pico_debug_publisher_data(_pub_data);
   }
@@ -367,6 +375,9 @@ rmw_create_publisher(
 							    _pub_data,
 							    publisher_options);
   declaration_publisher_data(_pub_data);
+
+  z_drop(z_move(_hash_data));
+  z_drop(z_move(_type_name));
 
   return rmw_publisher;
 }

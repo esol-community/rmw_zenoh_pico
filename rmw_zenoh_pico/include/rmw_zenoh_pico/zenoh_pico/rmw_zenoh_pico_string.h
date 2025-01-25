@@ -14,27 +14,12 @@
  * limitations under the License.
  */
 
-#ifndef ZENOH_PICO_MESSAGETYPE_H
-#define ZENOH_PICO_MESSAGETYPE_H
-
 #include <rmw/rmw.h>
-#include <rmw/types.h>
+#include <zenoh-pico.h>
 
-#include <ucdr/microcdr.h>
+#ifndef ZENOH_PICO_STRING_H
+#define ZENOH_PICO_STRING_H
 
-#include <rosidl_runtime_c/message_type_support_struct.h>
-#include <rosidl_typesupport_microxrcedds_c/message_type_support.h>
-
-#if defined(__cplusplus)
-extern "C"
-{
-#endif  // if defined(__cplusplus)
-
-  extern const rosidl_message_type_support_t * find_message_type_support(
-    const rosidl_message_type_support_t * type_supports);
-
-#if defined(__cplusplus)
-}
-#endif  // if defined(__cplusplus)
+extern char *zenoh_pico_string_clone(const z_loaned_string_t *str);
 
 #endif

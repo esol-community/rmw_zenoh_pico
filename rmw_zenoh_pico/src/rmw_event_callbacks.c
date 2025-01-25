@@ -13,7 +13,6 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-#include "zenoh-pico/system/platform-common.h"
 #include <rmw/rmw.h>
 
 #include <rmw_zenoh_pico/rmw_zenoh_pico.h>
@@ -22,7 +21,7 @@ void data_callback_init(DataCallbackManager *data_callback)
 {
   RMW_ZENOH_FUNC_ENTRY();
 
-  z_mutex_init(&data_callback->mutext);
+  z_mutex_init(&data_callback->mutex);
   data_callback->callback = NULL;
   data_callback->user_data = NULL;
   data_callback->unread_count = 0;
@@ -34,7 +33,7 @@ void data_callback_set(DataCallbackManager *data_callback,
 {
   RMW_ZENOH_FUNC_ENTRY();
 
-  z_mutex_lock(&data_callback->mutext);
+  z_mutex_lock(z_loan_mut(data_callback->mutex));
 
   if(callback != NULL){
     if(data_callback->unread_count) {
@@ -50,20 +49,20 @@ void data_callback_set(DataCallbackManager *data_callback,
     data_callback->callback  = NULL;
   }
 
-  z_mutex_unlock(&data_callback->mutext);
+  z_mutex_unlock(z_loan_mut(data_callback->mutex));
 }
 
 void data_callback_trigger(DataCallbackManager *data_callback)
 {
   RMW_ZENOH_FUNC_ENTRY();
 
-  z_mutex_lock(&data_callback->mutext);
+  z_mutex_lock(z_loan_mut(data_callback->mutex));
   if(data_callback->callback != NULL){
     data_callback->callback(data_callback->user_data, 1);
   }else{
     data_callback->unread_count += 1;
   }
-  z_mutex_unlock(&data_callback->mutext);
+  z_mutex_unlock(z_loan_mut(data_callback->mutex));
 }
 
 rmw_ret_t

@@ -18,6 +18,15 @@
 
 #define RMW_ZENOH_PICO_TYPESUPPORT_C rmw_zenoh_pico_typesupport_c()
 
-extern const char *rmw_zenoh_pico_typesupport_c(void);
+#if defined(__cplusplus)
+extern "C"
+{
+#endif  // if defined(__cplusplus)
+
+  extern const char *rmw_zenoh_pico_typesupport_c(void);
+
+#if defined(__cplusplus)
+}
+#endif  // if defined(__cplusplus)
 
 #endif  // RMW_MICROROS_INTERNAL__IDENTIFIERS_H_

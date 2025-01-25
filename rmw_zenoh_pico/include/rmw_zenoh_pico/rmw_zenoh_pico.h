@@ -33,17 +33,18 @@
 
 #include <ucdr/microcdr.h>
 
-#include "zenoh-pico/system/platform-common.h"
+#include "zenoh-pico/system/platform.h"
 
 // utility
 #include <rmw_zenoh_pico/rmw_zenoh_pico_macros.h>
 #include <rmw_zenoh_pico/rmw_zenoh_pico_logging.h>
 
 // internal data
-#include <rmw_zenoh_pico/liveliness/rmw_zenoh_pico_nodeInfo.h>
-#include <rmw_zenoh_pico/liveliness/rmw_zenoh_pico_topicInfo.h>
-#include <rmw_zenoh_pico/liveliness/rmw_zenoh_pico_entity.h>
-#include <rmw_zenoh_pico/liveliness/rmw_zenoh_pico_liveliness.h>
+#include <rmw_zenoh_pico/zenoh_pico/rmw_zenoh_pico_nodeInfo.h>
+#include <rmw_zenoh_pico/zenoh_pico/rmw_zenoh_pico_topicInfo.h>
+#include <rmw_zenoh_pico/zenoh_pico/rmw_zenoh_pico_entity.h>
+#include <rmw_zenoh_pico/zenoh_pico/rmw_zenoh_pico_liveliness.h>
+#include <rmw_zenoh_pico/zenoh_pico/rmw_zenoh_pico_string.h>
 
 #include <rmw_zenoh_pico/rmw_zenoh_pico_receiveMessage.h>
 #include <rmw_zenoh_pico/rmw_zenoh_pico_messageType.h>
@@ -60,7 +61,7 @@
 #include <rmw_zenoh_pico/rmw_zenoh_pico_publisher.h>
 
 // expand zenoh-pico api
-extern int8_t z_condvar_wait_time(z_condvar_t *cv, z_mutex_t *m, struct timespec *wait_timeout);
+extern int8_t z_condvar_wait_time(_z_condvar_t *cv, z_loaned_mutex_t *m, struct timespec *wait_timeout);
 extern void test_qos_profile(rmw_qos_profile_t *qos);
 
 #endif

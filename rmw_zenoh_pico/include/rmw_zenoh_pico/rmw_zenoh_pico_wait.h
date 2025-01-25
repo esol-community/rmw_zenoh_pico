@@ -28,8 +28,8 @@ extern "C"
   typedef struct _ZenohPicoWaitSetData {
     int ref;
 
-    z_condvar_t condition_variable;
-    z_mutex_t condition_mutex;
+    z_owned_condvar_t condition_variable;
+    z_owned_mutex_t condition_mutex;
 
     bool triggered;
     rmw_context_t * context;
@@ -47,6 +47,5 @@ extern "C"
 #if defined(__cplusplus)
 }
 #endif  // if defined(__cplusplus)
-
 
 #endif

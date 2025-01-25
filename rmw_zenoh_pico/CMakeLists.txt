@@ -67,14 +67,15 @@ endif()
 set(DOC_INSTALL_DIR ${DOC_DIR} CACHE PATH "Installation directory for documentation")
 
 set(SRCS
-  src/rmw_zenoh_pico/zenoh_pico_topicInfo.c
-  src/rmw_zenoh_pico/zenoh_pico_entity.c
-  src/rmw_zenoh_pico/zenoh_pico_liveliness.c
-  src/rmw_zenoh_pico/zenoh_pico_nodeInfo.c
-  src/rmw_zenoh_pico/zenoh_pico_receiveMessage.c
-  src/rmw_zenoh_pico/zenoh_pico_messageType.c
+  src/zenoh_pico/zenoh_pico_topicInfo.c
+  src/zenoh_pico/zenoh_pico_entity.c
+  src/zenoh_pico/zenoh_pico_liveliness.c
+  src/zenoh_pico/zenoh_pico_nodeInfo.c
+  src/zenoh_pico/zenoh_pico_receiveMessage.c
+  src/zenoh_pico/zenoh_pico_messageType.c
+  src/zenoh_pico/zenoh_pico_string.c
+  src/zenoh_pico/zenoh_pico_condition.c
 
-  src/utilities/z_condvar_wait_time.c
   src/utilities/test_qos_profile.c
 
   src/rmw_client.c

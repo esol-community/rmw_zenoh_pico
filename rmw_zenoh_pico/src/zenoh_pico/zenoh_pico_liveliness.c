@@ -18,11 +18,8 @@
 #include <string.h>
 
 #include "rmw_zenoh_pico/rmw_zenoh_pico_logging.h"
-#include "rmw_zenoh_pico/rmw_zenoh_pico_macros.h"
-#include "rmw_zenoh_pico/liveliness/rmw_zenoh_pico_entity.h"
-#include "rmw_zenoh_pico/liveliness/rmw_zenoh_pico_liveliness.h"
 #include "zenoh-pico/api/primitives.h"
-#include "zenoh-pico/collections/string.h"
+#include "zenoh-pico/api/types.h"
 
 #include <rmw_zenoh_pico/rmw_zenoh_pico.h>
 
@@ -86,9 +83,10 @@ static bool add_int_value(size_t value, char **buf, int *left)
   return true;
 }
 
+#define STRING_MAX_LEN 128
 static bool add_string_value(const char *value, char **buf, int *left)
 {
-  char _worker[64];
+  char _worker[STRING_MAX_LEN];
 
   if(*left <= 0)
     return false;
@@ -99,6 +97,29 @@ static bool add_string_value(const char *value, char **buf, int *left)
   mangle_name(_worker, strlen(_worker));
 
   // join _worker buffer
+  int ret = snprintf(*buf, *left, "%s", _worker);
+
+  *buf += ret;
+  *left -= ret;
+
+  return true;
+}
+
+static bool add_loan_string_value(
+  const z_loaned_string_t *value,
+  char **buf, int *left)
+{
+  char _worker[STRING_MAX_LEN];
+
+  if(*left <= 0)
+    return false;
+
+  size_t _len = z_string_len(value) > sizeof(_worker) -1 ? sizeof(_worker) -1 : z_string_len(value);
+
+  memset(_worker, 0, sizeof(_worker));
+  memcpy(_worker, z_string_data(value), _len);
+  mangle_name(_worker, _len);
+
   int ret = snprintf(*buf, *left, "%s", _worker);
 
   *buf += ret;
@@ -121,14 +142,16 @@ static bool add_delimiter(char **buf, int *left)
   return true;
 }
 
-#define APPEND_VALUE(v, b, s)				\
-  _Generic((v),						\
-	   size_t : add_int_value,			\
-	   const char * : add_string_value)(v, b, s)
+#define APPEND_VALUE(v, b, s)					\
+  _Generic((v),							\
+	   size_t : add_int_value,				\
+	   const char * : add_string_value,			\
+	   const z_loaned_string_t *: add_loan_string_value	\
+    )(v, b, s)
 
 #define APPEND_DELIMITER(b, s)  add_delimiter(b, s)
 
-z_string_t generate_liveliness(ZenohPicoEntity *entity)
+z_result_t generate_liveliness(ZenohPicoEntity *entity, z_owned_string_t *value)
 {
   char buf[RMW_ZENOH_PICO_MAX_LINENESS_LEN];
   int left_size = sizeof(buf);
@@ -154,8 +177,7 @@ z_string_t generate_liveliness(ZenohPicoEntity *entity)
 
     // append zid
     APPEND_DELIMITER(&buf_ptr, &left_size);
-    const char *_zid = Z_STRING_VAL(entity->zid);
-    APPEND_VALUE(_zid, &buf_ptr, &left_size);
+    APPEND_VALUE(get_zid(entity), &buf_ptr, &left_size);
 
     // append nid
     APPEND_DELIMITER(&buf_ptr, &left_size);
@@ -201,16 +223,16 @@ z_string_t generate_liveliness(ZenohPicoEntity *entity)
     }
   }
 
-  return z_string_make(buf);
+  return z_string_copy_from_str(value, buf);
 }
 
-z_string_t conv_domain(size_t domain){
+z_result_t conv_domain(size_t domain, z_owned_string_t *value){
   char _domain[16];
 
   memset(_domain, 0, sizeof(_domain));
   snprintf(_domain, sizeof(_domain), "%d", (int)domain);
 
-  return _z_string_make(_domain);
+  return z_string_copy_from_str(value, _domain);
 }
 
 #define RIHS01_PREFIX 	   "RIHS01_"
@@ -219,7 +241,7 @@ z_string_t conv_domain(size_t domain){
 #define RIHS01_STRING_LEN  71  // RIHS_PREFIX_LEN + (ROSIDL_TYPE_HASH_SIZE * 2);
 #define INVALID_NIBBLE	   0xff
 
-z_string_t convert_hash(const rosidl_type_hash_t * type_hash)
+z_result_t convert_hash(const rosidl_type_hash_t * type_hash, z_owned_string_t *value)
 {
   char _hash_data[RIHS01_STRING_LEN +1];
 
@@ -246,12 +268,16 @@ z_string_t convert_hash(const rosidl_type_hash_t * type_hash)
     }
   }
 
-  return _z_string_make(_hash_data);
+  RMW_ZENOH_LOG_INFO("hash = [%s]", _hash_data);
+
+  return z_string_copy_from_str(value, _hash_data);
 }
 
-z_string_t convert_message_type(const message_type_support_callbacks_t *callbacks)
+#define TYPE_NAME_LEN 128
+z_result_t convert_message_type(const message_type_support_callbacks_t *callbacks, z_owned_string_t *value)
 {
-  char _type_name[64];
+  char _type_name[TYPE_NAME_LEN];
+
   if(callbacks->message_name_ != NULL)
     snprintf(_type_name, sizeof(_type_name), "%s::dds_::%s_",
 	     callbacks->message_namespace_,
@@ -260,10 +286,10 @@ z_string_t convert_message_type(const message_type_support_callbacks_t *callback
     snprintf(_type_name, sizeof(_type_name), "dds_::%s_",
 	     callbacks->message_name_);
 
-  return _z_string_make(_type_name);
+  return z_string_copy_from_str(value, _type_name);
 }
 
-z_string_t qos_to_keyexpr(rmw_qos_profile_t *qos)
+z_result_t qos_to_keyexpr(rmw_qos_profile_t *qos, z_owned_string_t *value)
 {
   char qos_data[64];
 
@@ -282,5 +308,5 @@ z_string_t qos_to_keyexpr(rmw_qos_profile_t *qos)
 	   (int)qos->liveliness_lease_duration.sec, QOS_COMPONENT_DELIMITER,
 	   (int)qos->liveliness_lease_duration.nsec);
 
-  return _z_string_make(qos_data);
+  return z_string_copy_from_str(value, qos_data);
 }

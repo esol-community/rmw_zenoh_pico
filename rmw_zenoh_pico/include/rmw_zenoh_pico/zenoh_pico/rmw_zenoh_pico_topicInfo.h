@@ -17,8 +17,9 @@
 #ifndef RMW_ZENOH_PICO_TOPICINFO_H
 #define RMW_ZENOH_PICO_TOPICINFO_H
 
+#include "rmw/types.h"
+
 #include "zenoh-pico/api/types.h"
-#include "zenoh-pico/collections/string.h"
 #include <zenoh-pico.h>
 
 #if defined(__cplusplus)
@@ -30,31 +31,33 @@ extern "C"
   {
     int ref;
 
-    _z_string_t name;
-    _z_string_t type;
-    _z_string_t hash;
-    _z_string_t qos;
+    z_owned_string_t name;
+    z_owned_string_t type;
+    z_owned_string_t hash;
+    z_owned_string_t qos;
   } ZenohPicoTopicInfo;
 
-  extern const char *topic_name(ZenohPicoTopicInfo *topic);
-  extern const char *topic_type(ZenohPicoTopicInfo *topic);
-  extern const char *topic_hash(ZenohPicoTopicInfo *topic);
-  extern const char *topic_qos(ZenohPicoTopicInfo *topic);
+  extern const z_loaned_string_t *topic_name(ZenohPicoTopicInfo *topic);
+  extern const z_loaned_string_t *topic_type(ZenohPicoTopicInfo *topic);
+  extern const z_loaned_string_t *topic_hash(ZenohPicoTopicInfo *topic);
+  extern const z_loaned_string_t *topic_qos(ZenohPicoTopicInfo *topic);
 
-  extern ZenohPicoTopicInfo *zenoh_pico_generate_topic_info(z_string_t *name,
-							    z_string_t *type,
-							    z_string_t *typehash,
-							    z_string_t *qos);
+  extern ZenohPicoTopicInfo *zenoh_pico_generate_topic_info(const char *name,
+							    const rmw_qos_profile_t *qos,
+							    const z_loaned_string_t *type,
+							    const z_loaned_string_t *hash);
+
   extern bool zenoh_pico_destroy_topic_info(ZenohPicoTopicInfo *topic);
 
   extern void zenoh_pico_debug_topic_info(ZenohPicoTopicInfo *topic);
 
   // -------
 
-  extern z_string_t ros_topic_name_to_zenoh_key(const char * domain,
-						const char * name,
-						const char * type,
-						const char * hash);
+  extern z_result_t ros_topic_name_to_zenoh_key(const z_loaned_string_t *domain,
+						const z_loaned_string_t *name,
+						const z_loaned_string_t *type,
+						const z_loaned_string_t *hash,
+						z_owned_string_t *key);
 
 #if defined(__cplusplus)
 }

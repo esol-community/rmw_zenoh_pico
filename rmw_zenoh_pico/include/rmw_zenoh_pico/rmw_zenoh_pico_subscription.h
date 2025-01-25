@@ -20,9 +20,9 @@
 #include <rmw/rmw.h>
 #include <zenoh-pico.h>
 
-#include <rmw_zenoh_pico/liveliness/rmw_zenoh_pico_nodeInfo.h>
-#include <rmw_zenoh_pico/liveliness/rmw_zenoh_pico_entity.h>
-#include <rmw_zenoh_pico/liveliness/rmw_zenoh_pico_liveliness.h>
+#include <rmw_zenoh_pico/zenoh_pico/rmw_zenoh_pico_nodeInfo.h>
+#include <rmw_zenoh_pico/zenoh_pico/rmw_zenoh_pico_entity.h>
+#include <rmw_zenoh_pico/zenoh_pico/rmw_zenoh_pico_liveliness.h>
 
 #include <rmw_zenoh_pico/rmw_zenoh_pico_node.h>
 #include <rmw_zenoh_pico/rmw_zenoh_pico_receiveMessage.h>
@@ -42,8 +42,8 @@ extern "C"
     size_t id;
 
     // Liveliness key for the subscriber.
-    _z_string_t topic_key;
-    _z_string_t token_key;
+    z_owned_string_t topic_key;
+    z_owned_string_t token_key;
 
     // Liveliness token for the subscriber.
     z_owned_subscriber_t subscriber;
@@ -68,7 +68,7 @@ extern "C"
     DataCallbackManager data_callback_mgr;
 
     // rmw_wait condition
-    z_mutex_t condition_mutex;
+    z_owned_mutex_t condition_mutex;
     ZenohPicoWaitSetData * wait_set_data;
 
   } ZenohPicoSubData;
@@ -77,9 +77,9 @@ extern "C"
     size_t sub_id,
     ZenohPicoNodeData *node,
     ZenohPicoEntity *entity,
+    const rmw_qos_profile_t *qos_profile,
     const rosidl_message_type_support_t * type_support,
-    const message_type_support_callbacks_t *callbacks,
-    rmw_qos_profile_t *qos_profile);
+    const message_type_support_callbacks_t *callbacks);
 
   extern bool zenoh_pico_destroy_subscription_data(ZenohPicoSubData *sub_data);
   extern void zenoh_pico_debug_subscription_data(ZenohPicoSubData *sub_data);

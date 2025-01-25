@@ -57,9 +57,9 @@ int main(int argc, const char * const * argv)
 		char *endl;
 		int domain_id = strtol(domain_id_ptr, &endl, 10);
 
-		if(endl != '\0'){
+		if(endl != NULL){
 			rcl_init_options_t init_options = rcl_get_zero_initialized_init_options();
-			rcl_init_options_init(&init_options, allocator);
+			rcl_ret_t ret = rcl_init_options_init(&init_options, allocator);
 			RCCHECK(rcl_init_options_set_domain_id(&init_options, domain_id));
 			RCCHECK(rclc_support_init_with_options(&support,
 							       0,

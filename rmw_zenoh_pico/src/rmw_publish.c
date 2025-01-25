@@ -48,7 +48,7 @@ rmw_publish(const rmw_publisher_t * publisher,
   size_t serialized_size = pub_data->callbacks->get_serialized_size(ros_message);
 
   serialized_size += SUB_MSG_OFFSET;
-  uint8_t * msg_bytes = (uint8_t *)Z_MALLOC(serialized_size);
+  uint8_t * msg_bytes = (uint8_t *)TOPIC_MALLOC(serialized_size);
   RMW_CHECK_FOR_NULL_WITH_MSG(
     msg_bytes,
     "failed to allocate memory for the serialized",
@@ -70,15 +70,16 @@ rmw_publish(const rmw_publisher_t * publisher,
     (void)zenoh_pico_debug_dump_msg(msg_bytes, serialized_size);
   }
 
-  z_publisher_put_options_t options = z_publisher_put_options_default();
-  options.encoding = z_encoding(Z_ENCODING_PREFIX_TEXT_PLAIN, NULL);
+  z_publisher_put_options_t options;
+  z_publisher_put_options_default(&options);
 
+  z_owned_bytes_t payload;
+  z_bytes_copy_from_buf(&payload, msg_bytes, serialized_size);
   z_publisher_put(z_loan(pub_data->publisher),
-		  (const uint8_t *)msg_bytes,
-		  serialized_size,
+		  z_move(payload),
 		  &options);
 
-  Z_FREE(msg_bytes);
+  TOPIC_FREE(msg_bytes);
 
   return RMW_RET_OK;
 }

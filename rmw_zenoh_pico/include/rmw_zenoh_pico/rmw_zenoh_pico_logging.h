@@ -33,7 +33,7 @@ static inline void __z_log_prefix(const char *prefix, const char *func_name) {
   z_time_t tv = z_time_now();
   snprintf(time_stamp, sizeof(time_stamp), "%ld.%09ld", tv.tv_sec, tv.tv_usec);
 
-  printf("[%s] [%s] [%s]:",  prefix, time_stamp, func_name);
+  printf("[%-5s] [%s] [%s] : ",  prefix, time_stamp, func_name);
 }
 
 // Logging values
@@ -45,9 +45,27 @@ extern void rmw_zenoh_pico_debug_level_inir(void);
 extern int rmw_zenoh_pico_debug_level_get(void);
 
 // Logging macros
+
+#ifdef _Z_LOG_PREFIX
+#undef _Z_LOG_PREFIX
+#endif
+
 #define _Z_LOG_PREFIX(prefix)    __z_log_prefix(#prefix, __func__)
 
 // Ignore print only if log deactivated and build is release
+
+#ifdef _Z_DEBUG
+#undef _Z_DEBUG
+#endif
+
+#ifdef _Z_INFO
+#undef _Z_INFO
+#endif
+
+#ifdef _Z_ERROR
+#undef _Z_ERROR
+#endif
+
 #ifndef ZENOH_DEBUG_ENABLE
 
 #define _Z_DEBUG(...) (void)(0)

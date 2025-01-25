@@ -20,44 +20,54 @@
 #include <rmw/rmw.h>
 #include <zenoh-pico.h>
 
-typedef struct _ReceiveMessageData {
-  struct _ReceiveMessageData *next;
+#if defined(__cplusplus)
+extern "C"
+{
+#endif  // if defined(__cplusplus)
 
-  int ref;
+  typedef struct _ReceiveMessageData {
+    struct _ReceiveMessageData *next;
 
-  void *payload_start;
-  size_t payload_size;
+    int ref;
 
-  uint64_t recv_timestamp;
-  uint8_t publisher_gid_[RMW_GID_STORAGE_SIZE];
-  int64_t sequence_number;
-  int64_t source_timestamp;
+    void *payload_start;
+    size_t payload_size;
 
-} ReceiveMessageData;
+    uint64_t recv_timestamp;
+    uint8_t publisher_gid[RMW_GID_STORAGE_SIZE];
+    int64_t sequence_number;
+    int64_t source_timestamp;
 
-typedef struct _ReceiveMessageDataList {
-  z_mutex_t mutex;
+  } ReceiveMessageData;
 
-  ReceiveMessageData *que_top;
-  ReceiveMessageData *que_bottom;
-  int count;
-} ReceiveMessageDataList;
+  typedef struct _ReceiveMessageDataList {
+    z_owned_mutex_t mutex;
 
-extern ReceiveMessageData * zenoh_pico_generate_recv_msg_data(const z_sample_t *sample,
-							      uint64_t recv_ts,
-							      const uint8_t pub_gid[RMW_GID_STORAGE_SIZE],
-							      int64_t seqnum,
-							      int64_t source_ts);
-extern bool zenoh_pico_delete_recv_msg_data(ReceiveMessageData * recv_data);
-extern void zenoh_pico_debug_dump_msg(uint8_t *start, size_t size);
-extern void zenoh_pico_debug_recv_msg_data(ReceiveMessageData * recv_data);
+    ReceiveMessageData *que_top;
+    ReceiveMessageData *que_bottom;
+    int count;
+  } ReceiveMessageDataList;
 
-extern void recv_msg_list_init(ReceiveMessageDataList *msg_list);
-extern ReceiveMessageData *recv_msg_list_push(ReceiveMessageDataList *msg_list,
-					      ReceiveMessageData *recv_data);
-extern ReceiveMessageData *recv_msg_list_pop(ReceiveMessageDataList *msg_list);
-extern int recv_msg_list_count(ReceiveMessageDataList *msg_list);
-extern bool recv_msg_list_empty(ReceiveMessageDataList *msg_list);
-extern void recv_msg_list_debug(ReceiveMessageDataList *msg_list);
+  extern ReceiveMessageData * zenoh_pico_generate_recv_msg_data(
+    const z_loaned_sample_t *sample,
+    uint64_t recv_ts,
+    const uint8_t pub_gid[RMW_GID_STORAGE_SIZE],
+    int64_t seqnum,
+    int64_t source_ts);
+  extern bool zenoh_pico_delete_recv_msg_data(ReceiveMessageData * recv_data);
+  extern void zenoh_pico_debug_dump_msg(uint8_t *start, size_t size);
+  extern void zenoh_pico_debug_recv_msg_data(ReceiveMessageData * recv_data);
+
+  extern void recv_msg_list_init(ReceiveMessageDataList *msg_list);
+  extern ReceiveMessageData *recv_msg_list_push(ReceiveMessageDataList *msg_list,
+						ReceiveMessageData *recv_data);
+  extern ReceiveMessageData *recv_msg_list_pop(ReceiveMessageDataList *msg_list);
+  extern int recv_msg_list_count(ReceiveMessageDataList *msg_list);
+  extern bool recv_msg_list_empty(ReceiveMessageDataList *msg_list);
+  extern void recv_msg_list_debug(ReceiveMessageDataList *msg_list);
+
+#if defined(__cplusplus)
+}
+#endif  // if defined(__cplusplus)
 
 #endif

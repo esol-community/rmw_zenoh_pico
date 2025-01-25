@@ -20,7 +20,7 @@
 
 void guard_condition_trigger(ZenohPicoGuardConditionData *condition_data)
 {
-  z_mutex_lock(&condition_data->condition_mutex);
+  z_mutex_lock(z_loan_mut(condition_data->condition_mutex));
   condition_data->triggered = true;
 
   if(condition_data->wait_set_data != NULL){
@@ -30,16 +30,16 @@ void guard_condition_trigger(ZenohPicoGuardConditionData *condition_data)
     wait_condition_unlock(wait_set_data);
   }
 
-  z_mutex_unlock(&condition_data->condition_mutex);
+  z_mutex_unlock(z_loan_mut(condition_data->condition_mutex));
 }
 
 bool guard_condition_check_and_attach(ZenohPicoGuardConditionData *condition_data,
 				      ZenohPicoWaitSetData * wait_set_data)
 {
-  z_mutex_lock(&condition_data->condition_mutex);
+  z_mutex_lock(z_loan_mut(condition_data->condition_mutex));
 
   if(condition_data->triggered) {
-    z_mutex_unlock(&condition_data->condition_mutex);
+    z_mutex_unlock(z_loan_mut(condition_data->condition_mutex));
     return true;
   }
 
@@ -47,7 +47,7 @@ bool guard_condition_check_and_attach(ZenohPicoGuardConditionData *condition_dat
     condition_data->wait_set_data = wait_set_data;
   }
 
-  z_mutex_unlock(&condition_data->condition_mutex);
+  z_mutex_unlock(z_loan_mut(condition_data->condition_mutex));
 
   return false;
 }
@@ -55,12 +55,12 @@ bool guard_condition_check_and_attach(ZenohPicoGuardConditionData *condition_dat
 bool guard_condition_detach_and_is_trigger_set(ZenohPicoGuardConditionData *condition_data)
 {
   bool value;
-  z_mutex_lock(&condition_data->condition_mutex);
+  z_mutex_lock(z_loan_mut(condition_data->condition_mutex));
 
   value = condition_data->triggered;
   condition_data->wait_set_data = NULL;
 
-  z_mutex_unlock(&condition_data->condition_mutex);
+  z_mutex_unlock(z_loan_mut(condition_data->condition_mutex));
 
   return value;
 }

@@ -56,7 +56,7 @@ __rmw_take_one(ZenohPicoSubData * sub_data,
     message_info->reception_sequence_number	= 0;
 
     message_info->publisher_gid.implementation_identifier = rmw_get_implementation_identifier();
-    memcpy(message_info->publisher_gid.data, msg_data->publisher_gid_, RMW_GID_STORAGE_SIZE);
+    memcpy(message_info->publisher_gid.data, msg_data->publisher_gid, RMW_GID_STORAGE_SIZE);
 
     message_info->from_intra_process = false;
   }

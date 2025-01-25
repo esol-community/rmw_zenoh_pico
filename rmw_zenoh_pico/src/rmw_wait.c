@@ -17,17 +17,17 @@
 
 void wait_condition_lock(ZenohPicoWaitSetData * wait_set_data)
 {
-  z_mutex_lock(&wait_set_data->condition_mutex);
+  z_mutex_lock(z_loan_mut(wait_set_data->condition_mutex));
 }
 
 void wait_condition_unlock(ZenohPicoWaitSetData * wait_set_data)
 {
-  z_mutex_unlock(&wait_set_data->condition_mutex);
+  z_mutex_unlock(z_loan_mut(wait_set_data->condition_mutex));
 }
 
 void wait_condition_signal(ZenohPicoWaitSetData * wait_set_data)
 {
-  z_condvar_signal(&wait_set_data->condition_variable);
+  z_condvar_signal(z_loan_mut(wait_set_data->condition_variable));
 }
 
 void wait_condition_triggered(ZenohPicoWaitSetData * wait_set_data, bool value)
@@ -113,8 +113,8 @@ rmw_wait(rmw_subscriptions_t * subscriptions,
     subscriptions, guard_conditions, services, clients, events, wait_set_data);
 
   if(!skip_wait){
-    z_mutex_t *lock = &wait_set_data->condition_mutex;
-    z_condvar_t *cv = &wait_set_data->condition_variable;
+    z_loaned_mutex_t *lock = z_loan_mut(wait_set_data->condition_mutex);
+    z_loaned_condvar_t *cv = z_loan_mut(wait_set_data->condition_variable);
 
     z_mutex_lock(lock);
 

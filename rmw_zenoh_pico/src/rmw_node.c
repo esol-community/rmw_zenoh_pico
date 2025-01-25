@@ -14,10 +14,11 @@
 // limitations under the License.
 
 #include "rmw_zenoh_pico/rmw_zenoh_pico_logging.h"
+#include "rmw_zenoh_pico/rmw_zenoh_pico_macros.h"
 #include "zenoh-pico/api/primitives.h"
 #include <rmw_zenoh_pico/rmw_zenoh_pico.h>
 
-z_mutex_t mutex_ZenohPicoNodeData;
+z_owned_mutex_t mutex_ZenohPicoNodeData;
 
 ZenohPicoNodeData * zenoh_pico_generate_node_data(size_t node_id,
 						  ZenohPicoSession *session,
@@ -37,10 +38,11 @@ ZenohPicoNodeData * zenoh_pico_generate_node_data(size_t node_id,
 
   node_data->session	= session;
   node_data->entity	= entity;
-  node_data->id	= node_id;
+  node_data->id	        = node_id;
 
   // generate key from entity data
-  node_data->token_key = generate_liveliness(entity);
+  z_string_empty(&node_data->token_key);
+  generate_liveliness(entity, &node_data->token_key);
 
   return node_data;
 }
@@ -56,9 +58,8 @@ bool zenoh_pico_destroy_node_data(ZenohPicoNodeData *node_data)
 {
   RMW_ZENOH_FUNC_ENTRY();
 
-  (void)undeclaration_node_data(node_data);
-
-  Z_STRING_FREE(node_data->token_key);
+  z_undeclare_subscriber(z_move(node_data->token));
+  z_drop(z_move(node_data->token_key));
 
   // delete entity
   if(node_data->entity != NULL){
@@ -82,7 +83,7 @@ void zenoh_pico_debug_node_data(ZenohPicoNodeData *node_data)
   zenoh_pico_debug_entity(node_data->entity);
 }
 
-static void _token_handler(const z_sample_t *sample, void *ctx) {
+static void _token_handler(z_loaned_sample_t *sample, void *ctx) {
   RMW_ZENOH_FUNC_ENTRY();
 
   ZenohPicoNodeData *node_data = (ZenohPicoNodeData *)ctx;
@@ -95,33 +96,24 @@ bool declaration_node_data(ZenohPicoNodeData *node_data)
   RMW_ZENOH_FUNC_ENTRY();
 
   ZenohPicoSession *session = node_data->session;
-  const char *keyexpr = Z_STRING_VAL(node_data->token_key);
 
-  z_owned_closure_sample_t callback_ = z_closure(_token_handler, 0, (void *)node_data);
-  node_data->token = z_declare_subscriber(z_loan(session->session),
-					   z_keyexpr(keyexpr),
-                                           z_move(callback_),
-                                           NULL);
-  if (!z_check(node_data->token)) {
+  z_owned_closure_sample_t callback;
+  z_closure(&callback, _token_handler, NULL, (void *)node_data);
+
+  z_view_keyexpr_t ke;
+  const z_loaned_string_t *keyexpr = z_loan(node_data->token_key);
+  z_view_keyexpr_from_substr(&ke, z_string_data(keyexpr), z_string_len(keyexpr));
+  if(z_declare_subscriber(z_loan(session->session),
+			  &node_data->token,
+			  z_loan(ke),
+			  z_move(callback),
+			  NULL) < 0){
     return false;
   }
 
   // dump node infomation
   if(rmw_zenoh_pico_debug_level_get() == _Z_LOG_LVL_DEBUG){
     zenoh_pico_debug_node_data(node_data);
-  }
-
-  return true;
-}
-
-bool undeclaration_node_data(ZenohPicoNodeData *node_data)
-{
-  RMW_ZENOH_FUNC_ENTRY();
-
-  ZenohPicoSession *session = node_data->session;
-
-  if (z_check(node_data->token)) {
-    z_undeclare_subscriber(z_move(node_data->token));
   }
 
   return true;
@@ -142,11 +134,13 @@ static rmw_node_t *rmw_node_generate(rmw_context_t *context, ZenohPicoNodeData *
     "failed to allocate memory for the node",
     return NULL);
 
-
   memset(node, 0, sizeof(rmw_node_t));
 
-  node->name				= node_info->name.val;
-  node->namespace_			= node_info->ns.val;
+  const z_loaned_string_t *_name = z_loan(node_info->name);
+  const z_loaned_string_t *_ns   = z_loan(node_info->ns);
+
+  node->name				= zenoh_pico_string_clone(_name);
+  node->namespace_			= zenoh_pico_string_clone(_ns);
   node->data				= (void *)node_data;
   node->implementation_identifier	= rmw_get_implementation_identifier();
   node->context				= context;
@@ -165,6 +159,8 @@ static rmw_ret_t rmw_node_destroy(rmw_node_t * node)
       node_data = NULL;
     }
 
+    Z_FREE(node->name);
+    Z_FREE(node->namespace_);
     Z_FREE(node);
   }
 
@@ -175,7 +171,7 @@ rmw_node_t *
 rmw_create_node(rmw_context_t * context, const char * name, const char * namespace)
 {
   RMW_ZENOH_FUNC_ENTRY();
-  RMW_ZENOH_LOG_INFO("%s : name = [%s], namespace = [%s]", __func__, name, namespace);
+  RMW_ZENOH_LOG_INFO("name = [%s], namespace = [%s]", name, namespace);
 
   RMW_CHECK_ARGUMENT_FOR_NULL(context, NULL);
   RMW_CHECK_TYPE_IDENTIFIERS_MATCH(
@@ -189,7 +185,7 @@ rmw_create_node(rmw_context_t * context, const char * name, const char * namespa
   RMW_CHECK_ARGUMENT_FOR_NULL(namespace, NULL);
 
   if (strlen(name) == 0 || strlen(namespace) == 0) {
-    RMW_ZENOH_LOG_INFO("name or namespace_ is null");
+    RMW_ZENOH_LOG_INFO("name or namespace is null");
     return NULL;
   }
 
@@ -197,22 +193,18 @@ rmw_create_node(rmw_context_t * context, const char * name, const char * namespa
 
   // generate private node info data
   ZenohPicoNodeInfo *node_info;
-  z_string_t _domain = conv_domain(context->actual_domain_id);
-  z_string_t _ns = _z_string_make(namespace);
-  z_string_t _name = _z_string_make(name);
-  z_string_t _enclave = _z_string_make(session->enclave.val);
-
-  node_info = zenoh_pico_generate_node_info(&_domain,
-					    &_ns,
-					    &_name,
-					    &_enclave);
+  node_info = zenoh_pico_generate_node_info(context->actual_domain_id,
+					    namespace,
+					    name,
+					    z_loan(session->enclave));
   if(node_info == NULL){
     return NULL;
   }
 
   // generate entity data
   size_t _entity_id = zenoh_pico_get_next_entity_id();
-  ZenohPicoEntity *entity = zenoh_pico_generate_entity(z_info_zid(z_loan(session->session)),
+  z_id_t _zid = z_info_zid(z_loan(session->session));
+  ZenohPicoEntity *entity = zenoh_pico_generate_entity(&_zid,
 						       _entity_id,
 						       _entity_id,
 						       Node,
@@ -250,7 +242,7 @@ rmw_create_node(rmw_context_t * context, const char * name, const char * namespa
 rmw_ret_t rmw_destroy_node(rmw_node_t * node)
 {
   RMW_ZENOH_FUNC_ENTRY();
-  RMW_ZENOH_LOG_INFO("%s : start(%p)", __func__, node);
+  RMW_ZENOH_LOG_INFO("start(%p)", node);
 
   if (!node) {
     RMW_ZENOH_LOG_INFO("node handle is null");
@@ -273,7 +265,7 @@ rmw_ret_t
 rmw_node_assert_liveliness(const rmw_node_t * node)
 {
   RMW_ZENOH_FUNC_ENTRY();
-  RMW_ZENOH_LOG_INFO("%s : start(%p)", __func__, node);
+  RMW_ZENOH_LOG_INFO("start(%p)", node);
 
   (void)node;
   RMW_ZENOH_LOG_INFO("function not implemented");
@@ -284,7 +276,7 @@ const rmw_guard_condition_t *
 rmw_node_get_graph_guard_condition(const rmw_node_t * node)
 {
   RMW_ZENOH_FUNC_ENTRY();
-  RMW_ZENOH_LOG_INFO("%s : start(%p)", __func__, node);
+  RMW_ZENOH_LOG_INFO("start(%p)", node);
 
   ZenohPicoNodeData *node_data = (ZenohPicoNodeData *)node->data;
   ZenohPicoSession *session = node_data->session;

@@ -14,32 +14,37 @@
  * limitations under the License.
  */
 
+#include <stdint.h>
 #include <rmw_zenoh_pico/rmw_zenoh_pico.h>
 
-const char *get_zid(ZenohPicoEntity *entity)	        { return Z_STRING_VAL(entity->zid); }
-size_t get_nid(ZenohPicoEntity *entity)		        { return entity->nid; }
-size_t get_id(ZenohPicoEntity *entity)		        { return entity->id; }
-ZenohPicoEntityType get_type(ZenohPicoEntity *entity)   { return entity->type; }
+#include "zenoh-pico/api/types.h"
 
-const char *get_node_domain(ZenohPicoEntity *entity)    { return node_domain(entity->node_info); }
-const char *get_node_namespace(ZenohPicoEntity *entity)	{ return node_namespace(entity->node_info); }
-const char *get_node_name(ZenohPicoEntity *entity)	{ return node_name(entity->node_info); }
-const char *get_node_enclave(ZenohPicoEntity *entity)	{ return node_enclave(entity->node_info); }
+const z_loaned_string_t *get_zid(ZenohPicoEntity *entity)		{ return z_loan(entity->zid); }
+size_t get_nid(ZenohPicoEntity *entity)					{ return entity->nid; }
+size_t get_id(ZenohPicoEntity *entity)					{ return entity->id; }
+ZenohPicoEntityType get_type(ZenohPicoEntity *entity)			{ return entity->type; }
 
-const char *get_topic_name(ZenohPicoEntity *entity)     { return topic_name(entity->topic_info); }
-const char *get_topic_type(ZenohPicoEntity *entity)     { return topic_type(entity->topic_info); }
-const char *get_topic_hash(ZenohPicoEntity *entity)     { return topic_hash(entity->topic_info); }
-const char *get_topic_qos(ZenohPicoEntity *entity)      { return topic_qos(entity->topic_info); }
+const z_loaned_string_t *get_node_domain(ZenohPicoEntity *entity)	{ return node_domain(entity->node_info); }
+const z_loaned_string_t *get_node_namespace(ZenohPicoEntity *entity)	{ return node_namespace(entity->node_info); }
+const z_loaned_string_t *get_node_name(ZenohPicoEntity *entity)		{ return node_name(entity->node_info); }
+const z_loaned_string_t *get_node_enclave(ZenohPicoEntity *entity)	{ return node_enclave(entity->node_info); }
 
-z_mutex_t mutex_ZenohPicoEntity;
+const z_loaned_string_t *get_topic_name(ZenohPicoEntity *entity)	{ return topic_name(entity->topic_info); }
+const z_loaned_string_t *get_topic_type(ZenohPicoEntity *entity)	{ return topic_type(entity->topic_info); }
+const z_loaned_string_t *get_topic_hash(ZenohPicoEntity *entity)	{ return topic_hash(entity->topic_info); }
+const z_loaned_string_t *get_topic_qos(ZenohPicoEntity *entity)		{ return topic_qos(entity->topic_info); }
 
-ZenohPicoEntity * zenoh_pico_generate_entity(z_id_t zid,
+z_owned_mutex_t mutex_ZenohPicoEntity;
+
+ZenohPicoEntity * zenoh_pico_generate_entity(z_id_t *zid,
 					     size_t id,
 					     size_t nid,
 					     ZenohPicoEntityType type,
 					     ZenohPicoNodeInfo *node_info,
 					     ZenohPicoTopicInfo *topic_info)
 {
+  RMW_ZENOH_FUNC_ENTRY();
+
   ZenohPicoEntity *entity = NULL;
   ZenohPicoGenerateData(entity, ZenohPicoEntity);
   RMW_CHECK_FOR_NULL_WITH_MSG(
@@ -47,16 +52,10 @@ ZenohPicoEntity * zenoh_pico_generate_entity(z_id_t zid,
     "failed to allocate struct for the ZenohPicoEntity",
     return NULL);
 
-  if(_z_id_check(zid)) {
-    _z_bytes_t zid_data;
-    zid_data.len	= _z_id_len(zid);
-    zid_data.start	= zid.id;
-    zid_data._is_alloc	= false;
-
-    entity->zid = _z_string_from_bytes(&zid_data);
-  }else{
-    entity->zid = _z_string_make("");
-  }
+  if(_z_id_check(*zid))
+    z_id_to_string(zid, &entity->zid);
+  else
+    z_string_copy_from_str(&entity->zid, "");
 
   entity->id		= id;
   entity->nid		= nid;
@@ -70,14 +69,9 @@ ZenohPicoEntity * zenoh_pico_generate_entity(z_id_t zid,
   return entity;
 }
 
-static void _zenoh_pico_clear_entity_member(ZenohPicoEntity *entity)
-{
-  Z_STRING_FREE(entity->zid);
-}
-
 void zenoh_pico_destroy_entity(ZenohPicoEntity *entity)
 {
-  _zenoh_pico_clear_entity_member(entity);
+  z_drop(z_move(entity->zid));
 
   if(entity->node_info != NULL){
     zenoh_pico_destroy_node_info(entity->node_info);

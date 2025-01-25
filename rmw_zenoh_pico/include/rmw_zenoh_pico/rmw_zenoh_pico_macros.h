@@ -19,16 +19,21 @@
 #include <rmw/rmw.h>
 #include <zenoh-pico.h>
 
-extern z_mutex_t mutex_ZenohPicoSubData;
-extern z_mutex_t mutex_ZenohPicoTransportParams;
-extern z_mutex_t mutex_ZenohPicoSession;
-extern z_mutex_t mutex_ZenohPicoWaitSetData;
-extern z_mutex_t mutex_ZenohPicoNodeData;
-extern z_mutex_t mutex_ZenohPicoPubData;
-extern z_mutex_t mutex_ZenohPicoEntity;
-extern z_mutex_t mutex_ZenohPicoTopicInfo;
+#if defined(__cplusplus)
+extern "C"
+{
+#endif  // if defined(__cplusplus)
 
-extern void rmw_zenoh_pico_mutex_init(void);
+  extern z_owned_mutex_t mutex_ZenohPicoSubData;
+  extern z_owned_mutex_t mutex_ZenohPicoTransportParams;
+  extern z_owned_mutex_t mutex_ZenohPicoSession;
+  extern z_owned_mutex_t mutex_ZenohPicoWaitSetData;
+  extern z_owned_mutex_t mutex_ZenohPicoNodeData;
+  extern z_owned_mutex_t mutex_ZenohPicoPubData;
+  extern z_owned_mutex_t mutex_ZenohPicoEntity;
+  extern z_owned_mutex_t mutex_ZenohPicoTopicInfo;
+
+  extern void rmw_zenoh_pico_mutex_init(void);
 
 //
 // for identifier data utilities
@@ -50,9 +55,9 @@ extern void rmw_zenoh_pico_mutex_init(void);
       (D) = (T *)z_malloc(sizeof(T));		\
       if ((D) != NULL) {			\
 	memset((D), 0, sizeof(T));		\
-	z_mutex_lock(&mutex_##T);		\
+	z_mutex_lock(z_loan_mut(mutex_##T));	\
 	(D)->ref = 1;				\
-	z_mutex_unlock(&mutex_##T);		\
+	z_mutex_unlock(z_loan_mut(mutex_##T));	\
       }						\
     }						\
   }						\
@@ -60,49 +65,48 @@ extern void rmw_zenoh_pico_mutex_init(void);
 #define ZenohPicoDestroyData(D, T)		\
   {						\
     if((D) != NULL) {				\
-      z_mutex_lock(&mutex_##T);			\
+      z_mutex_lock(z_loan_mut(mutex_##T));	\
       (D)->ref -= 1;				\
       if((D)->ref == 0) {			\
-	z_mutex_unlock(&mutex_##T);		\
+	z_mutex_unlock(z_loan_mut(mutex_##T));	\
 	Z_FREE((D));				\
       }else{					\
-	z_mutex_unlock(&mutex_##T);		\
+	z_mutex_unlock(z_loan_mut(mutex_##T));	\
       }						\
     }						\
   }
 
 #define ZenohPicoLoanData(D, T)			\
   {						\
-    z_mutex_lock(&mutex_##T);			\
+    z_mutex_lock(z_loan_mut(mutex_##T));	\
     (D)->ref += 1;				\
-    z_mutex_unlock(&mutex_##T);			\
+    z_mutex_unlock(z_loan_mut(mutex_##T));	\
   }						\
 
 //
 // zenoh-pico macro
 //
 
-#define Z_MALLOC(size) z_malloc(size)
-#define Z_FREE(ptr)    z_free(ptr)
+#define Z_MALLOC(size)       z_malloc(size)
+#define Z_FREE(ptr)          z_free((void *)ptr)
 
-#define Z_STRING_PRINTF(_z_str, tag)		\
-  {						\
-    if(_z_str.len == 0)				\
-      printf(#tag " = []\n");			\
-    else					\
-      printf(#tag "= [%s]\n", _z_str.val);	\
-  }						\
+#define TOPIC_MALLOC(size)   Z_MALLOC(size)
+#define TOPIC_FREE(ptr)      Z_FREE(ptr)
 
-#define Z_STRING_VAL(s)    (s.val)
-#define Z_STRING_LEN(s)    (s.len)
-#define Z_STRING_ENABLE(s) (s.val != NULL)
+#define Z_STRING_VAL(s)      (z_string_data(z_loan(s)))
+#define Z_STRING_LEN(s)      ((int)z_string_len(z_loan(s)))
 
-#define Z_STRING_FREE(s)			\
-  {						\
-    if(!Z_STRING_ENABLE(s))			\
-      _z_string_clear(&s);			\
-  }						\
+#define Z_STRING_PRINTF(_z_str, tag)					\
+  {									\
+    const z_loaned_string_t *__z_str = z_loan(_z_str);			\
+    if(z_string_is_empty(__z_str))					\
+      printf(#tag " = []\n");						\
+    else								\
+      printf(#tag " = [%.*s]\n", (int)z_string_len(__z_str), z_string_data(__z_str)); \
+  }									\
 
-#define Z_DECLARATION_FREE(s) (_z_declaration_clear(&s))
+#if defined(__cplusplus)
+}
+#endif  // if defined(__cplusplus)
 
 #endif  // RMW_ZENOH_PICO_MACROS_H_

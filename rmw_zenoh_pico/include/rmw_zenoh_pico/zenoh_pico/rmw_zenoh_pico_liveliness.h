@@ -18,7 +18,7 @@
 #define RMW_ZENOH_PICO_LIVELINESS_H
 
 #include "rmw_zenoh_pico/rmw_zenoh_pico_macros.h"
-#include "rmw_zenoh_pico/liveliness/rmw_zenoh_pico_entity.h"
+#include "rmw_zenoh_pico/zenoh_pico/rmw_zenoh_pico_entity.h"
 
 #include <rmw/rmw.h>
 #include <rmw/types.h>
@@ -28,11 +28,20 @@
 #include <rosidl_runtime_c/message_type_support_struct.h>
 #include <rosidl_typesupport_microxrcedds_c/message_type_support.h>
 
-extern z_string_t generate_liveliness(ZenohPicoEntity *entity);
+#if defined(__cplusplus)
+extern "C"
+{
+#endif  // if defined(__cplusplus)
 
-extern z_string_t conv_domain(size_t domain);
-extern z_string_t convert_hash(const rosidl_type_hash_t * type_hash);
-extern z_string_t convert_message_type(const message_type_support_callbacks_t *callbacks);
-extern z_string_t qos_to_keyexpr(rmw_qos_profile_t *qos);
+  extern z_result_t generate_liveliness(ZenohPicoEntity *entity, z_owned_string_t *value);
+
+  extern z_result_t conv_domain(size_t domain, z_owned_string_t *value);
+  extern z_result_t convert_hash(const rosidl_type_hash_t * type_hash, z_owned_string_t *value);
+  extern z_result_t convert_message_type(const message_type_support_callbacks_t *callbacks, z_owned_string_t *value);
+  extern z_result_t qos_to_keyexpr(rmw_qos_profile_t *qos, z_owned_string_t *value);
+
+#if defined(__cplusplus)
+}
+#endif  // if defined(__cplusplus)
 
 #endif

@@ -17,6 +17,7 @@
 #ifndef RMW_ZENOH_PICO_NODEINFO_H
 #define RMW_ZENOH_PICO_NODEINFO_H
 
+#include "zenoh-pico/api/types.h"
 #include <stddef.h>
 #include <unistd.h>
 
@@ -31,22 +32,22 @@ extern "C"
   {
     int ref;
 
-    z_string_t domain;
-    z_string_t ns;
-    z_string_t name;
-    z_string_t enclave;
+    z_owned_string_t domain;
+    z_owned_string_t ns;
+    z_owned_string_t name;
+    z_owned_string_t enclave;
 
   } ZenohPicoNodeInfo;
 
-  extern const char *node_domain(ZenohPicoNodeInfo *node);
-  extern const char *node_enclave(ZenohPicoNodeInfo *node);
-  extern const char *node_namespace(ZenohPicoNodeInfo *node);
-  extern const char *node_name(ZenohPicoNodeInfo *node);
+  extern const z_loaned_string_t *node_domain(ZenohPicoNodeInfo *node);
+  extern const z_loaned_string_t *node_enclave(ZenohPicoNodeInfo *node);
+  extern const z_loaned_string_t *node_namespace(ZenohPicoNodeInfo *node);
+  extern const z_loaned_string_t *node_name(ZenohPicoNodeInfo *node);
 
-  extern ZenohPicoNodeInfo *zenoh_pico_generate_node_info(z_string_t *domain,
-							  z_string_t *ns,
-							  z_string_t *name,
-							  z_string_t *enclave);
+  extern ZenohPicoNodeInfo *zenoh_pico_generate_node_info(size_t domain_id,
+							  const char *ns,
+							  const char *name,
+							  const z_loaned_string_t *enclave);
   extern ZenohPicoNodeInfo *zenoh_pico_clone_node_info(ZenohPicoNodeInfo *node_info);
   extern bool zenoh_pico_destroy_node_info(ZenohPicoNodeInfo *node);
 

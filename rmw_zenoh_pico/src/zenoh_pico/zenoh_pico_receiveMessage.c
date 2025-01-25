@@ -14,11 +14,12 @@
  * limitations under the License.
  */
 
+#include "zenoh-pico/api/macros.h"
 #include <rmw_zenoh_pico/rmw_zenoh_pico.h>
 
-z_mutex_t mutex_ReceiveMessageData;
+z_owned_mutex_t mutex_ReceiveMessageData;
 
-ReceiveMessageData * zenoh_pico_generate_recv_msg_data(const z_sample_t *sample,
+ReceiveMessageData * zenoh_pico_generate_recv_msg_data(const z_loaned_sample_t *sample,
 						       uint64_t recv_ts,
 						       const uint8_t pub_gid[RMW_GID_STORAGE_SIZE],
 						       int64_t seqnum,
@@ -31,16 +32,18 @@ ReceiveMessageData * zenoh_pico_generate_recv_msg_data(const z_sample_t *sample,
     "failed to allocate struct for the ReceiveMessageData",
     return NULL);
 
-  recv_data->payload_start = (void *)Z_MALLOC(sample->payload.len);
+  const z_loaned_bytes_t *payload = z_sample_payload(sample);
+  recv_data->payload_start = (void *)TOPIC_MALLOC(z_bytes_len(payload));
   RMW_CHECK_FOR_NULL_WITH_MSG(
     recv_data->payload_start,
     "failed to allocate memory for the payload",
     return NULL);
 
-  recv_data->payload_size  = sample->payload.len;
-  memcpy(recv_data->payload_start, sample->payload.start, sample->payload.len);
+  recv_data->payload_size  = z_bytes_len(payload);
 
-  memcpy(recv_data->publisher_gid_, pub_gid, RMW_GID_STORAGE_SIZE);
+  _z_bytes_to_buf(payload, recv_data->payload_start, z_bytes_len(payload));
+
+  memcpy(recv_data->publisher_gid, pub_gid, RMW_GID_STORAGE_SIZE);
   recv_data->recv_timestamp	= recv_ts;
   recv_data->sequence_number	= seqnum;
   recv_data->source_timestamp	= source_ts;
@@ -53,7 +56,7 @@ bool zenoh_pico_delete_recv_msg_data(ReceiveMessageData * recv_data)
   RMW_CHECK_ARGUMENT_FOR_NULL(recv_data, false);
 
   if(recv_data->payload_start != NULL)
-    Z_FREE(recv_data->payload_start);
+    TOPIC_FREE(recv_data->payload_start);
 
   ZenohPicoDestroyData(recv_data, ReceiveMessageData);
 
@@ -109,9 +112,9 @@ void zenoh_pico_debug_recv_msg_data(ReceiveMessageData * recv_data)
   printf("--------- recv msg data ----------\n");
   printf("ref              = %d\n", recv_data->ref);
   printf("recv_timestamp   = %d\n", (int)recv_data->recv_timestamp);
-  printf("publisher_gid_   = [");
+  printf("publisher_gid    = [");
   for(size_t count = 0; count < RMW_GID_STORAGE_SIZE && count < 16; count++){
-    printf("%02x ", recv_data->publisher_gid_[count]);
+    printf("%02x ", recv_data->publisher_gid[count]);
   }
   printf("]\n");
   printf("sequence_number  = [%d]\n", (int)recv_data->sequence_number);
@@ -136,16 +139,18 @@ void recv_msg_list_destroy(ReceiveMessageDataList *msg_list)
     return;
   }
 
-  z_mutex_lock(&msg_list->mutex);
+  z_loaned_mutex_t *msg_mutex = z_loan_mut(msg_list->mutex);
+
+  z_mutex_lock(msg_mutex);
   ReceiveMessageData * msg_data = msg_list->que_top;
 
   for(size_t count = 0; msg_data != NULL; count++){
     (void)zenoh_pico_delete_recv_msg_data(msg_data);
     msg_data = msg_data->next;
   }
-  z_mutex_unlock(&msg_list->mutex);
+  z_mutex_unlock(msg_mutex);
 
-  z_mutex_free(&msg_list->mutex);
+  z_mutex_drop(z_move(msg_list->mutex));
 }
 
 ReceiveMessageData *recv_msg_list_push(ReceiveMessageDataList *msg_list,
@@ -154,7 +159,9 @@ ReceiveMessageData *recv_msg_list_push(ReceiveMessageDataList *msg_list,
   if((msg_list == NULL) || (recv_data == NULL))
     return NULL;
 
-  z_mutex_lock(&msg_list->mutex);
+  z_loaned_mutex_t *msg_mutex = z_loan_mut(msg_list->mutex);
+
+  z_mutex_lock(msg_mutex);
 
   ReceiveMessageData *bottom_msg = msg_list->que_bottom;
 
@@ -170,7 +177,7 @@ ReceiveMessageData *recv_msg_list_push(ReceiveMessageDataList *msg_list,
   msg_list->que_bottom = recv_data;
   msg_list->count += 1;
 
-  z_mutex_unlock(&msg_list->mutex);
+  z_mutex_unlock(msg_mutex);
 
   return(recv_data);
 }
@@ -181,11 +188,13 @@ ReceiveMessageData *recv_msg_list_pop(ReceiveMessageDataList *msg_list)
   if(msg_list == NULL)
     return NULL;
 
-  z_mutex_lock(&msg_list->mutex);
+  z_loaned_mutex_t *msg_mutex = z_loan_mut(msg_list->mutex);
+
+  z_mutex_lock(msg_mutex);
 
   ReceiveMessageData *bottom_msg = msg_list->que_top;
   if(bottom_msg == NULL){
-    z_mutex_unlock(&msg_list->mutex);
+    z_mutex_unlock(msg_mutex);
     return NULL;
   }
 
@@ -196,7 +205,7 @@ ReceiveMessageData *recv_msg_list_pop(ReceiveMessageDataList *msg_list)
   if(msg_list->count <= 0)
     msg_list->count = 0;
 
-  z_mutex_unlock(&msg_list->mutex);
+  z_mutex_unlock(msg_mutex);
 
   return bottom_msg;
 }
@@ -205,9 +214,11 @@ int recv_msg_list_count(ReceiveMessageDataList *msg_list)
 {
   int ret;
 
-  z_mutex_lock(&msg_list->mutex);
+  z_loaned_mutex_t *msg_mutex = z_loan_mut(msg_list->mutex);
+
+  z_mutex_lock(msg_mutex);
   ret = msg_list->count;
-  z_mutex_unlock(&msg_list->mutex);
+  z_mutex_unlock(msg_mutex);
 
   return ret;
 }
@@ -226,7 +237,9 @@ void recv_msg_list_debug(ReceiveMessageDataList *msg_list)
 
   printf("data dump start... \n");
 
-  z_mutex_lock(&msg_list->mutex);
+  z_loaned_mutex_t *msg_mutex = z_loan_mut(msg_list->mutex);
+
+  z_mutex_lock(msg_mutex);
   ReceiveMessageData * msg_data = msg_list->que_top;
 
   for(size_t count = 0; msg_data != NULL; count++){
@@ -234,7 +247,7 @@ void recv_msg_list_debug(ReceiveMessageDataList *msg_list)
     zenoh_pico_debug_recv_msg_data(msg_data);
     msg_data = msg_data->next;
   }
-  z_mutex_unlock(&msg_list->mutex);
+  z_mutex_unlock(msg_mutex);
 
   printf("data dump end  ... \n");
 }

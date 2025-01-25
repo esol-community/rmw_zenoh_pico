@@ -21,7 +21,7 @@
 #include <zenoh-pico.h>
 
 typedef struct _DataCallbackManager {
-  z_mutex_t mutext;
+  z_owned_mutex_t mutex;
 
   /// User callback that can be set via set_callback().
   rmw_event_callback_t callback;

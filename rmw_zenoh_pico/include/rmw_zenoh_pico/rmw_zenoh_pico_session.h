@@ -31,7 +31,7 @@ extern "C"
     int ref;
 
     // Enclave, name used to find security artifacts in a sros2 keystore
-    z_string_t enclave;
+    z_owned_string_t enclave;
 
     // configuration data array
     z_owned_config_t config;
@@ -45,10 +45,9 @@ extern "C"
   } ZenohPicoSession;
 
   extern ZenohPicoSession *zenoh_pico_generate_session(ZenohPicoSession *session,
-						       z_owned_config_t *config,
+						       const z_loaned_config_t *config,
 						       const char *enclave);
   extern bool zenoh_pico_destroy_session(ZenohPicoSession *session);
-  extern bool zenoh_pico_clone_session(ZenohPicoSession *dst, ZenohPicoSession *src);
   extern rmw_ret_t session_connect(ZenohPicoSession *session);
 
 #if defined(__cplusplus)

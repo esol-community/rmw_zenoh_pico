@@ -20,9 +20,9 @@
 #include <rmw/rmw.h>
 #include <zenoh-pico.h>
 
-#include <rmw_zenoh_pico/liveliness/rmw_zenoh_pico_nodeInfo.h>
-#include <rmw_zenoh_pico/liveliness/rmw_zenoh_pico_entity.h>
-#include <rmw_zenoh_pico/liveliness/rmw_zenoh_pico_liveliness.h>
+#include <rmw_zenoh_pico/zenoh_pico/rmw_zenoh_pico_nodeInfo.h>
+#include <rmw_zenoh_pico/zenoh_pico/rmw_zenoh_pico_entity.h>
+#include <rmw_zenoh_pico/zenoh_pico/rmw_zenoh_pico_liveliness.h>
 
 #include <rmw_zenoh_pico/rmw_zenoh_pico_session.h>
 
@@ -40,7 +40,7 @@ extern "C"
     size_t id;
 
     // Liveliness key for the node.
-    _z_string_t token_key;
+    z_owned_string_t token_key;
 
     // Liveliness token for the node.
     z_owned_subscriber_t token;
