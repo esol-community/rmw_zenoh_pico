@@ -16,19 +16,19 @@
 
 #include <rmw_zenoh_pico/rmw_zenoh_pico.h>
 
-const char *topic_name(ZenohPicoTopicInfo *topic)	{ return Z_STRING_VAL(topic->name_); }
-const char *topic_type(ZenohPicoTopicInfo *topic)	{ return Z_STRING_VAL(topic->type_); }
-const char *topic_hash(ZenohPicoTopicInfo *topic)	{ return Z_STRING_VAL(topic->hash_); }
-const char *topic_qos(ZenohPicoTopicInfo *topic)	{ return Z_STRING_VAL(topic->qos_); }
+const char *topic_name(ZenohPicoTopicInfo *topic)	{ return Z_STRING_VAL(topic->name); }
+const char *topic_type(ZenohPicoTopicInfo *topic)	{ return Z_STRING_VAL(topic->type); }
+const char *topic_hash(ZenohPicoTopicInfo *topic)	{ return Z_STRING_VAL(topic->hash); }
+const char *topic_qos(ZenohPicoTopicInfo *topic)	{ return Z_STRING_VAL(topic->qos); }
 
 z_mutex_t mutex_ZenohPicoTopicInfo;
 
 static void _zenoh_pico_clear_topic_info_member(ZenohPicoTopicInfo *topic)
 {
-  Z_STRING_FREE(topic->name_);
-  Z_STRING_FREE(topic->type_);
-  Z_STRING_FREE(topic->hash_);
-  Z_STRING_FREE(topic->qos_);
+  Z_STRING_FREE(topic->name);
+  Z_STRING_FREE(topic->type);
+  Z_STRING_FREE(topic->hash);
+  Z_STRING_FREE(topic->qos);
 }
 
 ZenohPicoTopicInfo *zenoh_pico_generate_topic_info(z_string_t *name,
@@ -45,10 +45,10 @@ ZenohPicoTopicInfo *zenoh_pico_generate_topic_info(z_string_t *name,
 
   _zenoh_pico_clear_topic_info_member(topic);
 
-  _z_string_move(&topic->name_, name);
-  _z_string_move(&topic->type_, type);
-  _z_string_move(&topic->hash_, hash);
-  _z_string_move(&topic->qos_, qos);
+  _z_string_move(&topic->name, name);
+  _z_string_move(&topic->type, type);
+  _z_string_move(&topic->hash, hash);
+  _z_string_move(&topic->qos, qos);
 
   return topic;
 }
@@ -66,10 +66,10 @@ void zenoh_pico_debug_topic_info(ZenohPicoTopicInfo *topic)
 {
   printf("topic info ...\n");
 
-  printf("\tname = %s\n", topic->name_.val);
-  printf("\ttype = %s\n", topic->type_.val);
-  printf("\thash = %s\n", topic->hash_.val);
-  printf("\tqos  = %s\n", topic->qos_.val);
+  printf("\tname = %s\n", topic->name.val);
+  printf("\ttype = %s\n", topic->type.val);
+  printf("\thash = %s\n", topic->hash.val);
+  printf("\tqos  = %s\n", topic->qos.val);
 }
 
 // ------

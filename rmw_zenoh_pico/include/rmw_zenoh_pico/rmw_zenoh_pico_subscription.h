@@ -37,39 +37,39 @@ extern "C"
 #endif  // if defined(__cplusplus)
 
   typedef struct _ZenohPicoSubData {
-    int ref_;
+    int ref;
 
-    size_t id_;
+    size_t id;
 
     // Liveliness key for the subscriber.
-    _z_string_t topic_key_;
-    _z_string_t token_key_;
+    _z_string_t topic_key;
+    _z_string_t token_key;
 
     // Liveliness token for the subscriber.
-    z_owned_subscriber_t subscriber_;
-    z_owned_subscriber_t token_;
+    z_owned_subscriber_t subscriber;
+    z_owned_subscriber_t token;
 
     // this node
-    ZenohPicoNodeData *node_;
+    ZenohPicoNodeData *node;
 
     // this subscribe entity
-    ZenohPicoEntity *entity_;
+    ZenohPicoEntity *entity;
 
     // Store the actual QoS profile used to configure this subscription.
-    rmw_qos_profile_t adapted_qos_profile_;
+    rmw_qos_profile_t adapted_qos_profile;
 
     // CDR callback
-    const message_type_support_callbacks_t *callbacks_;
+    const message_type_support_callbacks_t *callbacks;
 
     // recived message list
-    ReceiveMessageDataList message_queue_;
+    ReceiveMessageDataList message_queue;
 
     // data callback on new message
     DataCallbackManager data_callback_mgr;
 
     // rmw_wait condition
     z_mutex_t condition_mutex;
-    ZenohPicoWaitSetData * wait_set_data_;
+    ZenohPicoWaitSetData * wait_set_data;
 
   } ZenohPicoSubData;
 

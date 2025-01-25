@@ -26,13 +26,13 @@ extern "C"
 #endif  // if defined(__cplusplus)
 
   typedef struct _ZenohPicoWaitSetData {
-    int ref_;
+    int ref;
 
-    z_condvar_t condition_variable_;
-    z_mutex_t condition_mutex_;
+    z_condvar_t condition_variable;
+    z_mutex_t condition_mutex;
 
-    bool triggered_;
-    rmw_context_t * context_;
+    bool triggered;
+    rmw_context_t * context;
 
   } ZenohPicoWaitSetData;
 

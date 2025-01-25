@@ -28,12 +28,12 @@ extern "C"
 
   typedef struct _ZenohPicoTopicInfo
   {
-    int ref_;
+    int ref;
 
-    _z_string_t name_;
-    _z_string_t type_;
-    _z_string_t hash_;
-    _z_string_t qos_;
+    _z_string_t name;
+    _z_string_t type;
+    _z_string_t hash;
+    _z_string_t qos;
   } ZenohPicoTopicInfo;
 
   extern const char *topic_name(ZenohPicoTopicInfo *topic);

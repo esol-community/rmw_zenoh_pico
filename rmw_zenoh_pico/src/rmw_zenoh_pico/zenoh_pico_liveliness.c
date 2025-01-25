@@ -137,7 +137,7 @@ z_string_t generate_liveliness(ZenohPicoEntity *entity)
   memset(buf, 0, sizeof(buf));
 
   // generate part of node
-  if(entity->node_info_ != NULL) {
+  if(entity->node_info != NULL) {
 
     // append liveliness header
     strcpy(buf, LIVELINESS_SPACE);
@@ -154,7 +154,7 @@ z_string_t generate_liveliness(ZenohPicoEntity *entity)
 
     // append zid
     APPEND_DELIMITER(&buf_ptr, &left_size);
-    const char *_zid = Z_STRING_VAL(entity->zid_);
+    const char *_zid = Z_STRING_VAL(entity->zid);
     APPEND_VALUE(_zid, &buf_ptr, &left_size);
 
     // append nid
@@ -167,7 +167,7 @@ z_string_t generate_liveliness(ZenohPicoEntity *entity)
 
     // append type
     APPEND_DELIMITER(&buf_ptr, &left_size);
-    APPEND_VALUE(conv_entity_type(entity->type_), &buf_ptr, &left_size);
+    APPEND_VALUE(conv_entity_type(entity->type), &buf_ptr, &left_size);
 
     // append node_enclave
     APPEND_DELIMITER(&buf_ptr, &left_size);
@@ -181,7 +181,7 @@ z_string_t generate_liveliness(ZenohPicoEntity *entity)
     APPEND_DELIMITER(&buf_ptr, &left_size);
     APPEND_VALUE(get_node_name(entity), &buf_ptr, &left_size);
 
-    if(entity->topic_info_ != NULL) {
+    if(entity->topic_info != NULL) {
 
       // append topic_name
       APPEND_DELIMITER(&buf_ptr, &left_size);

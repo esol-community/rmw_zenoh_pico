@@ -28,16 +28,16 @@ extern "C"
 
   typedef struct _ZenohPicoSession
   {
-    int ref_;
+    int ref;
 
     // Enclave, name used to find security artifacts in a sros2 keystore
-    z_string_t enclave_;
+    z_string_t enclave;
 
     // configuration data array
-    z_owned_config_t config_;
+    z_owned_config_t config;
 
     // An owned session.
-    z_owned_session_t session_;
+    z_owned_session_t session;
 
     // graph infomation
     rmw_guard_condition_t graph_guard_condition;

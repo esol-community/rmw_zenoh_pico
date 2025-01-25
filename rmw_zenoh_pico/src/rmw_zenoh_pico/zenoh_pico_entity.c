@@ -16,20 +16,20 @@
 
 #include <rmw_zenoh_pico/rmw_zenoh_pico.h>
 
-const char *get_zid(ZenohPicoEntity *entity)	        { return Z_STRING_VAL(entity->zid_); }
-size_t get_nid(ZenohPicoEntity *entity)		        { return entity->nid_; }
-size_t get_id(ZenohPicoEntity *entity)		        { return entity->id_; }
-ZenohPicoEntityType get_type(ZenohPicoEntity *entity)   { return entity->type_; }
+const char *get_zid(ZenohPicoEntity *entity)	        { return Z_STRING_VAL(entity->zid); }
+size_t get_nid(ZenohPicoEntity *entity)		        { return entity->nid; }
+size_t get_id(ZenohPicoEntity *entity)		        { return entity->id; }
+ZenohPicoEntityType get_type(ZenohPicoEntity *entity)   { return entity->type; }
 
-const char *get_node_domain(ZenohPicoEntity *entity)    { return node_domain(entity->node_info_); }
-const char *get_node_namespace(ZenohPicoEntity *entity)	{ return node_namespace(entity->node_info_); }
-const char *get_node_name(ZenohPicoEntity *entity)	{ return node_name(entity->node_info_); }
-const char *get_node_enclave(ZenohPicoEntity *entity)	{ return node_enclave(entity->node_info_); }
+const char *get_node_domain(ZenohPicoEntity *entity)    { return node_domain(entity->node_info); }
+const char *get_node_namespace(ZenohPicoEntity *entity)	{ return node_namespace(entity->node_info); }
+const char *get_node_name(ZenohPicoEntity *entity)	{ return node_name(entity->node_info); }
+const char *get_node_enclave(ZenohPicoEntity *entity)	{ return node_enclave(entity->node_info); }
 
-const char *get_topic_name(ZenohPicoEntity *entity)     { return topic_name(entity->topic_info_); }
-const char *get_topic_type(ZenohPicoEntity *entity)     { return topic_type(entity->topic_info_); }
-const char *get_topic_hash(ZenohPicoEntity *entity)     { return topic_hash(entity->topic_info_); }
-const char *get_topic_qos(ZenohPicoEntity *entity)      { return topic_qos(entity->topic_info_); }
+const char *get_topic_name(ZenohPicoEntity *entity)     { return topic_name(entity->topic_info); }
+const char *get_topic_type(ZenohPicoEntity *entity)     { return topic_type(entity->topic_info); }
+const char *get_topic_hash(ZenohPicoEntity *entity)     { return topic_hash(entity->topic_info); }
+const char *get_topic_qos(ZenohPicoEntity *entity)      { return topic_qos(entity->topic_info); }
 
 z_mutex_t mutex_ZenohPicoEntity;
 
@@ -53,17 +53,17 @@ ZenohPicoEntity * zenoh_pico_generate_entity(z_id_t zid,
     zid_data.start	= zid.id;
     zid_data._is_alloc	= false;
 
-    entity->zid_ = _z_string_from_bytes(&zid_data);
+    entity->zid = _z_string_from_bytes(&zid_data);
   }else{
-    entity->zid_ = _z_string_make("");
+    entity->zid = _z_string_make("");
   }
 
-  entity->id_		= id;
-  entity->nid_		= nid;
-  entity->type_		= type;
+  entity->id		= id;
+  entity->nid		= nid;
+  entity->type		= type;
 
-  entity->node_info_	= node_info;
-  entity->topic_info_	= topic_info;
+  entity->node_info	= node_info;
+  entity->topic_info	= topic_info;
 
   // zenoh_pico_debug_entity(entity);
 
@@ -72,21 +72,21 @@ ZenohPicoEntity * zenoh_pico_generate_entity(z_id_t zid,
 
 static void _zenoh_pico_clear_entity_member(ZenohPicoEntity *entity)
 {
-  Z_STRING_FREE(entity->zid_);
+  Z_STRING_FREE(entity->zid);
 }
 
 void zenoh_pico_destroy_entity(ZenohPicoEntity *entity)
 {
   _zenoh_pico_clear_entity_member(entity);
 
-  if(entity->node_info_ != NULL){
-    zenoh_pico_destroy_node_info(entity->node_info_);
-    entity->node_info_ = NULL;
+  if(entity->node_info != NULL){
+    zenoh_pico_destroy_node_info(entity->node_info);
+    entity->node_info = NULL;
   }
 
-  if(entity->topic_info_ != NULL){
-    zenoh_pico_destroy_topic_info(entity->topic_info_);
-    entity->topic_info_ = NULL;
+  if(entity->topic_info != NULL){
+    zenoh_pico_destroy_topic_info(entity->topic_info);
+    entity->topic_info = NULL;
   }
 
   ZenohPicoDestroyData(entity, ZenohPicoEntity);
@@ -95,14 +95,14 @@ void zenoh_pico_destroy_entity(ZenohPicoEntity *entity)
 void zenoh_pico_debug_entity(ZenohPicoEntity *entity)
 {
   printf("--------- entity data ----------\n");
-  printf("ref = %d\n", entity->ref_);
+  printf("ref = %d\n", entity->ref);
 
-  Z_STRING_PRINTF(entity->zid_, zid);
-  printf("id  = %d\n", (int)entity->id_);
-  printf("nid = %d\n", (int)entity->nid_);
+  Z_STRING_PRINTF(entity->zid, zid);
+  printf("id  = %d\n", (int)entity->id);
+  printf("nid = %d\n", (int)entity->nid);
 
   const char *_type_name = "unknown type";
-  switch(entity->type_){
+  switch(entity->type){
   case Node:			_type_name = "Node"; break;
   case Publisher:		_type_name = "Publisher"; break;
   case Subscription:		_type_name = "Subscription"; break;
@@ -112,14 +112,14 @@ void zenoh_pico_debug_entity(ZenohPicoEntity *entity)
   printf("type = %s\n",	_type_name);
 
   // debug node_info
-  if(entity->node_info_ != NULL)
-    zenoh_pico_debug_node_info(entity->node_info_);
+  if(entity->node_info != NULL)
+    zenoh_pico_debug_node_info(entity->node_info);
   else
     printf("not found node info\n");
 
   // debug topic_info
-  if(entity->topic_info_ != NULL)
-    zenoh_pico_debug_topic_info(entity->topic_info_);
+  if(entity->topic_info != NULL)
+    zenoh_pico_debug_topic_info(entity->topic_info);
   else
     printf("not found topic info\n");
 

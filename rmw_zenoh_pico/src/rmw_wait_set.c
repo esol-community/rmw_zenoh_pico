@@ -27,19 +27,19 @@ ZenohPicoWaitSetData * zenoh_pico_generate_wait_set_data(rmw_context_t * context
     "failed to allocate struct for the ZenohPicoWaitSetData",
     return NULL);
 
-  z_mutex_init(&wait_data->condition_mutex_);
-  z_condvar_init(&wait_data->condition_variable_);
-  wait_data->triggered_ = false;
+  z_mutex_init(&wait_data->condition_mutex);
+  z_condvar_init(&wait_data->condition_variable);
+  wait_data->triggered = false;
 
-  wait_data->context_ = context;
+  wait_data->context = context;
 
   return wait_data;
 }
 
 bool zenoh_pico_destroy_wait_set_data(ZenohPicoWaitSetData *wait_data)
 {
-  z_mutex_free(&wait_data->condition_mutex_);
-  z_condvar_free(&wait_data->condition_variable_);
+  z_mutex_free(&wait_data->condition_mutex);
+  z_condvar_free(&wait_data->condition_variable);
 
   ZenohPicoDestroyData(wait_data, ZenohPicoWaitSetData);
 

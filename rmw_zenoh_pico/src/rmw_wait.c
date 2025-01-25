@@ -17,22 +17,22 @@
 
 void wait_condition_lock(ZenohPicoWaitSetData * wait_set_data)
 {
-  z_mutex_lock(&wait_set_data->condition_mutex_);
+  z_mutex_lock(&wait_set_data->condition_mutex);
 }
 
 void wait_condition_unlock(ZenohPicoWaitSetData * wait_set_data)
 {
-  z_mutex_unlock(&wait_set_data->condition_mutex_);
+  z_mutex_unlock(&wait_set_data->condition_mutex);
 }
 
 void wait_condition_signal(ZenohPicoWaitSetData * wait_set_data)
 {
-  z_condvar_signal(&wait_set_data->condition_variable_);
+  z_condvar_signal(&wait_set_data->condition_variable);
 }
 
 void wait_condition_triggered(ZenohPicoWaitSetData * wait_set_data, bool value)
 {
-  wait_set_data->triggered_ = value;
+  wait_set_data->triggered = value;
 }
 
 static bool _check_and_attach_condition(const rmw_subscriptions_t * const subscriptions,
@@ -113,13 +113,13 @@ rmw_wait(rmw_subscriptions_t * subscriptions,
     subscriptions, guard_conditions, services, clients, events, wait_set_data);
 
   if(!skip_wait){
-    z_mutex_t *lock = &wait_set_data->condition_mutex_;
-    z_condvar_t *cv = &wait_set_data->condition_variable_;
+    z_mutex_t *lock = &wait_set_data->condition_mutex;
+    z_condvar_t *cv = &wait_set_data->condition_variable;
 
     z_mutex_lock(lock);
 
     if (wait_timeout == NULL) {
-      while(!wait_set_data->triggered_)
+      while(!wait_set_data->triggered)
 	z_condvar_wait(cv, lock);
 
     }else{
@@ -136,7 +136,7 @@ rmw_wait(rmw_subscriptions_t * subscriptions,
 
     // RMW_ZENOH_LOG_INFO("wakeup from wait condition....");
 
-    wait_set_data->triggered_ = false;
+    wait_set_data->triggered = false;
 
     z_mutex_unlock(lock);
   }

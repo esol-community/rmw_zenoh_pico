@@ -21,17 +21,17 @@
 #include <zenoh-pico.h>
 
 typedef struct _ReceiveMessageData {
-  struct _ReceiveMessageData *next_;
+  struct _ReceiveMessageData *next;
 
-  int ref_;
+  int ref;
 
   void *payload_start;
   size_t payload_size;
 
-  uint64_t recv_timestamp_;
+  uint64_t recv_timestamp;
   uint8_t publisher_gid_[RMW_GID_STORAGE_SIZE];
-  int64_t sequence_number_;
-  int64_t source_timestamp_;
+  int64_t sequence_number;
+  int64_t source_timestamp;
 
 } ReceiveMessageData;
 

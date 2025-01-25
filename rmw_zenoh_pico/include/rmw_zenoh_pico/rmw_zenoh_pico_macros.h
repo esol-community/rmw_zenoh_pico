@@ -51,7 +51,7 @@ extern void rmw_zenoh_pico_mutex_init(void);
       if ((D) != NULL) {			\
 	memset((D), 0, sizeof(T));		\
 	z_mutex_lock(&mutex_##T);		\
-	(D)->ref_ = 1;				\
+	(D)->ref = 1;				\
 	z_mutex_unlock(&mutex_##T);		\
       }						\
     }						\
@@ -61,8 +61,8 @@ extern void rmw_zenoh_pico_mutex_init(void);
   {						\
     if((D) != NULL) {				\
       z_mutex_lock(&mutex_##T);			\
-      (D)->ref_ -= 1;				\
-      if((D)->ref_ == 0) {			\
+      (D)->ref -= 1;				\
+      if((D)->ref == 0) {			\
 	z_mutex_unlock(&mutex_##T);		\
 	Z_FREE((D));				\
       }else{					\
@@ -74,7 +74,7 @@ extern void rmw_zenoh_pico_mutex_init(void);
 #define ZenohPicoLoanData(D, T)			\
   {						\
     z_mutex_lock(&mutex_##T);			\
-    (D)->ref_ += 1;				\
+    (D)->ref += 1;				\
     z_mutex_unlock(&mutex_##T);			\
   }						\
 

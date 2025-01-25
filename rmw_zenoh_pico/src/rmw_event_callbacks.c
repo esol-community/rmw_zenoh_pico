@@ -22,10 +22,10 @@ void data_callback_init(DataCallbackManager *data_callback)
 {
   RMW_ZENOH_FUNC_ENTRY();
 
-  z_mutex_init(&data_callback->mutext_);
-  data_callback->callback_ = NULL;
-  data_callback->user_data_ = NULL;
-  data_callback->unread_count_ = 0;
+  z_mutex_init(&data_callback->mutext);
+  data_callback->callback = NULL;
+  data_callback->user_data = NULL;
+  data_callback->unread_count = 0;
 }
 
 void data_callback_set(DataCallbackManager *data_callback,
@@ -34,36 +34,36 @@ void data_callback_set(DataCallbackManager *data_callback,
 {
   RMW_ZENOH_FUNC_ENTRY();
 
-  z_mutex_lock(&data_callback->mutext_);
+  z_mutex_lock(&data_callback->mutext);
 
   if(callback != NULL){
-    if(data_callback->unread_count_) {
-      data_callback->callback_(data_callback->user_data_,
-			       data_callback->unread_count_);
-      data_callback->unread_count_ = 0;
+    if(data_callback->unread_count) {
+      data_callback->callback(data_callback->user_data,
+			       data_callback->unread_count);
+      data_callback->unread_count = 0;
     }
-    data_callback->user_data_ = user_data;
-    data_callback->callback_  = callback;
+    data_callback->user_data = user_data;
+    data_callback->callback  = callback;
 
   }else{
-    data_callback->user_data_ = NULL;
-    data_callback->callback_  = NULL;
+    data_callback->user_data = NULL;
+    data_callback->callback  = NULL;
   }
 
-  z_mutex_unlock(&data_callback->mutext_);
+  z_mutex_unlock(&data_callback->mutext);
 }
 
 void data_callback_trigger(DataCallbackManager *data_callback)
 {
   RMW_ZENOH_FUNC_ENTRY();
 
-  z_mutex_lock(&data_callback->mutext_);
-  if(data_callback->callback_ != NULL){
-    data_callback->callback_(data_callback->user_data_, 1);
+  z_mutex_lock(&data_callback->mutext);
+  if(data_callback->callback != NULL){
+    data_callback->callback(data_callback->user_data, 1);
   }else{
-    data_callback->unread_count_ += 1;
+    data_callback->unread_count += 1;
   }
-  z_mutex_unlock(&data_callback->mutext_);
+  z_mutex_unlock(&data_callback->mutext);
 }
 
 rmw_ret_t

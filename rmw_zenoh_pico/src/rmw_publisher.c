@@ -50,24 +50,24 @@ ZenohPicoPubData * zenoh_pico_generate_publisher_data(
     "failed to allocate struct for the ZenohPicoPubData",
     return NULL);
 
-  pub_data->id_         = pub_id;
-  pub_data->node_	= node;
-  pub_data->entity_	= entity;
+  pub_data->id         = pub_id;
+  pub_data->node	= node;
+  pub_data->entity	= entity;
 
-  pub_data->callbacks_  = callbacks;
-  pub_data->adapted_qos_profile_ = *qos_profile;
+  pub_data->callbacks  = callbacks;
+  pub_data->adapted_qos_profile = *qos_profile;
 
-  ZenohPicoNodeInfo  *node_info  = entity->node_info_;
-  ZenohPicoTopicInfo *topic_info = entity->topic_info_;
+  ZenohPicoNodeInfo  *node_info  = entity->node_info;
+  ZenohPicoTopicInfo *topic_info = entity->topic_info;
 
   // generate key from entity data
-  pub_data->token_key_ = generate_liveliness(entity);
+  pub_data->token_key = generate_liveliness(entity);
 
   // generate topic key
-  pub_data->topic_key_ = ros_topic_name_to_zenoh_key(Z_STRING_VAL(node_info->domain_),
-						     Z_STRING_VAL(topic_info->name_),
-						     Z_STRING_VAL(topic_info->type_),
-						     Z_STRING_VAL(topic_info->hash_));
+  pub_data->topic_key = ros_topic_name_to_zenoh_key(Z_STRING_VAL(node_info->domain),
+						     Z_STRING_VAL(topic_info->name),
+						     Z_STRING_VAL(topic_info->type),
+						     Z_STRING_VAL(topic_info->hash));
 
   return pub_data;
 }
@@ -78,17 +78,17 @@ bool zenoh_pico_destroy_publisher_data(ZenohPicoPubData *pub_data)
 
   (void)undeclaration_publisher_data(pub_data);
 
-  Z_STRING_FREE(pub_data->token_key_);
-  Z_STRING_FREE(pub_data->topic_key_);
+  Z_STRING_FREE(pub_data->token_key);
+  Z_STRING_FREE(pub_data->topic_key);
 
-  if(pub_data->node_ != NULL){
-    zenoh_pico_destroy_node_data(pub_data->node_);
-    pub_data->node_ = NULL;
+  if(pub_data->node != NULL){
+    zenoh_pico_destroy_node_data(pub_data->node);
+    pub_data->node = NULL;
   }
 
-  if(pub_data->entity_ != NULL){
-    zenoh_pico_destroy_entity(pub_data->entity_);
-    pub_data->entity_ = NULL;
+  if(pub_data->entity != NULL){
+    zenoh_pico_destroy_entity(pub_data->entity);
+    pub_data->entity = NULL;
   }
 
   ZenohPicoDestroyData(pub_data, ZenohPicoPubData);
@@ -99,16 +99,16 @@ bool zenoh_pico_destroy_publisher_data(ZenohPicoPubData *pub_data)
 void zenoh_pico_debug_publisher_data(ZenohPicoPubData *pub_data)
 {
   printf("--------- publisher data ----------\n");
-  printf("ref = %d\n", pub_data->ref_);
+  printf("ref = %d\n", pub_data->ref);
 
-  Z_STRING_PRINTF(pub_data->token_key_, token_key);
-  Z_STRING_PRINTF(pub_data->topic_key_, topic_key);
+  Z_STRING_PRINTF(pub_data->token_key, token_key);
+  Z_STRING_PRINTF(pub_data->topic_key, topic_key);
 
   // debug node member
-  zenoh_pico_debug_node_data(pub_data->node_);
+  zenoh_pico_debug_node_data(pub_data->node);
 
   // debug entity member
-  zenoh_pico_debug_entity(pub_data->entity_);
+  zenoh_pico_debug_entity(pub_data->entity);
 }
 
 static void _token_handler(const z_sample_t *sample, void *ctx) {
@@ -123,34 +123,34 @@ bool declaration_publisher_data(ZenohPicoPubData *pub_data)
 {
   RMW_ZENOH_FUNC_ENTRY();
 
-  ZenohPicoSession *session = pub_data->node_->session_;
+  ZenohPicoSession *session = pub_data->node->session;
 
   z_publisher_options_t options = z_publisher_options_default();
   options.congestion_control = Z_CONGESTION_CONTROL_DROP;
-  if(pub_data->adapted_qos_profile_.history == RMW_QOS_POLICY_HISTORY_KEEP_ALL &&
-     pub_data->adapted_qos_profile_.reliability == RMW_QOS_POLICY_RELIABILITY_RELIABLE)
+  if(pub_data->adapted_qos_profile.history == RMW_QOS_POLICY_HISTORY_KEEP_ALL &&
+     pub_data->adapted_qos_profile.reliability == RMW_QOS_POLICY_RELIABILITY_RELIABLE)
     {
       options.congestion_control = Z_CONGESTION_CONTROL_BLOCK;
     }
 
-  pub_data->publisher_ = z_declare_publisher(z_loan(session->session_),
-					     z_keyexpr(pub_data->topic_key_.val),
+  pub_data->publisher = z_declare_publisher(z_loan(session->session),
+					     z_keyexpr(pub_data->topic_key.val),
 					     &options);
-  if(!z_check(pub_data->publisher_)) {
+  if(!z_check(pub_data->publisher)) {
     RMW_ZENOH_LOG_DEBUG("Unable to declare publisher.");
     return false;
   }
 
   // liveliness tokendeclare
-  const char *keyexpr = Z_STRING_VAL(pub_data->token_key_);
+  const char *keyexpr = Z_STRING_VAL(pub_data->token_key);
   RMW_ZENOH_LOG_DEBUG("Declaring subscriber key expression '%s'...", keyexpr);
 
   z_owned_closure_sample_t token_callback_ = z_closure(_token_handler, 0, (void *)pub_data);
-  pub_data->token_ = z_declare_subscriber(z_loan(session->session_),
+  pub_data->token = z_declare_subscriber(z_loan(session->session),
 					 z_keyexpr(keyexpr),
 					 z_move(token_callback_),
 					 NULL);
-  if (!z_check(pub_data->token_)) {
+  if (!z_check(pub_data->token)) {
     RMW_ZENOH_LOG_DEBUG("Unable to declare token.");
     return false;
   }
@@ -162,12 +162,12 @@ bool undeclaration_publisher_data(ZenohPicoPubData *pub_data)
 {
   RMW_ZENOH_FUNC_ENTRY();
 
-  if (z_check(pub_data->token_)) {
-    z_undeclare_subscriber(z_move(pub_data->token_));
+  if (z_check(pub_data->token)) {
+    z_undeclare_subscriber(z_move(pub_data->token));
   }
 
-  if (z_check(pub_data->publisher_)) {
-    z_undeclare_publisher(z_move(pub_data->publisher_));
+  if (z_check(pub_data->publisher)) {
+    z_undeclare_publisher(z_move(pub_data->publisher));
   }
 
   return true;
@@ -186,7 +186,7 @@ static rmw_publisher_t *_rmw_publisher_generate(rmw_context_t *context,
     return NULL);
 
   rmw_publisher->implementation_identifier	= rmw_get_implementation_identifier();
-  rmw_publisher->topic_name			= Z_STRING_VAL(pub_data->entity_->topic_info_->name_);
+  rmw_publisher->topic_name			= Z_STRING_VAL(pub_data->entity->topic_info->name);
   rmw_publisher->can_loan_messages		= false;
   rmw_publisher->data				= (void *)pub_data;
 
@@ -341,14 +341,14 @@ rmw_create_publisher(
 								   &_hash_data,
 								   &qos_key);
   // clone node_info
-  ZenohPicoNodeInfo *_node_info = zenoh_pico_clone_node_info(node_data->entity_->node_info_);
+  ZenohPicoNodeInfo *_node_info = zenoh_pico_clone_node_info(node_data->entity->node_info);
 
   // generate entity data
   size_t _entity_id = zenoh_pico_get_next_entity_id();
-  ZenohPicoSession *_session = node_data->session_;
-  ZenohPicoEntity *_entity = zenoh_pico_generate_entity( z_info_zid(z_loan(_session->session_)),
+  ZenohPicoSession *_session = node_data->session;
+  ZenohPicoEntity *_entity = zenoh_pico_generate_entity( z_info_zid(z_loan(_session->session)),
 							 _entity_id,
-							 node_data->id_,
+							 node_data->id,
 							 Publisher,
 							 _node_info,
 							 _topic_info);

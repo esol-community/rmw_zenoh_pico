@@ -28,31 +28,31 @@
 #include <rmw_zenoh_pico/rmw_zenoh_pico_node.h>
 
 typedef struct _ZenohPicoPubData {
-  int ref_;
+  int ref;
 
-  size_t id_;
+  size_t id;
 
   // Liveliness key for the publisher.
-  _z_string_t topic_key_;
-  _z_string_t token_key_;
+  _z_string_t topic_key;
+  _z_string_t token_key;
 
   // Liveliness token for the publisher.
-  z_owned_publisher_t publisher_;
-  z_owned_subscriber_t token_;
+  z_owned_publisher_t publisher;
+  z_owned_subscriber_t token;
 
   // this node
-  ZenohPicoNodeData *node_;
+  ZenohPicoNodeData *node;
 
   // this subscribe entity
-  ZenohPicoEntity *entity_;
+  ZenohPicoEntity *entity;
 
   // CDR callback
-  const message_type_support_callbacks_t *callbacks_;
+  const message_type_support_callbacks_t *callbacks;
 
   // Store the actual QoS profile used to configure this publisher.
-  rmw_qos_profile_t adapted_qos_profile_;
+  rmw_qos_profile_t adapted_qos_profile;
 
-  uint8_t pub_gid_[RMW_GID_STORAGE_SIZE];
+  uint8_t pub_gid[RMW_GID_STORAGE_SIZE];
 
 } ZenohPicoPubData;
 

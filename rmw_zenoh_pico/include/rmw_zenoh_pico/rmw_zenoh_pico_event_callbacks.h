@@ -21,16 +21,16 @@
 #include <zenoh-pico.h>
 
 typedef struct _DataCallbackManager {
-  z_mutex_t mutext_;
+  z_mutex_t mutext;
 
   /// User callback that can be set via set_callback().
-  rmw_event_callback_t callback_;
+  rmw_event_callback_t callback;
 
   /// User data that should be passed to the user callback.
-  const void * user_data_;
+  const void * user_data;
 
   /// number of trigger requests made before the callback was set.
-  size_t unread_count_;
+  size_t unread_count;
 
 } DataCallbackManager;
 

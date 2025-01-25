@@ -45,7 +45,7 @@ rmw_publish(const rmw_publisher_t * publisher,
 
   ZenohPicoPubData *pub_data = (ZenohPicoPubData *)publisher->data;
 
-  size_t serialized_size = pub_data->callbacks_->get_serialized_size(ros_message);
+  size_t serialized_size = pub_data->callbacks->get_serialized_size(ros_message);
 
   serialized_size += SUB_MSG_OFFSET;
   uint8_t * msg_bytes = (uint8_t *)Z_MALLOC(serialized_size);
@@ -62,7 +62,7 @@ rmw_publish(const rmw_publisher_t * publisher,
 				 0,
 				 SUB_MSG_OFFSET);
 
-  bool ret = pub_data->callbacks_->cdr_serialize(ros_message, &temp_buffer);
+  bool ret = pub_data->callbacks->cdr_serialize(ros_message, &temp_buffer);
 
   set_ros2_header(msg_bytes);
 
@@ -73,7 +73,7 @@ rmw_publish(const rmw_publisher_t * publisher,
   z_publisher_put_options_t options = z_publisher_put_options_default();
   options.encoding = z_encoding(Z_ENCODING_PREFIX_TEXT_PLAIN, NULL);
 
-  z_publisher_put(z_loan(pub_data->publisher_),
+  z_publisher_put(z_loan(pub_data->publisher),
 		  (const uint8_t *)msg_bytes,
 		  serialized_size,
 		  &options);

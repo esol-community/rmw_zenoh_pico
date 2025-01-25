@@ -35,21 +35,21 @@ extern "C"
 
   typedef struct _ZenohPicoNodeData
   {
-    int ref_;
+    int ref;
 
-    size_t id_;
+    size_t id;
 
     // Liveliness key for the node.
-    _z_string_t token_key_;
+    _z_string_t token_key;
 
     // Liveliness token for the node.
-    z_owned_subscriber_t token_;
+    z_owned_subscriber_t token;
 
     // this node session
-    ZenohPicoSession *session_;
+    ZenohPicoSession *session;
 
     // this node entity
-    ZenohPicoEntity *entity_;
+    ZenohPicoEntity *entity;
 
   } ZenohPicoNodeData;
 

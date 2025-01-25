@@ -28,9 +28,9 @@ extern "C"
 #include <rmw_zenoh_pico/rmw_zenoh_pico_wait.h>
 
   typedef struct _ZenohPicoGuardConditionData {
-    z_mutex_t condition_mutex_;
-    bool triggered_;
-    ZenohPicoWaitSetData * wait_set_data_;
+    z_mutex_t condition_mutex;
+    bool triggered;
+    ZenohPicoWaitSetData * wait_set_data;
 
   } ZenohPicoGuardConditionData;
 

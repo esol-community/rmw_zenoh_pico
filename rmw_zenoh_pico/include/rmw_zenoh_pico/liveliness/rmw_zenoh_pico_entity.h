@@ -41,16 +41,16 @@ extern "C"
 
   typedef struct _ZenohPicoEntity
   {
-    int ref_;
+    int ref;
 
-    _z_string_t zid_;
-    size_t id_;
-    size_t nid_;
+    _z_string_t zid;
+    size_t id;
+    size_t nid;
 
-    ZenohPicoEntityType type_;
+    ZenohPicoEntityType type;
 
-    ZenohPicoNodeInfo *node_info_;
-    ZenohPicoTopicInfo *topic_info_;
+    ZenohPicoNodeInfo *node_info;
+    ZenohPicoTopicInfo *topic_info;
 
   } ZenohPicoEntity;
 

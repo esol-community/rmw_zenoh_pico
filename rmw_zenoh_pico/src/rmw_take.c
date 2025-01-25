@@ -43,16 +43,16 @@ __rmw_take_one(ZenohPicoSubData * sub_data,
 {
   *taken = false;
 
-  ReceiveMessageData *msg_data = recv_msg_list_pop(&sub_data->message_queue_);
+  ReceiveMessageData *msg_data = recv_msg_list_pop(&sub_data->message_queue);
 
-  const message_type_support_callbacks_t *callbacks = sub_data->callbacks_;
+  const message_type_support_callbacks_t *callbacks = sub_data->callbacks;
 
   bool deserialize_rv = rmw_zenoh_pico_deserialize(msg_data, callbacks, ros_message);
 
   if (message_info != NULL) {
-    message_info->source_timestamp		= msg_data->source_timestamp_;
-    message_info->received_timestamp		= msg_data->recv_timestamp_;
-    message_info->publication_sequence_number	= msg_data->sequence_number_;
+    message_info->source_timestamp		= msg_data->source_timestamp;
+    message_info->received_timestamp		= msg_data->recv_timestamp;
+    message_info->publication_sequence_number	= msg_data->sequence_number;
     message_info->reception_sequence_number	= 0;
 
     message_info->publisher_gid.implementation_identifier = rmw_get_implementation_identifier();

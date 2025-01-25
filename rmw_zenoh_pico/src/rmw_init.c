@@ -57,10 +57,10 @@ ZenohPicoSession *zenoh_pico_generate_session(ZenohPicoSession *session,
     "failed to allocate struct for the ZenohPicoSession",
     return NULL);
 
-  session->config_ = *z_move(*config);
+  session->config = *z_move(*config);
 
   if(enclave != NULL)
-    session->enclave_ = z_string_make(enclave);
+    session->enclave = z_string_make(enclave);
 
   session->graph_guard_condition.implementation_identifier = rmw_get_implementation_identifier();
   session->graph_guard_condition.data = NULL;
@@ -70,10 +70,10 @@ ZenohPicoSession *zenoh_pico_generate_session(ZenohPicoSession *session,
 
 bool zenoh_pico_destroy_session(ZenohPicoSession *session)
 {
-  z_drop(z_move(session->config_));
-  z_drop(z_move(session->session_));
+  z_drop(z_move(session->config));
+  z_drop(z_move(session->session));
 
-  Z_STRING_FREE(session->enclave_);
+  Z_STRING_FREE(session->enclave);
 
   ZenohPicoDestroyData(session, ZenohPicoSession);
 
@@ -82,31 +82,31 @@ bool zenoh_pico_destroy_session(ZenohPicoSession *session)
 
 bool zenoh_pico_clone_session(ZenohPicoSession *dst, ZenohPicoSession *src)
 {
-  z_drop(z_move(dst->config_));
-  z_drop(z_move(dst->session_));
+  z_drop(z_move(dst->config));
+  z_drop(z_move(dst->session));
 
-  dst->config_ = z_clone(src->config_);
-  dst->session_ = z_clone(src->session_);
+  dst->config = z_clone(src->config);
+  dst->session = z_clone(src->session);
 
   return true;
 }
 
 rmw_ret_t session_connect(ZenohPicoSession *session)
 {
-  z_owned_config_t *config = &session->config_;
+  z_owned_config_t *config = &session->config;
 
   RMW_ZENOH_LOG_INFO("Opening session...");
-  session->session_ = z_open(z_config_move(config));
-  if (!z_session_check(&session->session_)) {
+  session->session = z_open(z_config_move(config));
+  if (!z_session_check(&session->session)) {
     RMW_SET_ERROR_MSG("Error setting up zenoh session");
     return RMW_RET_ERROR;
   }
 
-  if (zp_start_read_task(z_loan(session->session_), NULL) < 0
-      || zp_start_lease_task(z_loan(session->session_), NULL) < 0) {
+  if (zp_start_read_task(z_loan(session->session), NULL) < 0
+      || zp_start_lease_task(z_loan(session->session), NULL) < 0) {
     RMW_SET_ERROR_MSG("Unable to start read and lease tasks");
     z_drop(z_config_move(config));
-    z_close(z_session_move(&session->session_));
+    z_close(z_session_move(&session->session));
     return RMW_RET_ERROR;
   }
 
@@ -115,7 +115,7 @@ rmw_ret_t session_connect(ZenohPicoSession *session)
 
 static rmw_ret_t rmw_zenoh_pico_init_option(ZenohPicoTransportParams *params)
 {
-  params->mode_ = RMW_ZENOH_PICO_TRANSPORT_MODE;
+  params->mode = RMW_ZENOH_PICO_TRANSPORT_MODE;
 
 #if defined(RMW_ZENOH_PICO_TRANSPORT_SERIAL)
   if(strlen(RMW_ZENOH_PICO_SERIAL_DEVICE) > sizeof(params->serial_device)){
@@ -132,12 +132,12 @@ static rmw_ret_t rmw_zenoh_pico_init_option(ZenohPicoTransportParams *params)
 
 #if defined (RMW_ZENOH_PICO_TRANSPORT_UNICAST)
   snprintf(buf, sizeof(buf), "tcp/%s:%s", RMW_ZENOH_PICO_CONNECT, RMW_ZENOH_PICO_CONNECT_PORT);
-  if(strlen(buf) >= sizeof(params->connect_addr_) -1) {
+  if(strlen(buf) >= sizeof(params->connect_addr) -1) {
     RMW_ZENOH_LOG_INFO("default ip configuration overflow");
     return RMW_RET_INVALID_ARGUMENT;
   }
-  memset(params->connect_addr_, 0, sizeof(params->connect_addr_));
-  strcpy(params->connect_addr_, buf);
+  memset(params->connect_addr, 0, sizeof(params->connect_addr));
+  strcpy(params->connect_addr, buf);
 
 #elif defined (RMW_ZENOH_PICO_TRANSPORT_MCAST)
   snprintf(buf, sizeof(buf), "udp/%s:%s", RMW_ZENOH_PICO_LOCATOR, RMW_ZENOH_PICO_LOCATOR_PORT);
@@ -152,12 +152,12 @@ static rmw_ret_t rmw_zenoh_pico_init_option(ZenohPicoTransportParams *params)
   if(strcmp(RMW_ZENOH_PICO_LISTEN_PORT,"-1") != 0){
     memset(buf, 0, sizeof(buf));
     snprintf(buf, sizeof(buf), "tcp/%s:%s", RMW_ZENOH_PICO_LISTEN, RMW_ZENOH_PICO_LISTEN_PORT);
-    if(strlen(buf) >= sizeof(params->listen_addr_) -1) {
+    if(strlen(buf) >= sizeof(params->listen_addr) -1) {
       RMW_ZENOH_LOG_INFO("default ip configuration overflow");
       return RMW_RET_INVALID_ARGUMENT;
     }
-    memset(params->listen_addr_, 0, sizeof(params->listen_addr_));
-    strcpy(params->listen_addr_, buf);
+    memset(params->listen_addr, 0, sizeof(params->listen_addr));
+    strcpy(params->listen_addr, buf);
   }
 
 #endif
@@ -260,7 +260,7 @@ rmw_init_options_fini(rmw_init_options_t * init_options)
 static rmw_ret_t
 rmw_zenoh_pico_set_unicast_config(ZenohPicoTransportParams *params, z_owned_config_t *config)
 {
-  const char *mode = params->mode_;
+  const char *mode = params->mode;
 
   if(zp_config_insert(z_config_loan(config),
 		      Z_CONFIG_MODE_KEY,
@@ -382,7 +382,7 @@ rmw_init(const rmw_init_options_t * options, rmw_context_t * context)
 
   {
     rmw_ret_t ret = RMW_RET_OK;
-    const char *mode = params->mode_;
+    const char *mode = params->mode;
 
     if(strncmp(mode, "unicast", sizeof("unicast"))) {
       ret = rmw_zenoh_pico_set_unicast_config(params, &config);
@@ -425,7 +425,7 @@ rmw_shutdown(rmw_context_t * context)
   ZenohPicoSession *session = (ZenohPicoSession *)context->impl;
 
   // stop background zenoh task
-  z_owned_session_t *s = z_move(session->session_);
+  z_owned_session_t *s = z_move(session->session);
   zp_stop_read_task(z_session_loan(s));
   zp_stop_lease_task(z_session_loan(s));
 

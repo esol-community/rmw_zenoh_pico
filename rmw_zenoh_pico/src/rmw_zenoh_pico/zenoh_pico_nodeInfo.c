@@ -16,19 +16,19 @@
 
 #include <rmw_zenoh_pico/rmw_zenoh_pico.h>
 
-const char *node_domain(ZenohPicoNodeInfo *node)      { return Z_STRING_VAL(node->domain_); }
-const char *node_namespace(ZenohPicoNodeInfo *node)	{ return Z_STRING_VAL(node->ns_); }
-const char *node_name(ZenohPicoNodeInfo *node)	{ return Z_STRING_VAL(node->name_); }
-const char *node_enclave(ZenohPicoNodeInfo *node)	{ return Z_STRING_VAL(node->enclave_); }
+const char *node_domain(ZenohPicoNodeInfo *node)      { return Z_STRING_VAL(node->domain); }
+const char *node_namespace(ZenohPicoNodeInfo *node)	{ return Z_STRING_VAL(node->ns); }
+const char *node_name(ZenohPicoNodeInfo *node)	{ return Z_STRING_VAL(node->name); }
+const char *node_enclave(ZenohPicoNodeInfo *node)	{ return Z_STRING_VAL(node->enclave); }
 
 z_mutex_t mutex_ZenohPicoNodeInfo;
 
 static void _zenoh_pico_clear_node_info_member(ZenohPicoNodeInfo *node)
 {
-  Z_STRING_FREE(node->domain_);
-  Z_STRING_FREE(node->ns_);
-  Z_STRING_FREE(node->name_);
-  Z_STRING_FREE(node->enclave_);
+  Z_STRING_FREE(node->domain);
+  Z_STRING_FREE(node->ns);
+  Z_STRING_FREE(node->name);
+  Z_STRING_FREE(node->enclave);
 }
 
 ZenohPicoNodeInfo * zenoh_pico_generate_node_info(z_string_t *domain,
@@ -45,10 +45,10 @@ ZenohPicoNodeInfo * zenoh_pico_generate_node_info(z_string_t *domain,
 
   _zenoh_pico_clear_node_info_member(node);
 
-  _z_string_move(&node->domain_, domain);
-  _z_string_move(&node->ns_, ns);
-  _z_string_move(&node->name_, name);
-  _z_string_move(&node->enclave_, enclave);
+  _z_string_move(&node->domain, domain);
+  _z_string_move(&node->ns, ns);
+  _z_string_move(&node->name, name);
+  _z_string_move(&node->enclave, enclave);
 
   return node;
 }
@@ -62,10 +62,10 @@ ZenohPicoNodeInfo *zenoh_pico_clone_node_info(ZenohPicoNodeInfo *src)
     "failed to allocate struct for the ZenohPicoNodeInfo",
     return NULL);
 
-  _z_string_copy(&node->domain_, &src->domain_);
-  _z_string_copy(&node->ns_, &src->ns_);
-  _z_string_copy(&node->name_, &src->name_);
-  _z_string_copy(&node->enclave_, &src->enclave_);
+  _z_string_copy(&node->domain, &src->domain);
+  _z_string_copy(&node->ns, &src->ns);
+  _z_string_copy(&node->name, &src->name);
+  _z_string_copy(&node->enclave, &src->enclave);
 
   return node;
 }
@@ -83,8 +83,8 @@ bool zenoh_pico_destroy_node_info(ZenohPicoNodeInfo *node)
 void zenoh_pico_debug_node_info(ZenohPicoNodeInfo *node)
 {
   printf("node info ...\n");
-  printf("\tdomain        = %s\n", node->domain_.val);
-  printf("\tnamespace     = %s\n", node->ns_.val);
-  printf("\tname          = %s\n", node->name_.val);
-  printf("\tenclave_      = %s\n", node->enclave_.val);
+  printf("\tdomain        = %s\n", node->domain.val);
+  printf("\tnamespace     = %s\n", node->ns.val);
+  printf("\tname          = %s\n", node->name.val);
+  printf("\tenclave_      = %s\n", node->enclave.val);
 }

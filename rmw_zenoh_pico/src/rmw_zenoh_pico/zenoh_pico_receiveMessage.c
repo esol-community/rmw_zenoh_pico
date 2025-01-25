@@ -41,9 +41,9 @@ ReceiveMessageData * zenoh_pico_generate_recv_msg_data(const z_sample_t *sample,
   memcpy(recv_data->payload_start, sample->payload.start, sample->payload.len);
 
   memcpy(recv_data->publisher_gid_, pub_gid, RMW_GID_STORAGE_SIZE);
-  recv_data->recv_timestamp_	= recv_ts;
-  recv_data->sequence_number_	= seqnum;
-  recv_data->source_timestamp_	= source_ts;
+  recv_data->recv_timestamp	= recv_ts;
+  recv_data->sequence_number	= seqnum;
+  recv_data->source_timestamp	= source_ts;
 
   return recv_data;
 }
@@ -107,15 +107,15 @@ void zenoh_pico_debug_dump_msg(uint8_t *start, size_t size)
 void zenoh_pico_debug_recv_msg_data(ReceiveMessageData * recv_data)
 {
   printf("--------- recv msg data ----------\n");
-  printf("ref              = %d\n", recv_data->ref_);
-  printf("recv_timestamp   = %d\n", (int)recv_data->recv_timestamp_);
+  printf("ref              = %d\n", recv_data->ref);
+  printf("recv_timestamp   = %d\n", (int)recv_data->recv_timestamp);
   printf("publisher_gid_   = [");
   for(size_t count = 0; count < RMW_GID_STORAGE_SIZE && count < 16; count++){
     printf("%02x ", recv_data->publisher_gid_[count]);
   }
   printf("]\n");
-  printf("sequence_number  = [%d]\n", (int)recv_data->sequence_number_);
-  printf("source_timestamp = [%d]\n", (int)recv_data->source_timestamp_);
+  printf("sequence_number  = [%d]\n", (int)recv_data->sequence_number);
+  printf("source_timestamp = [%d]\n", (int)recv_data->source_timestamp);
 
   printf("--------- recv simple data ----------\n");
   zenoh_pico_debug_dump_msg(recv_data->payload_start, recv_data->payload_size);
@@ -141,7 +141,7 @@ void recv_msg_list_destroy(ReceiveMessageDataList *msg_list)
 
   for(size_t count = 0; msg_data != NULL; count++){
     (void)zenoh_pico_delete_recv_msg_data(msg_data);
-    msg_data = msg_data->next_;
+    msg_data = msg_data->next;
   }
   z_mutex_unlock(&msg_list->mutex);
 
@@ -158,10 +158,10 @@ ReceiveMessageData *recv_msg_list_push(ReceiveMessageDataList *msg_list,
 
   ReceiveMessageData *bottom_msg = msg_list->que_bottom;
 
-  recv_data->next_ = NULL;
+  recv_data->next = NULL;
 
   if(bottom_msg != NULL){
-    bottom_msg->next_ = recv_data;
+    bottom_msg->next = recv_data;
   }
 
   if(msg_list->que_top == NULL)
@@ -189,8 +189,8 @@ ReceiveMessageData *recv_msg_list_pop(ReceiveMessageDataList *msg_list)
     return NULL;
   }
 
-  msg_list->que_top = bottom_msg->next_;
-  bottom_msg->next_  = NULL;
+  msg_list->que_top = bottom_msg->next;
+  bottom_msg->next  = NULL;
 
   msg_list->count -= 1;
   if(msg_list->count <= 0)
@@ -232,7 +232,7 @@ void recv_msg_list_debug(ReceiveMessageDataList *msg_list)
   for(size_t count = 0; msg_data != NULL; count++){
     printf("[%d]\n", (int)count);
     zenoh_pico_debug_recv_msg_data(msg_data);
-    msg_data = msg_data->next_;
+    msg_data = msg_data->next;
   }
   z_mutex_unlock(&msg_list->mutex);
 

@@ -29,12 +29,12 @@ extern "C"
 
   typedef struct _ZenohPicoNodeInfo
   {
-    int ref_;
+    int ref;
 
-    z_string_t domain_;
-    z_string_t ns_;
-    z_string_t name_;
-    z_string_t enclave_;
+    z_string_t domain;
+    z_string_t ns;
+    z_string_t name;
+    z_string_t enclave;
 
   } ZenohPicoNodeInfo;
 

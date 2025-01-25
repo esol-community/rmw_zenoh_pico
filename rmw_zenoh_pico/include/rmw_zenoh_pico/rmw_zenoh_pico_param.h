@@ -32,19 +32,19 @@ extern "C"
 
   typedef struct _ZenohPicoTransportParams
   {
-    int ref_;
-    const char *mode_;
+    int ref;
+    const char *mode;
 
 #if defined(RMW_ZENOH_PICO_TRANSPORT_UNICAST)
-    char connect_addr_[MAX_INET_DEVICE];
-    char listen_addr_[MAX_INET_DEVICE];
+    char connect_addr[MAX_INET_DEVICE];
+    char listen_addr[MAX_INET_DEVICE];
 
 #elif defined (RMW_ZENOH_PICO_TRANSPORT_MCAST)
-    char locator_addr_[MAX_INET_DEVICE];
-    char listen_addr_[MAX_INET_DEVICE];
+    char locator_addr[MAX_INET_DEVICE];
+    char listen_addr[MAX_INET_DEVICE];
 
 #elif defined (RMW_ZENOH_PICO_TRANSPORT_SERIAL)
-    char serial_device_[MAX_SERIAL_DEVICE];
+    char serial_device[MAX_SERIAL_DEVICE];
 #endif
   } ZenohPicoTransportParams;
 
