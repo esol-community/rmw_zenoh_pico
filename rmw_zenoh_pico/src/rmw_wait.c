@@ -50,6 +50,7 @@ static bool _check_and_attach_condition(const rmw_subscriptions_t * const subscr
       }
 
       if(guard_condition_check_and_attach(gc, wait_set_data)) {
+	// RMW_ZENOH_LOG_INFO("found attach guard_conditions");
 	return true;
       }
     }
@@ -68,6 +69,7 @@ static bool _check_and_attach_condition(const rmw_subscriptions_t * const subscr
       }
 
       if(subscription_condition_check_and_attach(sub_data, wait_set_data)) {
+	// RMW_ZENOH_LOG_INFO("found attach subscriptions");
 	return true;
       }
     }

@@ -21,16 +21,23 @@ int8_t z_condvar_wait_time(z_condvar_t *cv, z_mutex_t *m, struct timespec *wait_
   struct timespec abstime;
 
   memset(&abstime, 0, sizeof(abstime));
-  time(&abstime.tv_sec);
-  abstime.tv_sec += wait_timeout->tv_sec;
-  abstime.tv_nsec += wait_timeout->tv_nsec;
+  clock_gettime(CLOCK_REALTIME, &abstime);
 
-  // RMW_ZENOH_LOG_DEBUG("%s : wait_set_data->wait_timeout = [%ld : %ld]",
-  // 	   __func__,
-  // 	   abstime.tv_sec,
-  // 	   abstime.tv_nsec);
+  uint64_t _nsec_time = abstime.tv_nsec + wait_timeout->tv_nsec;
+  abstime.tv_sec += wait_timeout->tv_sec + (_nsec_time/1000000000);
+  abstime.tv_nsec = _nsec_time % 1000000000;
 
-  return pthread_cond_timedwait(cv, m, &abstime);
+  // RMW_ZENOH_LOG_DEBUG("wait_timeout[%ld : %ld] = [%ld : %ld]",
+  //		      wait_timeout->tv_sec,
+  //		      wait_timeout->tv_nsec,
+  //		      abstime.tv_sec,
+  //		      abstime.tv_nsec);
+
+  int ret = pthread_cond_timedwait(cv, m, &abstime);
+
+  // RMW_ZENOH_LOG_DEBUG("pthread_cond_timedwait() return is %s", strerror(ret));
+
+  return ret;
 }
 #else
 #include "zenoh-pico/system/platform/void.h"
