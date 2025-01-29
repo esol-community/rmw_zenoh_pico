@@ -132,7 +132,7 @@ rmw_wait(rmw_subscriptions_t * subscriptions,
 	timeout.tv_sec = wait_timeout->sec;
 	timeout.tv_nsec = wait_timeout->nsec;
 
-	z_condvar_wait_time(cv, lock, &timeout);
+	(void)z_condvar_timewait(cv, lock, &timeout);
       }
     }
 

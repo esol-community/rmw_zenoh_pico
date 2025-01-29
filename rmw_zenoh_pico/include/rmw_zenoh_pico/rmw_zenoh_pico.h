@@ -45,6 +45,7 @@
 #include <rmw_zenoh_pico/zenoh_pico/rmw_zenoh_pico_entity.h>
 #include <rmw_zenoh_pico/zenoh_pico/rmw_zenoh_pico_liveliness.h>
 #include <rmw_zenoh_pico/zenoh_pico/rmw_zenoh_pico_string.h>
+#include <rmw_zenoh_pico/zenoh_pico/rmw_zenoh_pico_condition.h>
 
 #include <rmw_zenoh_pico/rmw_zenoh_pico_receiveMessage.h>
 #include <rmw_zenoh_pico/rmw_zenoh_pico_messageType.h>
@@ -61,7 +62,6 @@
 #include <rmw_zenoh_pico/rmw_zenoh_pico_publisher.h>
 
 // expand zenoh-pico api
-extern int8_t z_condvar_wait_time(_z_condvar_t *cv, z_loaned_mutex_t *m, struct timespec *wait_timeout);
 extern void test_qos_profile(rmw_qos_profile_t *qos);
 
 #endif
