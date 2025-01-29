@@ -63,13 +63,13 @@ For example, if you want to generate a host environment for rmw_zenoh_pico, plea
 
 Table: Related repositories
 
-| Repository      | Branch         | SID                                      | URL                                             |
-|-----------------|----------------|------------------------------------------|-------------------------------------------------|
-| micro_ros_setup | jazzy          | 9ae1ca79ca3cb5f8fbd3867d02a6e43686388f05 | <https://github.com/micro-ROS/micro_ros_setup>    |
-| zenoh-c         | release/0.11.0 | c8f6ca07f77d684a0ce4a8b31eae4c4a11c9bb58 | <https://github.com/eclipse-zenoh/zenoh-c.git>    |
-| zenoh-pico      | release/0.11.0 | a3ab7f79617c0076693852e68e75a50053463ae4 | <https://github.com/eclipse-zenoh/zenoh-pico.git> |
-| rmw_zenoh       | rolling        | 011cc79f564f7f4ab0e47e1604062c14c355546a | <https://github.com/ros2/rmw_zenoh.git>           |
-| zenoh           | main           | 2500e5a62d8940cbfbc36f27c07360f91ba28c2d | <https://github.com/eclipse-zenoh/zenoh.git>      |
+| Repository      | Branch      | SID                                      | URL                                               |
+|-----------------|-------------|------------------------------------------|---------------------------------------------------|
+| micro_ros_setup | jazzy       | 9ae1ca79ca3cb5f8fbd3867d02a6e43686388f05 | <https://github.com/micro-ROS/micro_ros_setup>    |
+| zenoh-c         | main        | 57d5e4d31d9b38fef34d7bcad3d3e54869c4ce73 | <https://github.com/eclipse-zenoh/zenoh-c.git>    |
+| zenoh-cpp       | main        | 964b64dc8b935a43147287199e7bb12da7b141e6 | <https://github.com/eclipse-zenoh/zenoh-cpp>      |
+| zenoh-pico      | main        | a24f7c12f45bcc8e4a7fae13bad3389f363d76a4 | <https://github.com/eclipse-zenoh/zenoh-pico.git> |
+| rmw_zenoh       | jazzy/0.2.0 | cf84677b966fbd414097a9e72db7e4a1e1dea6bf | <https://github.com/ros2/rmw_zenoh.git>           |
 
 ### Create a workspace and download the micro-ROS tools
 
@@ -281,12 +281,6 @@ This repository is open-sourced under the Apache-2.0 license. See the [LICENSE](
 For a list of other open-source components included in this repository, see the file [3rd-party-licenses.txt](3rd-party-licenses.txt).
 
 ## Known Issues/Limitations
-
-1. The pub/sub message from rmw_zenoh_pico does not use attempt data.  
-The rmw_zenoh is using Zenoh package, and the message from rmw_zenoh append additional data on future attempts with Zenoh.  
-The additional data on rmw_zenoh is "gid", "sequence_number" and "source_timestamp".  
-The rmw_zenoh_pico is using zenoh pico package. However, the rmw_zenoh_pico with zenoh-pico cannot exchange the attempt data.  
-Therefore, rmw_zenoh_pico does not yet support the full RMW API except for working communication between subscribers and publishers.
 
 1. How to share liveliness information data.  
 The rmw_zenoh pico can use some ROS 2 CLI commands. However, this implementation is provisional.  
