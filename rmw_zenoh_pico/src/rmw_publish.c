@@ -45,6 +45,8 @@ rmw_publish(const rmw_publisher_t * publisher,
 
   ZenohPicoPubData *pub_data = (ZenohPicoPubData *)publisher->data;
 
+  z_mutex_lock(z_loan_mut(pub_data->mutex));
+
   size_t serialized_size = pub_data->callbacks->get_serialized_size(ros_message);
 
   serialized_size += SUB_MSG_OFFSET;
@@ -70,9 +72,18 @@ rmw_publish(const rmw_publisher_t * publisher,
     (void)zenoh_pico_debug_dump_msg(msg_bytes, serialized_size);
   }
 
+  // set attachment to option
   z_publisher_put_options_t options;
   z_publisher_put_options_default(&options);
 
+  // gen attachment data
+  z_owned_bytes_t attachment;
+  zenoh_pico_inc_sequence_num(&pub_data->attachment);
+  if(_Z_IS_OK(zenoh_pico_attachment_gen(&pub_data->attachment, &attachment))){
+    options.attachment = z_move(attachment);
+  }
+
+  // put publish data
   z_owned_bytes_t payload;
   z_bytes_copy_from_buf(&payload, msg_bytes, serialized_size);
   z_publisher_put(z_loan(pub_data->publisher),
@@ -80,6 +91,9 @@ rmw_publish(const rmw_publisher_t * publisher,
 		  &options);
 
   TOPIC_FREE(msg_bytes);
+  z_drop(z_move(attachment));
+
+  z_mutex_unlock(z_loan_mut(pub_data->mutex));
 
   return RMW_RET_OK;
 }

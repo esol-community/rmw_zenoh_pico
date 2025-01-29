@@ -20,6 +20,8 @@
 #include <rmw/rmw.h>
 #include <zenoh-pico.h>
 
+#include <rmw_zenoh_pico/zenoh_pico/rmw_zenoh_pico_attach.h>
+
 #if defined(__cplusplus)
 extern "C"
 {
@@ -33,10 +35,10 @@ extern "C"
     void *payload_start;
     size_t payload_size;
 
-    uint64_t recv_timestamp;
-    uint8_t publisher_gid[RMW_GID_STORAGE_SIZE];
-    int64_t sequence_number;
-    int64_t source_timestamp;
+    int64_t recv_timestamp;
+
+    // attachment data [sequence_num, last timestamp, topic gid]
+    zenoh_pico_attachemt_data attachment;
 
   } ReceiveMessageData;
 
@@ -50,10 +52,7 @@ extern "C"
 
   extern ReceiveMessageData * zenoh_pico_generate_recv_msg_data(
     const z_loaned_sample_t *sample,
-    uint64_t recv_ts,
-    const uint8_t pub_gid[RMW_GID_STORAGE_SIZE],
-    int64_t seqnum,
-    int64_t source_ts);
+    time_t recv_ts);
   extern bool zenoh_pico_delete_recv_msg_data(ReceiveMessageData * recv_data);
   extern void zenoh_pico_debug_dump_msg(uint8_t *start, size_t size);
   extern void zenoh_pico_debug_recv_msg_data(ReceiveMessageData * recv_data);

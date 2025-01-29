@@ -44,6 +44,8 @@
 #include <rmw_zenoh_pico/zenoh_pico/rmw_zenoh_pico_topicInfo.h>
 #include <rmw_zenoh_pico/zenoh_pico/rmw_zenoh_pico_entity.h>
 #include <rmw_zenoh_pico/zenoh_pico/rmw_zenoh_pico_liveliness.h>
+#include <rmw_zenoh_pico/zenoh_pico/rmw_zenoh_pico_attach.h>
+#include <rmw_zenoh_pico/zenoh_pico/rmw_zenoh_pico_gid.h>
 #include <rmw_zenoh_pico/zenoh_pico/rmw_zenoh_pico_string.h>
 #include <rmw_zenoh_pico/zenoh_pico/rmw_zenoh_pico_condition.h>
 

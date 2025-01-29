@@ -50,13 +50,16 @@ __rmw_take_one(ZenohPicoSubData * sub_data,
   bool deserialize_rv = rmw_zenoh_pico_deserialize(msg_data, callbacks, ros_message);
 
   if (message_info != NULL) {
-    message_info->source_timestamp		= msg_data->source_timestamp;
+    message_info->source_timestamp		= msg_data->attachment.timestamp;
     message_info->received_timestamp		= msg_data->recv_timestamp;
-    message_info->publication_sequence_number	= msg_data->sequence_number;
+    message_info->publication_sequence_number	= msg_data->attachment.sequence_num;
     message_info->reception_sequence_number	= 0;
 
     message_info->publisher_gid.implementation_identifier = rmw_get_implementation_identifier();
-    memcpy(message_info->publisher_gid.data, msg_data->publisher_gid, RMW_GID_STORAGE_SIZE);
+
+    const uint8_t *gid_ptr = z_slice_data(z_loan(msg_data->attachment.gid));
+    size_t gid_len = z_slice_len(z_loan(msg_data->attachment.gid));
+    memcpy(message_info->publisher_gid.data, gid_ptr, gid_len);
 
     message_info->from_intra_process = false;
   }

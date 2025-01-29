@@ -24,6 +24,7 @@
 #include <rmw_zenoh_pico/zenoh_pico/rmw_zenoh_pico_nodeInfo.h>
 #include <rmw_zenoh_pico/zenoh_pico/rmw_zenoh_pico_entity.h>
 #include <rmw_zenoh_pico/zenoh_pico/rmw_zenoh_pico_liveliness.h>
+#include <rmw_zenoh_pico/zenoh_pico/rmw_zenoh_pico_attach.h>
 
 #include <rmw_zenoh_pico/rmw_zenoh_pico_node.h>
 
@@ -57,7 +58,11 @@ extern "C"
     // Store the actual QoS profile used to configure this publisher.
     rmw_qos_profile_t adapted_qos_profile;
 
-    uint8_t pub_gid_[RMW_GID_STORAGE_SIZE];
+    // publish mutex
+    z_owned_mutex_t mutex;
+
+    // attachment data [sequence_num, last timestamp, topic gid]
+    zenoh_pico_attachemt_data attachment;
 
   } ZenohPicoPubData;
 

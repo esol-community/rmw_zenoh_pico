@@ -7,6 +7,7 @@
   <maintainer email="v-yamazaki8668@esol.co.jp">Katsumi Yamazaki</maintainer>
   <maintainer email="k-yokoyama@esol.co.jp">Koichiro Yokoyama</maintainer>
   <license>Apache License 2.0</license>
+  <license>BSD</license>  <!-- for xxhash.h -->
 
   <buildtool_depend>ament_cmake_ros</buildtool_depend>
   <buildtool_depend>rosidl_cmake</buildtool_depend>

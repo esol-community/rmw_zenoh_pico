@@ -75,6 +75,16 @@ ZenohPicoPubData * zenoh_pico_generate_publisher_data(
     return NULL;
   }
 
+  // generate mutex
+  z_mutex_init(&pub_data->mutex);
+
+  // generate gid
+  uint8_t _gid[RMW_GID_STORAGE_SIZE];
+  zenoh_pico_gen_gid(z_loan(pub_data->topic_key), _gid);
+
+  z_slice_copy_from_buf(&pub_data->attachment.gid, _gid, sizeof(_gid));
+  pub_data->attachment.sequence_num = 0;
+
   return pub_data;
 }
 
@@ -99,6 +109,9 @@ bool zenoh_pico_destroy_publisher_data(ZenohPicoPubData *pub_data)
   z_drop(z_move(pub_data->token_key));
   z_drop(z_move(pub_data->topic_key));
 
+  zenoh_pico_destroy_attachment(&pub_data->attachment);
+  z_drop(z_move(pub_data->mutex));
+
   if(pub_data->node != NULL){
     (void)zenoh_pico_destroy_node_data(pub_data->node);
     pub_data->node = NULL;
@@ -121,6 +134,9 @@ void zenoh_pico_debug_publisher_data(ZenohPicoPubData *pub_data)
 
   Z_STRING_PRINTF(pub_data->token_key, token_key);
   Z_STRING_PRINTF(pub_data->topic_key, topic_key);
+
+  // debug attachment
+  zenoh_pico_debug_attachment(&pub_data->attachment);
 
   // debug node member
   zenoh_pico_debug_node_data(pub_data->node);

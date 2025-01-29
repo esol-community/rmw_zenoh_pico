@@ -161,86 +161,11 @@ void zenoh_pico_debug_subscription_data(ZenohPicoSubData *sub_data)
   zenoh_pico_debug_entity(sub_data->entity);
 }
 
-#undef Z_FEATURE_ATTACHMENT
-#if Z_FEATURE_ATTACHMENT == 1
-
-bool get_gid_from_attachment(
-  const z_attachment_t *attachment, uint8_t gid[RMW_GID_STORAGE_SIZE])
-{
-  if (!z_attachment_check(attachment)) {
-    return false;
-  }
-
-  _z_bytes_t index = z_attachment_get(*attachment, z_bytes_from_str("source_gid"));
-  if (!z_check(index)) {
-    return false;
-  }
-
-  if (index.len != RMW_GID_STORAGE_SIZE) {
-    return false;
-  }
-
-  memcpy(gid, index.start, index.len);
-
-  return true;
-}
-
-int64_t get_int64_from_attachment(const z_attachment_t * const attachment, char * name)
-{
-  if (!z_attachment_check(attachment)) {
-    // A valid request must have had an attachment
-    return -1;
-  }
-
-  _z_bytes_t index = z_attachment_get(*attachment, z_bytes_from_str(name));
-  if (!z_check(index)) {
-    return -1;
-  }
-
-  if (index.len < 1) {
-    return -1;
-  }
-
-  if (index.len > 19) {
-    // The number was larger than we expected
-    return -1;
-  }
-
-  // The largest possible int64_t number is INT64_MAX, i.e. 9223372036854775807.
-  // That is 19 characters long, plus one for the trailing \0, means we need 20 bytes.
-  char int64_str[20];
-
-  memcpy(int64_str, index.start, index.len);
-  int64_str[index.len] = '\0';
-
-  errno = 0;
-  char * endptr;
-  int64_t num = strtol(int64_str, &endptr, 10);
-  if (num == 0) {
-    // This is an error regardless; the client should never send this
-    return -1;
-  } else if (endptr == int64_str) {
-    // No values were converted, this is an error
-    return -1;
-  } else if (*endptr != '\0') {
-    // There was junk after the number
-    return -1;
-  } else if (errno != 0) {
-    // Some other error occurred, which may include overflow or underflow
-    return -1;
-  }
-
-  return num;
-}
-#endif
-
 void add_new_message(ZenohPicoSubData *sub_data, ReceiveMessageData *recv_data)
 {
   // zenoh_pico_debug_recv_msg_data(recv_data);
 
   (void)recv_msg_list_push(&sub_data->message_queue, recv_data);
-  RMW_ZENOH_LOG_INFO("message_queue size is %d",
-		     recv_msg_list_count(&sub_data->message_queue));
 
   (void)data_callback_trigger(&sub_data->data_callback_mgr);
 
@@ -264,41 +189,11 @@ static void _sub_data_handler(z_loaned_sample_t *sample, void *ctx) {
     return;
   }
 
-  uint8_t pub_gid[RMW_GID_STORAGE_SIZE];
-  int64_t sequence_number  = 0;
-  int64_t source_timestamp = 0;
-
-#if Z_FEATURE_ATTACHMENT == 1
-  if (!get_gid_from_attachment(&sample->attachment, pub_gid)) {
-    memset(pub_gid, 0, RMW_GID_STORAGE_SIZE);
-    RMW_ZENOH_LOG_INFO("Unable to obtain publisher GID from the attachment.");
-  }else{
-    RMW_ZENOH_LOG_INFO("pub_gid is [%s]", pub_gid);
+  ReceiveMessageData * recv_data;
+  if((recv_data = zenoh_pico_generate_recv_msg_data(sample, zenoh_pico_gen_timestamp())) == NULL) {
+    RMW_ZENOH_LOG_ERROR("unable to generate_recv_msg_data");
+    return;
   }
-
-  sequence_number = get_int64_from_attachment(&sample->attachment, "sequence_number");
-  if (sequence_number < 0) {
-    sequence_number = 0;
-    RMW_ZENOH_LOG_INFO("Unable to obtain sequence number from the attachment.");
-  } else {
-    RMW_ZENOH_LOG_INFO("sequence_number is [%s]", sequence_number);
-  }
-
-  source_timestamp = get_int64_from_attachment(&sample->attachment, "source_timestamp");
-  if (source_timestamp < 0) {
-    source_timestamp = 0;
-    RMW_ZENOH_LOG_INFO("Unable to obtain source timestamp from the attachment.");
-  }else{
-    RMW_ZENOH_LOG_INFO("source_timestamp is [%s]", source_timestamp);
-  }
-#endif
-
-  ReceiveMessageData * recv_data = zenoh_pico_generate_recv_msg_data(sample,
-								     sample->timestamp.time,
-								     pub_gid,
-								     sequence_number,
-								     source_timestamp);
-  if(recv_data == NULL) return;
 
   (void)add_new_message(sub_data, recv_data);
 }

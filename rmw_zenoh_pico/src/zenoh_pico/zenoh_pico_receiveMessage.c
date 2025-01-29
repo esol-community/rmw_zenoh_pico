@@ -20,10 +20,7 @@
 z_owned_mutex_t mutex_ReceiveMessageData;
 
 ReceiveMessageData * zenoh_pico_generate_recv_msg_data(const z_loaned_sample_t *sample,
-						       uint64_t recv_ts,
-						       const uint8_t pub_gid[RMW_GID_STORAGE_SIZE],
-						       int64_t seqnum,
-						       int64_t source_ts)
+						       time_t recv_ts)
 {
   ReceiveMessageData * recv_data = NULL;
   ZenohPicoGenerateData(recv_data, ReceiveMessageData);
@@ -43,10 +40,16 @@ ReceiveMessageData * zenoh_pico_generate_recv_msg_data(const z_loaned_sample_t *
 
   _z_bytes_to_buf(payload, recv_data->payload_start, z_bytes_len(payload));
 
-  memcpy(recv_data->publisher_gid, pub_gid, RMW_GID_STORAGE_SIZE);
   recv_data->recv_timestamp	= recv_ts;
-  recv_data->sequence_number	= seqnum;
-  recv_data->source_timestamp	= source_ts;
+
+  zenoh_pico_attachemt_data data;
+  if(_Z_IS_ERR(zenoh_pico_attachment_data_get(sample, &recv_data->attachment))) {
+    RMW_ZENOH_LOG_ERROR("unable to receive attachment data");
+  }
+
+  if(rmw_zenoh_pico_debug_level_get() == _Z_LOG_LVL_DEBUG){
+    zenoh_pico_debug_attachment(&recv_data->attachment);
+  }
 
   return recv_data;
 }
@@ -59,6 +62,8 @@ bool zenoh_pico_delete_recv_msg_data(ReceiveMessageData * recv_data)
 
   if(recv_data->payload_start != NULL)
     TOPIC_FREE(recv_data->payload_start);
+
+  zenoh_pico_destroy_attachment(&recv_data->attachment);
 
   ZenohPicoDestroyData(recv_data, ReceiveMessageData);
 
@@ -113,14 +118,10 @@ void zenoh_pico_debug_recv_msg_data(ReceiveMessageData * recv_data)
 {
   printf("--------- recv msg data ----------\n");
   printf("ref              = %d\n", recv_data->ref);
-  printf("recv_timestamp   = %d\n", (int)recv_data->recv_timestamp);
-  printf("publisher_gid    = [");
-  for(size_t count = 0; count < RMW_GID_STORAGE_SIZE && count < 16; count++){
-    printf("%02x ", recv_data->publisher_gid[count]);
-  }
-  printf("]\n");
-  printf("sequence_number  = [%d]\n", (int)recv_data->sequence_number);
-  printf("source_timestamp = [%d]\n", (int)recv_data->source_timestamp);
+  printf("recv_timestamp   = [%d]\n", (int)recv_data->recv_timestamp);
+
+  // debug attachment
+  zenoh_pico_debug_attachment(&recv_data->attachment);
 
   printf("--------- recv simple data ----------\n");
   zenoh_pico_debug_dump_msg(recv_data->payload_start, recv_data->payload_size);
