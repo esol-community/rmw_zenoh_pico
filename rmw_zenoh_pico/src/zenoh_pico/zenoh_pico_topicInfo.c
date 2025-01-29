@@ -70,6 +70,10 @@ ZenohPicoTopicInfo *zenoh_pico_generate_topic_info(const char *name,
 
 bool zenoh_pico_destroy_topic_info(ZenohPicoTopicInfo *topic)
 {
+  RMW_ZENOH_FUNC_ENTRY();
+
+  RMW_CHECK_ARGUMENT_FOR_NULL(topic, false);
+
   z_drop(z_move(topic->name));
   z_drop(z_move(topic->type));
   z_drop(z_move(topic->hash));

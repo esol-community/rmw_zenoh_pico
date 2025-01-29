@@ -19,6 +19,7 @@ z_owned_mutex_t mutex_ZenohPicoWaitSetData;
 
 ZenohPicoWaitSetData * zenoh_pico_generate_wait_set_data(rmw_context_t * context)
 {
+  RMW_ZENOH_FUNC_ENTRY();
 
   ZenohPicoWaitSetData *wait_data = NULL;
   ZenohPicoGenerateData(wait_data, ZenohPicoWaitSetData);
@@ -38,6 +39,8 @@ ZenohPicoWaitSetData * zenoh_pico_generate_wait_set_data(rmw_context_t * context
 
 bool zenoh_pico_destroy_wait_set_data(ZenohPicoWaitSetData *wait_data)
 {
+  RMW_ZENOH_FUNC_ENTRY();
+
   z_mutex_drop(z_move(wait_data->condition_mutex));
   z_condvar_drop(z_move(wait_data->condition_variable));
 
@@ -47,8 +50,7 @@ bool zenoh_pico_destroy_wait_set_data(ZenohPicoWaitSetData *wait_data)
 }
 
 rmw_wait_set_t *
-rmw_create_wait_set(rmw_context_t * context,
-		    size_t max_conditions)
+rmw_create_wait_set(rmw_context_t * context, size_t max_conditions)
 {
   (void)max_conditions;
 

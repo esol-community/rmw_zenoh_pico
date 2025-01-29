@@ -42,7 +42,10 @@ ZenohPicoNodeData * zenoh_pico_generate_node_data(size_t node_id,
 
   // generate key from entity data
   z_string_empty(&node_data->token_key);
-  generate_liveliness(entity, &node_data->token_key);
+  if(_Z_IS_ERR(generate_liveliness(entity, &node_data->token_key))){
+    RMW_SET_ERROR_MSG("failed generate_liveliness()");
+    return NULL;
+  }
 
   return node_data;
 }
@@ -57,6 +60,8 @@ ZenohPicoNodeData *zenoh_pico_loan_node_data(ZenohPicoNodeData *node_data)
 bool zenoh_pico_destroy_node_data(ZenohPicoNodeData *node_data)
 {
   RMW_ZENOH_FUNC_ENTRY();
+
+  RMW_CHECK_ARGUMENT_FOR_NULL(node_data, false);
 
   z_undeclare_subscriber(z_move(node_data->token));
   z_drop(z_move(node_data->token_key));
@@ -103,11 +108,11 @@ bool declaration_node_data(ZenohPicoNodeData *node_data)
   z_view_keyexpr_t ke;
   const z_loaned_string_t *keyexpr = z_loan(node_data->token_key);
   z_view_keyexpr_from_substr(&ke, z_string_data(keyexpr), z_string_len(keyexpr));
-  if(z_declare_subscriber(z_loan(session->session),
-			  &node_data->token,
-			  z_loan(ke),
-			  z_move(callback),
-			  NULL) < 0){
+  if(_Z_IS_ERR(z_declare_subscriber(z_loan(session->session),
+				    &node_data->token,
+				    z_loan(ke),
+				    z_move(callback),
+				    NULL))){
     return false;
   }
 
@@ -171,6 +176,7 @@ rmw_node_t *
 rmw_create_node(rmw_context_t * context, const char * name, const char * namespace)
 {
   RMW_ZENOH_FUNC_ENTRY();
+
   RMW_ZENOH_LOG_INFO("name = [%s], namespace = [%s]", name, namespace);
 
   RMW_CHECK_ARGUMENT_FOR_NULL(context, NULL);
@@ -191,58 +197,74 @@ rmw_create_node(rmw_context_t * context, const char * name, const char * namespa
 
   ZenohPicoSession *session = (ZenohPicoSession *)context->impl;
 
-  // generate private node info data
-  ZenohPicoNodeInfo *node_info;
-  node_info = zenoh_pico_generate_node_info(context->actual_domain_id,
-					    namespace,
-					    name,
-					    z_loan(session->enclave));
-  if(node_info == NULL){
-    return NULL;
+  ZenohPicoNodeInfo *_node_info = NULL;
+  ZenohPicoEntity *_entity = NULL;
+  ZenohPicoNodeData *_node_data = NULL;
+  size_t _entity_id = 0;
+
+  {
+    // generate private node info data
+    _node_info = zenoh_pico_generate_node_info(context->actual_domain_id,
+					       namespace,
+					       name,
+					       z_loan(session->enclave));
+    if(_node_info == NULL){
+      goto error;
+    }
   }
 
-  // generate entity data
-  size_t _entity_id = zenoh_pico_get_next_entity_id();
-  z_id_t _zid = z_info_zid(z_loan(session->session));
-  ZenohPicoEntity *entity = zenoh_pico_generate_entity(&_zid,
-						       _entity_id,
-						       _entity_id,
-						       Node,
-						       node_info,
-						       NULL);
-  if(entity == NULL){
-    zenoh_pico_destroy_node_info(node_info);
-    return NULL;
+  {
+    // generate entity data
+    _entity_id = zenoh_pico_get_next_entity_id();
+    z_id_t _zid = z_info_zid(z_loan(session->session));
+    _entity = zenoh_pico_generate_entity(&_zid,
+					 _entity_id,
+					 _entity_id,
+					 Node,
+					 _node_info,
+					 NULL);
+    if(_entity == NULL){
+      goto error;
+    }
   }
 
-  // generate private node data
-  ZenohPicoNodeData *node_data = zenoh_pico_generate_node_data(_entity_id,
-							       session,
-							       entity);
-  if(node_data == NULL){
-    zenoh_pico_destroy_entity(entity);
-    return NULL;
-  }
-
-  if(!declaration_node_data(node_data)){
-    zenoh_pico_destroy_node_data(node_data);
-    return NULL;
+  {
+    // generate private node data
+    _node_data = zenoh_pico_generate_node_data(_entity_id,
+					       session,
+					       _entity);
+    if(_node_data == NULL){
+      goto error;
+    }
   }
 
   // generate rmw_node_handle data
-  rmw_node_t * node = rmw_node_generate(context, node_data);
-  if(node == NULL){
-    zenoh_pico_destroy_node_data(node_data);
-    return NULL;
-  }
+  rmw_node_t * node = rmw_node_generate(context, _node_data);
+  if(node == NULL)
+    goto error;
+
+  declaration_node_data(_node_data);
 
   return node;
+
+  error:
+  if(_node_info != NULL)
+    zenoh_pico_destroy_node_info(_node_info);
+
+  if(_entity != NULL)
+    zenoh_pico_destroy_entity(_entity);
+
+  if(_node_data != NULL)
+    zenoh_pico_destroy_node_data(_node_data);
+
+  return NULL;
 }
 
 rmw_ret_t rmw_destroy_node(rmw_node_t * node)
 {
   RMW_ZENOH_FUNC_ENTRY();
-  RMW_ZENOH_LOG_INFO("start(%p)", node);
+
+  RMW_CHECK_ARGUMENT_FOR_NULL(node, RMW_RET_INVALID_ARGUMENT);
 
   if (!node) {
     RMW_ZENOH_LOG_INFO("node handle is null");

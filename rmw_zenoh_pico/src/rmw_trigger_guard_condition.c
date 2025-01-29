@@ -69,6 +69,8 @@ rmw_ret_t
 rmw_trigger_guard_condition(
   const rmw_guard_condition_t * guard_condition)
 {
+  RMW_ZENOH_FUNC_ENTRY();
+
   RMW_CHECK_ARGUMENT_FOR_NULL(guard_condition, RMW_RET_INVALID_ARGUMENT);
   RMW_CHECK_TYPE_IDENTIFIERS_MATCH(
     guard_condition->implementation_identifier,

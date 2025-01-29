@@ -53,6 +53,8 @@ ReceiveMessageData * zenoh_pico_generate_recv_msg_data(const z_loaned_sample_t *
 
 bool zenoh_pico_delete_recv_msg_data(ReceiveMessageData * recv_data)
 {
+  RMW_ZENOH_FUNC_ENTRY();
+
   RMW_CHECK_ARGUMENT_FOR_NULL(recv_data, false);
 
   if(recv_data->payload_start != NULL)
@@ -178,6 +180,8 @@ ReceiveMessageData *recv_msg_list_push(ReceiveMessageDataList *msg_list,
   msg_list->count += 1;
 
   z_mutex_unlock(msg_mutex);
+
+  // RMW_ZENOH_LOG_INFO("message_queue size is %d", recv_msg_list_count(msg_list));
 
   return(recv_data);
 }

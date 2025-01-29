@@ -111,7 +111,12 @@ extern int rmw_zenoh_pico_debug_level_get(void);
 #define RMW_ZENOH_LOG_INFO(...)  _Z_INFO(__VA_ARGS__)
 #define RMW_ZENOH_LOG_ERROR(...) _Z_ERROR(__VA_ARGS__)
 
+#define ZENOH_DEBUG_FUNC_ENTRY_ENABLE
+#ifdef ZENOH_DEBUG_FUNC_ENTRY_ENABLE
 #define RMW_ZENOH_FUNC_ENTRY() RMW_ZENOH_LOG_DEBUG("start()")
+#else
+#define RMW_ZENOH_FUNC_ENTRY() (void)(0)
+#endif
 
 #endif /* ! ZENOH_DEBUG_ENABLE */
 

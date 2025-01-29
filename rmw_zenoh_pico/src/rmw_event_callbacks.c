@@ -38,7 +38,7 @@ void data_callback_set(DataCallbackManager *data_callback,
   if(callback != NULL){
     if(data_callback->unread_count) {
       data_callback->callback(data_callback->user_data,
-			       data_callback->unread_count);
+			      data_callback->unread_count);
       data_callback->unread_count = 0;
     }
     data_callback->user_data = user_data;

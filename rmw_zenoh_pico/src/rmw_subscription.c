@@ -21,6 +21,7 @@
 #include "zenoh-pico/api/primitives.h"
 #include "zenoh-pico/api/types.h"
 #include "zenoh-pico/system/common/platform.h"
+
 #include <rmw_zenoh_pico/config.h>
 
 #include <rosidl_typesupport_microxrcedds_c/identifier.h>
@@ -69,14 +70,20 @@ ZenohPicoSubData * zenoh_pico_generate_subscription_data(
   ZenohPicoTopicInfo *topic_info = entity->topic_info;
 
   // generate key from entity data
-  generate_liveliness(entity, &sub_data->token_key);
+  if(_Z_IS_ERR(generate_liveliness(entity, &sub_data->token_key))){
+    RMW_SET_ERROR_MSG("failed generate_liveliness()");
+    return NULL;
+  }
 
   // generate topic key
-  ros_topic_name_to_zenoh_key(z_loan(node_info->domain),
-			      z_loan(topic_info->name),
-			      z_loan(topic_info->type),
-			      z_loan(topic_info->hash),
-			      &sub_data->topic_key);
+  if(_Z_IS_ERR(ros_topic_name_to_zenoh_key(z_loan(node_info->domain),
+					   z_loan(topic_info->name),
+					   z_loan(topic_info->type),
+					   z_loan(topic_info->hash),
+					   &sub_data->topic_key))){
+    RMW_SET_ERROR_MSG("failed ros_topic_name_to_zenoh_key()");
+    return NULL;
+  }
 
   // init receive message list
   recv_msg_list_init(&sub_data->message_queue);
@@ -95,23 +102,28 @@ bool zenoh_pico_destroy_subscription_data(ZenohPicoSubData *sub_data)
 {
   RMW_ZENOH_FUNC_ENTRY();
 
+  RMW_CHECK_ARGUMENT_FOR_NULL(sub_data, false);
+
   (void)undeclaration_subscription_data(sub_data);
 
   z_drop(z_move(sub_data->token_key));
   z_drop(z_move(sub_data->topic_key));
 
+  z_drop(z_move(sub_data->subscriber));
+  z_drop(z_move(sub_data->token));
+
   if(sub_data->node != NULL){
-    zenoh_pico_destroy_node_data(sub_data->node);
+    (void)zenoh_pico_destroy_node_data(sub_data->node);
     sub_data->node = NULL;
   }
 
   if(sub_data->entity != NULL){
-    zenoh_pico_destroy_entity(sub_data->entity);
+    (void)zenoh_pico_destroy_entity(sub_data->entity);
     sub_data->entity = NULL;
   }
 
   // free receive message list
-  recv_msg_list_debug(&sub_data->message_queue);
+  // recv_msg_list_debug(&sub_data->message_queue);
 
   if(recv_msg_list_count(&sub_data->message_queue) > 0){
     while(true){
@@ -120,7 +132,7 @@ bool zenoh_pico_destroy_subscription_data(ZenohPicoSubData *sub_data)
       if(recv_data == NULL)
 	break;
 
-      zenoh_pico_delete_recv_msg_data(recv_data);
+      (void)zenoh_pico_delete_recv_msg_data(recv_data);
     }
   }
 
@@ -139,6 +151,8 @@ void zenoh_pico_debug_subscription_data(ZenohPicoSubData *sub_data)
 
   Z_STRING_PRINTF(sub_data->token_key, token_key);
   Z_STRING_PRINTF(sub_data->topic_key, topic_key);
+
+  printf("message_queue = %d\n", recv_msg_list_count(&sub_data->message_queue));
 
   // debug node member
   zenoh_pico_debug_node_data(sub_data->node);
@@ -318,11 +332,11 @@ bool declaration_subscription_data(ZenohPicoSubData *sub_data)
     z_view_keyexpr_t ke;
     const z_loaned_string_t *keyexpr = z_loan(sub_data->topic_key);
     z_view_keyexpr_from_substr(&ke, z_string_data(keyexpr), z_string_len(keyexpr));
-    if(z_declare_subscriber(z_loan(session->session),
-			    &sub_data->subscriber,
-			    z_loan(ke),
-			    z_move(sub_callback),
-			    &options) < 0){
+    if(_Z_IS_ERR(z_declare_subscriber(z_loan(session->session),
+				      &sub_data->subscriber,
+				      z_loan(ke),
+				      z_move(sub_callback),
+				      &options))){
       RMW_ZENOH_LOG_INFO("Unable to declare subscriber.");
       return false;
     }
@@ -336,11 +350,11 @@ bool declaration_subscription_data(ZenohPicoSubData *sub_data)
     z_view_keyexpr_t ke;
     const z_loaned_string_t *keyexpr = z_loan(sub_data->topic_key);
     z_view_keyexpr_from_substr(&ke, z_string_data(keyexpr), z_string_len(keyexpr));
-    if(z_declare_subscriber(z_loan(session->session),
-			    &sub_data->token,
-			    z_loan(ke),
-			    z_move(token_callback),
-			    NULL) < 0){
+    if(_Z_IS_ERR(z_declare_subscriber(z_loan(session->session),
+				      &sub_data->token,
+				      z_loan(ke),
+				      z_move(token_callback),
+				      NULL))){
       RMW_ZENOH_LOG_INFO("Unable to declare token.");
       return false;
     }
@@ -353,14 +367,8 @@ bool undeclaration_subscription_data(ZenohPicoSubData *sub_data)
 {
   ZenohPicoSession *session = sub_data->node->session;
 
-  // if (z_check(sub_data->token_)) {
-  //   z_undeclare_subscriber(z_move(sub_data->token_));
-  // }
-
-
-  // if (z_check(sub_data->subscriber_)) {
-  //   z_undeclare_subscriber(z_move(sub_data->subscriber_));
-  // }
+  z_undeclare_subscriber(z_move(sub_data->token));
+  z_undeclare_subscriber(z_move(sub_data->subscriber));
 
   return true;
 }
@@ -497,6 +505,7 @@ rmw_create_subscription(
   const rmw_subscription_options_t * subscription_options)
 {
   RMW_ZENOH_FUNC_ENTRY();
+
   RMW_ZENOH_LOG_INFO("topic_name = %s", topic_name);
 
   RMW_CHECK_ARGUMENT_FOR_NULL(node, NULL);
@@ -554,31 +563,55 @@ rmw_create_subscription(
 		     Z_STRING_VAL(_type_name),
 		     Z_STRING_LEN(_type_name));
 
-  ZenohPicoTopicInfo *_topic_info = zenoh_pico_generate_topic_info(topic_name,
-								   qos_profile,
-								   z_loan(_type_name),
-								   z_loan(_hash_data));
+  ZenohPicoTopicInfo *_topic_info	= NULL;
+  ZenohPicoNodeInfo *_node_info		= NULL;
+  ZenohPicoEntity *_entity		= NULL;
+  ZenohPicoSubData *_sub_data		= NULL;
+  size_t _entity_id			= 0;
+
+  {
+    _topic_info = zenoh_pico_generate_topic_info(topic_name,
+						 qos_profile,
+						 z_loan(_type_name),
+						 z_loan(_hash_data));
+    if (_topic_info == NULL)
+      goto error;
+  }
+
   // clone node_info
-  ZenohPicoNodeInfo *_node_info = zenoh_pico_clone_node_info(node_data->entity->node_info);
+  {
+    _node_info = zenoh_pico_clone_node_info(node_data->entity->node_info);
+    if(_node_info == NULL)
+      goto error;
+  }
 
   // generate entity data
-  size_t _entity_id = zenoh_pico_get_next_entity_id();
-  ZenohPicoSession *_session = node_data->session;
-  z_id_t _zid = z_info_zid(z_loan(_session->session));
-  ZenohPicoEntity *_entity = zenoh_pico_generate_entity( &_zid,
-							 _entity_id,
-							 node_data->id,
-							 Subscription,
-							 _node_info,
-							 _topic_info);
+  {
+    _entity_id = zenoh_pico_get_next_entity_id();
+    ZenohPicoSession *_session = node_data->session;
+    z_id_t _zid = z_info_zid(z_loan(_session->session));
+    _entity = zenoh_pico_generate_entity( &_zid,
+					  _entity_id,
+					  node_data->id,
+					  Subscription,
+					  _node_info,
+					  _topic_info);
+    if(_entity == NULL)
+      goto error;
+  }
 
-  ZenohPicoNodeData *_node = zenoh_pico_loan_node_data(node_data);
-  ZenohPicoSubData *_sub_data = zenoh_pico_generate_subscription_data(_entity_id,
-								      _node,
-								      _entity,
-								      qos_profile,
-								      type_support,
-								      callbacks);
+  // generate subscriber data
+  {
+    ZenohPicoNodeData *_node = zenoh_pico_loan_node_data(node_data);
+    _sub_data = zenoh_pico_generate_subscription_data(_entity_id,
+						      _node,
+						      _entity,
+						      qos_profile,
+						      type_support,
+						      callbacks);
+    if(_sub_data == NULL) goto error;
+  }
+
   if(rmw_zenoh_pico_debug_level_get() == _Z_LOG_LVL_DEBUG){
     zenoh_pico_debug_subscription_data(_sub_data);
   }
@@ -586,12 +619,30 @@ rmw_create_subscription(
   rmw_subscription_t * rmw_subscription = _rmw_subscription_generate(node->context,
 								     _sub_data,
 								     subscription_options);
+  if(rmw_subscription == NULL)
+    goto error;
+
   declaration_subscription_data(_sub_data);
 
   z_drop(z_move(_hash_data));
   z_drop(z_move(_type_name));
 
   return rmw_subscription;
+
+  error:
+  if(_topic_info != NULL)
+    zenoh_pico_destroy_topic_info(_topic_info);
+
+  if(_node_info != NULL)
+    zenoh_pico_destroy_node_info(_node_info);
+
+  if(_entity != NULL)
+    zenoh_pico_destroy_entity(_entity);
+
+  if(_sub_data != NULL)
+    zenoh_pico_destroy_subscription_data(_sub_data);
+
+  return NULL;
 }
 
 rmw_ret_t

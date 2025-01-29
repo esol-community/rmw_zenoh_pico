@@ -70,6 +70,10 @@ ZenohPicoNodeInfo *zenoh_pico_clone_node_info(ZenohPicoNodeInfo *src)
 
 bool zenoh_pico_destroy_node_info(ZenohPicoNodeInfo *node)
 {
+  RMW_ZENOH_FUNC_ENTRY();
+
+  RMW_CHECK_ARGUMENT_FOR_NULL(node, false);
+
   z_drop(z_move(node->domain));
   z_drop(z_move(node->ns));
   z_drop(z_move(node->name));

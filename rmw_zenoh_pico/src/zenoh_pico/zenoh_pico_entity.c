@@ -64,13 +64,19 @@ ZenohPicoEntity * zenoh_pico_generate_entity(z_id_t *zid,
   entity->node_info	= node_info;
   entity->topic_info	= topic_info;
 
-  // zenoh_pico_debug_entity(entity);
+  // if(rmw_zenoh_pico_debug_level_get() == _Z_LOG_LVL_DEBUG){
+  //   zenoh_pico_debug_entity(entity);
+  // }
 
   return entity;
 }
 
-void zenoh_pico_destroy_entity(ZenohPicoEntity *entity)
+bool zenoh_pico_destroy_entity(ZenohPicoEntity *entity)
 {
+  RMW_ZENOH_FUNC_ENTRY();
+
+  RMW_CHECK_ARGUMENT_FOR_NULL(entity, false);
+
   z_drop(z_move(entity->zid));
 
   if(entity->node_info != NULL){
@@ -84,6 +90,8 @@ void zenoh_pico_destroy_entity(ZenohPicoEntity *entity)
   }
 
   ZenohPicoDestroyData(entity, ZenohPicoEntity);
+
+  return true;
 }
 
 void zenoh_pico_debug_entity(ZenohPicoEntity *entity)

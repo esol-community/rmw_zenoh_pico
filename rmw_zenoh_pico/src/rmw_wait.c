@@ -50,6 +50,7 @@ static bool _check_and_attach_condition(const rmw_subscriptions_t * const subscr
       }
 
       if(guard_condition_check_and_attach(gc, wait_set_data)) {
+	// RMW_ZENOH_LOG_INFO("found attach guard_conditions");
 	return true;
       }
     }
@@ -68,6 +69,7 @@ static bool _check_and_attach_condition(const rmw_subscriptions_t * const subscr
       }
 
       if(subscription_condition_check_and_attach(sub_data, wait_set_data)) {
+	// RMW_ZENOH_LOG_INFO("found attach subscriptions");
 	return true;
       }
     }
@@ -96,7 +98,7 @@ rmw_wait(rmw_subscriptions_t * subscriptions,
 	 rmw_wait_set_t * wait_set,
 	 const rmw_time_t * wait_timeout)
 {
-  // RMW_ZENOH_FUNC_ENTRY();
+  RMW_ZENOH_FUNC_ENTRY();
 
   RMW_CHECK_ARGUMENT_FOR_NULL(wait_set, RMW_RET_INVALID_ARGUMENT);
   RMW_CHECK_TYPE_IDENTIFIERS_MATCH(
@@ -134,7 +136,7 @@ rmw_wait(rmw_subscriptions_t * subscriptions,
       }
     }
 
-    // RMW_ZENOH_LOG_INFO("wakeup from wait condition....");
+    RMW_ZENOH_LOG_DEBUG("wakeup from wait condition....");
 
     wait_set_data->triggered = false;
 

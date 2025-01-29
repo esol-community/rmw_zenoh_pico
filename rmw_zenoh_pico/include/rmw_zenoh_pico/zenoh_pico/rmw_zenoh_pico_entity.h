@@ -77,7 +77,7 @@ extern "C"
 						      ZenohPicoEntityType type,
 						      ZenohPicoNodeInfo *node_info,
 						      ZenohPicoTopicInfo *topic_info);
-  extern void zenoh_pico_destroy_entity(ZenohPicoEntity *entity);
+  extern bool zenoh_pico_destroy_entity(ZenohPicoEntity *entity);
   extern void zenoh_pico_debug_entity(ZenohPicoEntity *entity);
 
   extern size_t zenoh_pico_get_next_entity_id(void);

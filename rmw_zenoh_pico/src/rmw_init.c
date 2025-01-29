@@ -72,9 +72,12 @@ ZenohPicoSession *zenoh_pico_generate_session(ZenohPicoSession *session,
 
 bool zenoh_pico_destroy_session(ZenohPicoSession *session)
 {
+  RMW_ZENOH_FUNC_ENTRY();
+
+  RMW_CHECK_ARGUMENT_FOR_NULL(session, false);
+
   z_drop(z_move(session->config));
   z_drop(z_move(session->session));
-
   z_drop(z_move(session->enclave));
 
   ZenohPicoDestroyData(session, ZenohPicoSession);
@@ -86,13 +89,13 @@ rmw_ret_t session_connect(ZenohPicoSession *session)
 {
 
   RMW_ZENOH_LOG_INFO("Opening session...");
-  if(z_open(&session->session, z_move(session->config), NULL) < 0){
+  if(_Z_IS_ERR(z_open(&session->session, z_move(session->config), NULL))){
     RMW_SET_ERROR_MSG("Error setting up zenoh session");
     return RMW_RET_ERROR;
   }
 
-  if (zp_start_read_task(z_loan_mut(session->session), NULL) < 0
-      || zp_start_lease_task(z_loan_mut(session->session), NULL) < 0) {
+  if (_Z_IS_ERR(zp_start_read_task(z_loan_mut(session->session), NULL))
+      || _Z_IS_ERR(zp_start_lease_task(z_loan_mut(session->session), NULL))) {
     RMW_SET_ERROR_MSG("Unable to start read and lease tasks");
     z_drop(z_move(session->config));
     z_drop(z_move(session->session));
@@ -251,26 +254,26 @@ rmw_zenoh_pico_set_unicast_config(ZenohPicoTransportParams *params, z_owned_conf
 {
   const char *mode = params->mode;
 
-  if(zp_config_insert(z_config_loan_mut(config),
-		      Z_CONFIG_MODE_KEY,
-		      mode) < 0){
+  if(_Z_IS_ERR(zp_config_insert(z_config_loan_mut(config),
+				Z_CONFIG_MODE_KEY,
+				mode))){
     RMW_SET_ERROR_MSG("mode param setting error.");
     return RMW_RET_ERROR;
   }
 
   if(strlen(params->connect_addr) > 0){
-    if(zp_config_insert(z_config_loan_mut(config),
-			Z_CONFIG_CONNECT_KEY,
-			params->connect_addr) < 0){
+    if(_Z_IS_ERR(zp_config_insert(z_config_loan_mut(config),
+				  Z_CONFIG_CONNECT_KEY,
+				  params->connect_addr))){
       RMW_SET_ERROR_MSG("connect address param setting error.");
       return RMW_RET_ERROR;
     }
   }
 
   if(strlen(params->listen_addr) > 0){
-    if(zp_config_insert(z_config_loan_mut(config),
-			Z_CONFIG_LISTEN_KEY,
-			params->listen_addr) < 0){
+    if(_Z_IS_ERR(zp_config_insert(z_config_loan_mut(config),
+				  Z_CONFIG_LISTEN_KEY,
+				  params->listen_addr))){
       RMW_SET_ERROR_MSG("listen address param setting error.");
       return RMW_RET_ERROR;
     }

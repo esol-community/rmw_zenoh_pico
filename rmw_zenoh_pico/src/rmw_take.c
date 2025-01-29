@@ -167,7 +167,11 @@ rmw_take_sequence(const rmw_subscription_t * subscription,
   *taken = 0;
 
   ZenohPicoSubData *sub_data = (ZenohPicoSubData *)subscription->data;
-  RMW_CHECK_ARGUMENT_FOR_NULL(sub_data, RMW_RET_INVALID_ARGUMENT);
+  if (sub_data == NULL){
+    RMW_SET_ERROR_MSG("don't found subscription");
+    return RMW_RET_INVALID_ARGUMENT;
+
+  }
 
   rmw_ret_t ret;
 
