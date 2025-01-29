@@ -27,14 +27,22 @@
 #include <zenoh-pico.h>
 
 // Timestamp function
+#if defined(ZENOH_LINUX)
 static inline void __z_log_prefix(const char *prefix, const char *func_name) {
   char time_stamp[64];
 
-  z_time_t tv = z_time_now();
-  snprintf(time_stamp, sizeof(time_stamp), "%ld.%09ld", tv.tv_sec, tv.tv_usec);
+  struct timespec abstime;
+  memset(&abstime, 0, sizeof(abstime));
+  clock_gettime(CLOCK_REALTIME, &abstime);
+
+  snprintf(time_stamp, sizeof(time_stamp), "%ld.%09ld", abstime.tv_sec, abstime.tv_nsec);
 
   printf("[%-5s] [%s] [%s] : ",  prefix, time_stamp, func_name);
 }
+#else
+#include "zenoh-pico/system/platform/void.h"
+#error "Unknown platform"
+#endif
 
 // Logging values
 #define _Z_LOG_LVL_ERROR 1
