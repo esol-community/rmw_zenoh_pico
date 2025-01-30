@@ -33,10 +33,10 @@
 
 #define RCCHECK(fn) {                                           \
     rcl_ret_t temp_rc = fn;					\
-    if((temp_rc != RCL_RET_OK))					\
-      {								\
+    if((temp_rc != RCL_RET_OK))	{				\
 	printf("Failed status on line %d: %d. Aborting.\n",	\
-	       __LINE__,(int)temp_rc); return 1;}		\
+	       __LINE__,(int)temp_rc); return 1;		\
+    }								\
   }
 
 #define RCSOFTCHECK(fn) {					\
@@ -78,7 +78,11 @@ int main(int argc, const char * const * argv)
   rcl_init_options_t init_options = rcl_get_zero_initialized_init_options();
   rcl_init_options_init(&init_options, allocator);
   RCCHECK(rcl_init_options_set_domain_id(&init_options, ROS_DOMAIN_ID));
-  RCCHECK(rclc_support_init_with_options(&support, 0, NULL, &init_options, &allocator));
+  RCCHECK(rclc_support_init_with_options(&support,
+					 0,
+					 NULL,
+					 &init_options,
+					 &allocator));
 #endif
 
   RCCHECK(rclc_node_init_default(&node, "talker_node", "", &support));
@@ -101,7 +105,11 @@ int main(int argc, const char * const * argv)
 
   // create executor
   rclc_executor_t executor = rclc_executor_get_zero_initialized_executor();
-  RCCHECK(rclc_executor_init(&executor, &support.context, 1, &allocator));
+  RCCHECK(rclc_executor_init(
+	    &executor,
+	    &support.context,
+	    1,
+	    &allocator));
   RCCHECK(rclc_executor_add_timer(&executor, &timer));
 
   // Fill the array with a known sequence
@@ -111,6 +119,6 @@ int main(int argc, const char * const * argv)
 
   rclc_executor_spin(&executor);
 
-  RCCHECK(rcl_publisher_fini(&publisher, &node))
-    RCCHECK(rcl_node_fini(&node))
-    }
+  RCCHECK(rcl_publisher_fini(&publisher, &node));
+  RCCHECK(rcl_node_fini(&node));
+}

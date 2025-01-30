@@ -55,6 +55,8 @@ endfunction()
 
 export_executable(listener)
 export_executable(talker)
+export_executable(client)
+export_executable(server)
 
 if(EXISTS ${PROJECT_BINARY_DIR}/temp_install/)
     install(

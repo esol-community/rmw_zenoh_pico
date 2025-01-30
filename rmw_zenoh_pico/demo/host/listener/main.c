@@ -26,8 +26,22 @@
 
 #define ARRAY_LEN 200
 
-#define RCCHECK(fn) { rcl_ret_t temp_rc = fn; if((temp_rc != RCL_RET_OK)){printf("Failed status on line %d: %d. Aborting.\n",__LINE__,(int)temp_rc); return 1;}}
-#define RCSOFTCHECK(fn) { rcl_ret_t temp_rc = fn; if((temp_rc != RCL_RET_OK)){printf("Failed status on line %d: %d. Continuing.\n",__LINE__,(int)temp_rc);}}
+#define RCCHECK(fn) {						\
+    rcl_ret_t temp_rc = fn;					\
+    if((temp_rc != RCL_RET_OK))	{				\
+	printf("Failed status on line %d: %d. Aborting.\n",	\
+	       __LINE__,(int)temp_rc);				\
+	return 1;						\
+      }								\
+  }
+
+#define RCSOFTCHECK(fn) {					\
+    rcl_ret_t temp_rc = fn;					\
+    if((temp_rc != RCL_RET_OK))	{				\
+	printf("Failed status on line %d: %d. Continuing.\n",	\
+	       __LINE__,(int)temp_rc);				\
+      }								\
+  }
 
 rcl_subscription_t subscriber;
 std_msgs__msg__String msg;
@@ -35,60 +49,72 @@ char test_array[ARRAY_LEN];
 
 void subscription_callback(const void * msgin)
 {
-	const std_msgs__msg__String * msg = (const std_msgs__msg__String *)msgin;
-	printf("I have heard: \"%s\"\n", msg->data.data);
+  const std_msgs__msg__String * msg = (const std_msgs__msg__String *)msgin;
+  printf("I have heard: \"%s\"\n", msg->data.data);
 }
 
 int main(int argc, const char * const * argv)
 {
-  	memset(test_array,'z',ARRAY_LEN);
+  memset(test_array,'z',ARRAY_LEN);
 
-  	rcl_allocator_t allocator = rcl_get_default_allocator();
-	rclc_support_t support;
+  rcl_allocator_t allocator = rcl_get_default_allocator();
+  rclc_support_t support;
 
-	// create init_options
-	RCCHECK(rclc_support_init(&support, argc, argv, &allocator));
+  // create init_options
+  RCCHECK(rclc_support_init(&support, argc, argv, &allocator));
 
-	// create node
-	rcl_node_t node;
+  // create node
+  rcl_node_t node;
 
-	char *domain_id_ptr;
-	if((domain_id_ptr = getenv("ROS_DOMAIN_ID")) != NULL){
-		char *endl;
-		int domain_id = strtol(domain_id_ptr, &endl, 10);
+  char *domain_id_ptr;
+  if((domain_id_ptr = getenv("ROS_DOMAIN_ID")) != NULL){
+    char *endl;
+    int domain_id = strtol(domain_id_ptr, &endl, 10);
 
-		if(endl != NULL){
-			rcl_init_options_t init_options = rcl_get_zero_initialized_init_options();
-			rcl_ret_t ret = rcl_init_options_init(&init_options, allocator);
-			RCCHECK(rcl_init_options_set_domain_id(&init_options, domain_id));
-			RCCHECK(rclc_support_init_with_options(&support,
-							       0,
-							       NULL,
-							       &init_options,
-							       &allocator));
-		}
-	}
+    if(endl != NULL){
+      rcl_init_options_t init_options = rcl_get_zero_initialized_init_options();
+      rcl_ret_t ret = rcl_init_options_init(&init_options, allocator);
+      RCCHECK(rcl_init_options_set_domain_id(&init_options, domain_id));
+      RCCHECK(rclc_support_init_with_options(&support,
+					     0,
+					     NULL,
+					     &init_options,
+					     &allocator));
+    }
+  }
 
-	RCCHECK(rclc_node_init_default(&node, "listener_node", "", &support));
+  RCCHECK(rclc_node_init_default(&node,
+				 "listener_node",
+				 "",
+				 &support));
 
-	// create subscriber
-	RCCHECK(rclc_subscription_init_default(
-		&subscriber,
-		&node,
-		ROSIDL_GET_MSG_TYPE_SUPPORT(std_msgs, msg, String),
-		"chatter"));
+  // create subscriber
+  RCCHECK(rclc_subscription_init_default(
+	    &subscriber,
+	    &node,
+	    ROSIDL_GET_MSG_TYPE_SUPPORT(std_msgs, msg, String),
+	    "chatter"));
 
-	// create executor
-	rclc_executor_t executor = rclc_executor_get_zero_initialized_executor();
-	RCCHECK(rclc_executor_init(&executor, &support.context, 1, &allocator));
-	RCCHECK(rclc_executor_add_subscription(&executor, &subscriber, &msg, &subscription_callback, ON_NEW_DATA));
+  // create executor
+  rclc_executor_t executor = rclc_executor_get_zero_initialized_executor();
+  RCCHECK(rclc_executor_init(
+	    &executor,
+	    &support.context,
+	    1,
+	    &allocator));
+  RCCHECK(rclc_executor_add_subscription(
+	    &executor,
+	    &subscriber,
+	    &msg,
+	    &subscription_callback,
+	    ON_NEW_DATA));
 
-	msg.data.data = (char * ) malloc(ARRAY_LEN * sizeof(char));
-	msg.data.size = 0;
-	msg.data.capacity = ARRAY_LEN;
+  msg.data.data = (char * ) malloc(ARRAY_LEN * sizeof(char));
+  msg.data.size = 0;
+  msg.data.capacity = ARRAY_LEN;
 
-	rclc_executor_spin(&executor);
+  rclc_executor_spin(&executor);
 
-	RCCHECK(rcl_subscription_fini(&subscriber, &node));
-	RCCHECK(rcl_node_fini(&node));
+  RCCHECK(rcl_subscription_fini(&subscriber, &node));
+  RCCHECK(rcl_node_fini(&node));
 }
