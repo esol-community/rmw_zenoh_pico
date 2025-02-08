@@ -52,6 +52,8 @@ ZenohPicoSession *zenoh_pico_generate_session(ZenohPicoSession *session,
 					      const z_loaned_config_t *config,
 					      const char *enclave)
 {
+  RMW_ZENOH_FUNC_ENTRY(NULL);
+
   ZenohPicoGenerateData(session, ZenohPicoSession);
   RMW_CHECK_FOR_NULL_WITH_MSG(
     session,
@@ -72,7 +74,7 @@ ZenohPicoSession *zenoh_pico_generate_session(ZenohPicoSession *session,
 
 bool zenoh_pico_destroy_session(ZenohPicoSession *session)
 {
-  RMW_ZENOH_FUNC_ENTRY();
+  RMW_ZENOH_FUNC_ENTRY(NULL);
 
   RMW_CHECK_ARGUMENT_FOR_NULL(session, false);
 
@@ -88,7 +90,7 @@ bool zenoh_pico_destroy_session(ZenohPicoSession *session)
 rmw_ret_t session_connect(ZenohPicoSession *session)
 {
 
-  RMW_ZENOH_LOG_INFO("Opening session...");
+  RMW_ZENOH_FUNC_ENTRY("Opening session...");
   if(_Z_IS_ERR(z_open(&session->session, z_move(session->config), NULL))){
     RMW_SET_ERROR_MSG("Error setting up zenoh session");
     return RMW_RET_ERROR;
@@ -107,6 +109,8 @@ rmw_ret_t session_connect(ZenohPicoSession *session)
 
 static rmw_ret_t rmw_zenoh_pico_init_option(ZenohPicoTransportParams *params)
 {
+  RMW_ZENOH_FUNC_ENTRY(NULL);
+
   params->mode = RMW_ZENOH_PICO_TRANSPORT_MODE;
 
 #if defined(RMW_ZENOH_PICO_TRANSPORT_SERIAL)
@@ -160,7 +164,7 @@ static rmw_ret_t rmw_zenoh_pico_init_option(ZenohPicoTransportParams *params)
 rmw_ret_t
 rmw_init_options_init(rmw_init_options_t * init_options, rcutils_allocator_t allocator)
 {
-  RMW_ZENOH_FUNC_ENTRY();
+  RMW_ZENOH_FUNC_ENTRY(init_options);
 
   RMW_CHECK_ARGUMENT_FOR_NULL(init_options, RMW_RET_INVALID_ARGUMENT);
   RCUTILS_CHECK_ALLOCATOR(&allocator, return RMW_RET_INVALID_ARGUMENT);
@@ -199,7 +203,7 @@ rmw_init_options_init(rmw_init_options_t * init_options, rcutils_allocator_t all
 rmw_ret_t
 rmw_init_options_copy(const rmw_init_options_t * src, rmw_init_options_t * dst)
 {
-  RMW_ZENOH_FUNC_ENTRY();
+  RMW_ZENOH_FUNC_ENTRY(src);
 
   RMW_CHECK_ARGUMENT_FOR_NULL(src, RMW_RET_INVALID_ARGUMENT);
   RMW_CHECK_ARGUMENT_FOR_NULL(dst, RMW_RET_INVALID_ARGUMENT);
@@ -234,7 +238,7 @@ rmw_init_options_copy(const rmw_init_options_t * src, rmw_init_options_t * dst)
 rmw_ret_t
 rmw_init_options_fini(rmw_init_options_t * init_options)
 {
-  RMW_ZENOH_FUNC_ENTRY();
+  RMW_ZENOH_FUNC_ENTRY(init_options);
 
   RMW_CHECK_ARGUMENT_FOR_NULL(init_options, RMW_RET_INVALID_ARGUMENT);
   RCUTILS_CHECK_ALLOCATOR(&(init_options->allocator), return RMW_RET_INVALID_ARGUMENT);
@@ -338,7 +342,8 @@ rmw_init(const rmw_init_options_t * options, rmw_context_t * context)
 {
   rmw_zenoh_pico_debug_level_init();
 
-  RMW_ZENOH_FUNC_ENTRY();
+  RMW_ZENOH_FUNC_ENTRY(options);
+
   RCUTILS_CHECK_ARGUMENT_FOR_NULL(options, RMW_RET_INVALID_ARGUMENT);
   RCUTILS_CHECK_ARGUMENT_FOR_NULL(context, RMW_RET_INVALID_ARGUMENT);
   RCUTILS_CHECK_ARGUMENT_FOR_NULL(options->impl, RMW_RET_INVALID_ARGUMENT);
@@ -409,7 +414,7 @@ rmw_init(const rmw_init_options_t * options, rmw_context_t * context)
 rmw_ret_t
 rmw_shutdown(rmw_context_t * context)
 {
-  RMW_ZENOH_FUNC_ENTRY();
+  RMW_ZENOH_FUNC_ENTRY(context);
 
   RCUTILS_CHECK_ARGUMENT_FOR_NULL(context, RMW_RET_INVALID_ARGUMENT);
   RMW_CHECK_TYPE_IDENTIFIERS_MATCH(
@@ -437,7 +442,7 @@ rmw_shutdown(rmw_context_t * context)
 rmw_ret_t
 rmw_context_fini(rmw_context_t * context)
 {
-  RMW_ZENOH_FUNC_ENTRY();
+  RMW_ZENOH_FUNC_ENTRY(context);
   rmw_ret_t ret = RMW_RET_OK;
 
   if(context->impl != NULL){

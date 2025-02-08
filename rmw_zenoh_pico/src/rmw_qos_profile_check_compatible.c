@@ -26,6 +26,8 @@ rmw_qos_profile_check_compatible(
   char * reason,
   size_t reason_size)
 {
+  RMW_ZENOH_FUNC_ENTRY(NULL);
+
   (void) publisher_profile;
   (void) subscription_profile;
   (void) compatibility;

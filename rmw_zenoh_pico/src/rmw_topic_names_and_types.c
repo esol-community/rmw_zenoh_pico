@@ -30,6 +30,8 @@ rmw_get_topic_names_and_types(
   bool no_demangle,
   rmw_names_and_types_t * topic_names_and_types)
 {
+  RMW_ZENOH_FUNC_ENTRY(node);
+
   (void)node;
   (void)allocator;
   (void)no_demangle;

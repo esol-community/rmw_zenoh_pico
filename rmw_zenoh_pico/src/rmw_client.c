@@ -27,6 +27,8 @@ rmw_create_client(
   const char * service_name,
   const rmw_qos_profile_t * qos_policies)
 {
+  RMW_ZENOH_FUNC_ENTRY(node);
+
   rmw_client_t * rmw_client = NULL;
   if (!node) {
     RMW_ZENOH_LOG_INFO("node handle is null");
@@ -47,6 +49,8 @@ rmw_destroy_client(
   rmw_node_t * node,
   rmw_client_t * client)
 {
+  RMW_ZENOH_FUNC_ENTRY(node);
+
   rmw_ret_t result_ret = RMW_RET_OK;
   return result_ret;
 }
@@ -56,7 +60,7 @@ rmw_client_request_publisher_get_actual_qos(
   const rmw_client_t * client,
   rmw_qos_profile_t * qos)
 {
-  RMW_ZENOH_FUNC_ENTRY();
+  RMW_ZENOH_FUNC_ENTRY(client);
 
   RMW_CHECK_ARGUMENT_FOR_NULL(client, RMW_RET_INVALID_ARGUMENT);
   RMW_CHECK_ARGUMENT_FOR_NULL(qos, RMW_RET_INVALID_ARGUMENT);
@@ -69,7 +73,7 @@ rmw_client_response_subscription_get_actual_qos(
   const rmw_client_t * client,
   rmw_qos_profile_t * qos)
 {
-  RMW_ZENOH_FUNC_ENTRY();
+  RMW_ZENOH_FUNC_ENTRY(client);
 
   RMW_CHECK_ARGUMENT_FOR_NULL(client, RMW_RET_INVALID_ARGUMENT);
   RMW_CHECK_ARGUMENT_FOR_NULL(qos, RMW_RET_INVALID_ARGUMENT);

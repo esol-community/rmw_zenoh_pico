@@ -39,6 +39,8 @@ ZenohPicoPubData * zenoh_pico_generate_publisher_data(
   const rosidl_message_type_support_t * type_support,
   const message_type_support_callbacks_t *callbacks)
 {
+  RMW_ZENOH_FUNC_ENTRY(node);
+
   if((node == NULL) || (entity == NULL))
     return NULL;
 
@@ -90,7 +92,7 @@ ZenohPicoPubData * zenoh_pico_generate_publisher_data(
 
 static bool undeclaration_publisher_data(ZenohPicoPubData *pub_data)
 {
-  RMW_ZENOH_FUNC_ENTRY();
+  RMW_ZENOH_FUNC_ENTRY(NULL);
 
   z_undeclare_subscriber(z_move(pub_data->token));
   z_undeclare_publisher(z_move(pub_data->publisher));
@@ -100,7 +102,7 @@ static bool undeclaration_publisher_data(ZenohPicoPubData *pub_data)
 
 bool zenoh_pico_destroy_publisher_data(ZenohPicoPubData *pub_data)
 {
-  RMW_ZENOH_FUNC_ENTRY();
+  RMW_ZENOH_FUNC_ENTRY(NULL);
 
   RMW_CHECK_ARGUMENT_FOR_NULL(pub_data, false);
 
@@ -146,7 +148,7 @@ void zenoh_pico_debug_publisher_data(ZenohPicoPubData *pub_data)
 }
 
 static void _token_handler(z_loaned_sample_t *sample, void *ctx) {
-  RMW_ZENOH_FUNC_ENTRY();
+  RMW_ZENOH_FUNC_ENTRY(sample);
 
   ZenohPicoPubData *pub_data = (ZenohPicoPubData *)ctx;
 
@@ -155,7 +157,7 @@ static void _token_handler(z_loaned_sample_t *sample, void *ctx) {
 
 bool declaration_publisher_data(ZenohPicoPubData *pub_data)
 {
-  RMW_ZENOH_FUNC_ENTRY();
+  RMW_ZENOH_FUNC_ENTRY(NULL);
 
   ZenohPicoSession *session = pub_data->node->session;
 
@@ -207,7 +209,7 @@ static rmw_publisher_t *_rmw_publisher_generate(rmw_context_t *context,
 						ZenohPicoPubData *pub_data,
 						const rmw_publisher_options_t *options)
 {
-  RMW_ZENOH_FUNC_ENTRY();
+  RMW_ZENOH_FUNC_ENTRY(context);
 
   rmw_publisher_t * rmw_publisher = Z_MALLOC(sizeof(rmw_publisher_t));
   RMW_CHECK_FOR_NULL_WITH_MSG(
@@ -229,7 +231,7 @@ static rmw_publisher_t *_rmw_publisher_generate(rmw_context_t *context,
 
 static rmw_ret_t _rmw_publisher_destroy(rmw_publisher_t * pub)
 {
-  RMW_ZENOH_FUNC_ENTRY();
+  RMW_ZENOH_FUNC_ENTRY(pub);
 
   RMW_CHECK_ARGUMENT_FOR_NULL(pub, RMW_RET_INVALID_ARGUMENT);
 
@@ -252,6 +254,8 @@ rmw_init_publisher_allocation(
   const rosidl_runtime_c__Sequence__bound * message_bounds,
   rmw_publisher_allocation_t * allocation)
 {
+  RMW_ZENOH_FUNC_ENTRY(NULL);
+
   (void)type_support;
   (void)message_bounds;
   (void)allocation;
@@ -263,6 +267,8 @@ rmw_ret_t
 rmw_fini_publisher_allocation(
   rmw_publisher_allocation_t * allocation)
 {
+  RMW_ZENOH_FUNC_ENTRY(NULL);
+
   (void)allocation;
   RMW_SET_ERROR_MSG("rmw_fini_publisher_allocation: unimplemented");
   return RMW_RET_UNSUPPORTED;
@@ -276,7 +282,7 @@ rmw_create_publisher(
   const rmw_qos_profile_t * qos_profile,
   const rmw_publisher_options_t * publisher_options)
 {
-  RMW_ZENOH_FUNC_ENTRY();
+  RMW_ZENOH_FUNC_ENTRY(node);
 
   RMW_CHECK_ARGUMENT_FOR_NULL(node, NULL);
   RMW_CHECK_TYPE_IDENTIFIERS_MATCH(
@@ -452,7 +458,7 @@ rmw_destroy_publisher(
   rmw_node_t * node,
   rmw_publisher_t * publisher)
 {
-  RMW_ZENOH_FUNC_ENTRY();
+  RMW_ZENOH_FUNC_ENTRY(node);
 
   RMW_CHECK_ARGUMENT_FOR_NULL(node, RMW_RET_INVALID_ARGUMENT);
   RMW_CHECK_ARGUMENT_FOR_NULL(publisher, RMW_RET_INVALID_ARGUMENT);
@@ -472,6 +478,8 @@ rmw_publisher_count_matched_subscriptions(
   const rmw_publisher_t * publisher,
   size_t * subscription_count)
 {
+  RMW_ZENOH_FUNC_ENTRY(publisher);
+
   (void)publisher;
   (void)subscription_count;
   RMW_ZENOH_LOG_INFO(
@@ -483,6 +491,8 @@ rmw_ret_t
 rmw_publisher_assert_liveliness(
   const rmw_publisher_t * publisher)
 {
+  RMW_ZENOH_FUNC_ENTRY(publisher);
+
   (void)publisher;
   RMW_ZENOH_LOG_INFO("function not implemented");
   return RMW_RET_UNSUPPORTED;
@@ -493,6 +503,8 @@ rmw_publisher_get_actual_qos(
   const rmw_publisher_t * publisher,
   rmw_qos_profile_t * qos)
 {
+  RMW_ZENOH_FUNC_ENTRY(publisher);
+
   RMW_CHECK_ARGUMENT_FOR_NULL(publisher, RMW_RET_INVALID_ARGUMENT);
   RMW_CHECK_ARGUMENT_FOR_NULL(qos, RMW_RET_INVALID_ARGUMENT);
 
@@ -505,6 +517,8 @@ rmw_borrow_loaned_message(
   const rosidl_message_type_support_t * type_support,
   void ** ros_message)
 {
+  RMW_ZENOH_FUNC_ENTRY(publisher);
+
   (void)publisher;
   (void)type_support;
   (void)ros_message;
@@ -518,6 +532,8 @@ rmw_return_loaned_message_from_publisher(
   const rmw_publisher_t * publisher,
   void * loaned_message)
 {
+  RMW_ZENOH_FUNC_ENTRY(publisher);
+
   (void)publisher;
   (void)loaned_message;
 

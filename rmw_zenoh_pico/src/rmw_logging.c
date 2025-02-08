@@ -17,9 +17,10 @@
 #include <rmw_zenoh_pico/rmw_zenoh_pico.h>
 
 rmw_ret_t
-rmw_set_log_severity(
-  rmw_log_severity_t severity)
+rmw_set_log_severity(rmw_log_severity_t severity)
 {
+  RMW_ZENOH_FUNC_ENTRY(NULL);
+
   (void)severity;
   RMW_ZENOH_LOG_INFO("function not implemented");
   return RMW_RET_UNSUPPORTED;

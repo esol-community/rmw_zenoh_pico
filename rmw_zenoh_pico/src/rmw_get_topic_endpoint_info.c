@@ -32,6 +32,8 @@ rmw_get_publishers_info_by_topic(
   bool no_mangle,
   rmw_topic_endpoint_info_array_t * publishers_info)
 {
+  RMW_ZENOH_FUNC_ENTRY(node);
+
   (void)node;
   (void)allocator;
   (void)topic_name;
@@ -50,6 +52,8 @@ rmw_get_subscriptions_info_by_topic(
   bool no_mangle,
   rmw_topic_endpoint_info_array_t * subscriptions_info)
 {
+  RMW_ZENOH_FUNC_ENTRY(node);
+
   (void)node;
   (void)allocator;
   (void)topic_name;

@@ -24,7 +24,7 @@ ZenohPicoNodeData * zenoh_pico_generate_node_data(size_t node_id,
 						  ZenohPicoSession *session,
 						  ZenohPicoEntity *entity)
 {
-  RMW_ZENOH_FUNC_ENTRY();
+  RMW_ZENOH_FUNC_ENTRY(NULL);
 
   if((session == NULL) || (entity == NULL))
     return NULL;
@@ -59,7 +59,7 @@ ZenohPicoNodeData *zenoh_pico_loan_node_data(ZenohPicoNodeData *node_data)
 
 bool zenoh_pico_destroy_node_data(ZenohPicoNodeData *node_data)
 {
-  RMW_ZENOH_FUNC_ENTRY();
+  RMW_ZENOH_FUNC_ENTRY(NULL);
 
   RMW_CHECK_ARGUMENT_FOR_NULL(node_data, false);
 
@@ -89,7 +89,7 @@ void zenoh_pico_debug_node_data(ZenohPicoNodeData *node_data)
 }
 
 static void _token_handler(z_loaned_sample_t *sample, void *ctx) {
-  RMW_ZENOH_FUNC_ENTRY();
+  RMW_ZENOH_FUNC_ENTRY(NULL);
 
   ZenohPicoNodeData *node_data = (ZenohPicoNodeData *)ctx;
 
@@ -98,7 +98,7 @@ static void _token_handler(z_loaned_sample_t *sample, void *ctx) {
 
 bool declaration_node_data(ZenohPicoNodeData *node_data)
 {
-  RMW_ZENOH_FUNC_ENTRY();
+  RMW_ZENOH_FUNC_ENTRY(NULL);
 
   ZenohPicoSession *session = node_data->session;
 
@@ -126,7 +126,7 @@ bool declaration_node_data(ZenohPicoNodeData *node_data)
 
 static rmw_node_t *rmw_node_generate(rmw_context_t *context, ZenohPicoNodeData *node_data)
 {
-  RMW_ZENOH_FUNC_ENTRY();
+  RMW_ZENOH_FUNC_ENTRY(context);
 
   if(node_data->entity->node_info == NULL)
     return NULL;
@@ -155,7 +155,7 @@ static rmw_node_t *rmw_node_generate(rmw_context_t *context, ZenohPicoNodeData *
 
 static rmw_ret_t rmw_node_destroy(rmw_node_t * node)
 {
-  RMW_ZENOH_FUNC_ENTRY();
+  RMW_ZENOH_FUNC_ENTRY(node);
 
   if(node != NULL){
     ZenohPicoNodeData *node_data = (ZenohPicoNodeData *)node->data;
@@ -175,7 +175,7 @@ static rmw_ret_t rmw_node_destroy(rmw_node_t * node)
 rmw_node_t *
 rmw_create_node(rmw_context_t * context, const char * name, const char * namespace)
 {
-  RMW_ZENOH_FUNC_ENTRY();
+  RMW_ZENOH_FUNC_ENTRY(context);
 
   RMW_ZENOH_LOG_INFO("name = [%s], namespace = [%s]", name, namespace);
 
@@ -262,7 +262,7 @@ rmw_create_node(rmw_context_t * context, const char * name, const char * namespa
 
 rmw_ret_t rmw_destroy_node(rmw_node_t * node)
 {
-  RMW_ZENOH_FUNC_ENTRY();
+  RMW_ZENOH_FUNC_ENTRY(node);
 
   RMW_CHECK_ARGUMENT_FOR_NULL(node, RMW_RET_INVALID_ARGUMENT);
 
@@ -286,7 +286,7 @@ rmw_ret_t rmw_destroy_node(rmw_node_t * node)
 rmw_ret_t
 rmw_node_assert_liveliness(const rmw_node_t * node)
 {
-  RMW_ZENOH_FUNC_ENTRY();
+  RMW_ZENOH_FUNC_ENTRY(node);
   RMW_ZENOH_LOG_INFO("start(%p)", node);
 
   (void)node;
@@ -297,7 +297,7 @@ rmw_node_assert_liveliness(const rmw_node_t * node)
 const rmw_guard_condition_t *
 rmw_node_get_graph_guard_condition(const rmw_node_t * node)
 {
-  RMW_ZENOH_FUNC_ENTRY();
+  RMW_ZENOH_FUNC_ENTRY(node);
   RMW_ZENOH_LOG_INFO("start(%p)", node);
 
   ZenohPicoNodeData *node_data = (ZenohPicoNodeData *)node->data;

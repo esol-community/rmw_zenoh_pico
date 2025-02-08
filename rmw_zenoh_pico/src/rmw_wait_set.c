@@ -19,7 +19,7 @@ z_owned_mutex_t mutex_ZenohPicoWaitSetData;
 
 ZenohPicoWaitSetData * zenoh_pico_generate_wait_set_data(rmw_context_t * context)
 {
-  RMW_ZENOH_FUNC_ENTRY();
+  RMW_ZENOH_FUNC_ENTRY(context);
 
   ZenohPicoWaitSetData *wait_data = NULL;
   ZenohPicoGenerateData(wait_data, ZenohPicoWaitSetData);
@@ -40,7 +40,7 @@ ZenohPicoWaitSetData * zenoh_pico_generate_wait_set_data(rmw_context_t * context
 
 bool zenoh_pico_destroy_wait_set_data(ZenohPicoWaitSetData *wait_data)
 {
-  RMW_ZENOH_FUNC_ENTRY();
+  RMW_ZENOH_FUNC_ENTRY(NULL);
 
   z_mutex_drop(z_move(wait_data->condition_mutex));
   z_condvar_drop(z_move(wait_data->condition_variable));
@@ -55,7 +55,7 @@ rmw_create_wait_set(rmw_context_t * context, size_t max_conditions)
 {
   (void)max_conditions;
 
-  RMW_ZENOH_FUNC_ENTRY();
+  RMW_ZENOH_FUNC_ENTRY(context);
 
   RCUTILS_CHECK_ARGUMENT_FOR_NULL(context, NULL);
   RMW_CHECK_TYPE_IDENTIFIERS_MATCH(
@@ -81,7 +81,7 @@ rmw_create_wait_set(rmw_context_t * context, size_t max_conditions)
 rmw_ret_t
 rmw_destroy_wait_set(rmw_wait_set_t * wait_set)
 {
-  RMW_ZENOH_FUNC_ENTRY();
+  RMW_ZENOH_FUNC_ENTRY(wait_set);
 
   RMW_CHECK_ARGUMENT_FOR_NULL(wait_set, RMW_RET_INVALID_ARGUMENT);
   RMW_CHECK_ARGUMENT_FOR_NULL(wait_set->data, RMW_RET_INVALID_ARGUMENT);

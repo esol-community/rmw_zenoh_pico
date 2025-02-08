@@ -18,7 +18,7 @@
 
 ZenohPicoGuardConditionData * zenoh_pico_guard_condition_data(void)
 {
-  RMW_ZENOH_FUNC_ENTRY();
+  RMW_ZENOH_FUNC_ENTRY(NULL);
 
   ZenohPicoGuardConditionData *condition_data = Z_MALLOC(sizeof(ZenohPicoGuardConditionData));
   RMW_CHECK_FOR_NULL_WITH_MSG(
@@ -36,7 +36,7 @@ ZenohPicoGuardConditionData * zenoh_pico_guard_condition_data(void)
 
 bool zenoh_pico_destroy_guard_condition_data(ZenohPicoGuardConditionData *condition_data)
 {
-  RMW_ZENOH_FUNC_ENTRY();
+  RMW_ZENOH_FUNC_ENTRY(NULL);
 
   z_mutex_drop(z_move(condition_data->condition_mutex));
   if(condition_data != NULL)
@@ -48,7 +48,7 @@ bool zenoh_pico_destroy_guard_condition_data(ZenohPicoGuardConditionData *condit
 rmw_guard_condition_t *
 rmw_create_guard_condition(rmw_context_t * context)
 {
-  RMW_ZENOH_FUNC_ENTRY();
+  RMW_ZENOH_FUNC_ENTRY(context);
 
   rmw_guard_condition_t *guard_condition = Z_MALLOC(sizeof(rmw_guard_condition_t));
   RMW_CHECK_FOR_NULL_WITH_MSG(
@@ -72,7 +72,7 @@ rmw_create_guard_condition(rmw_context_t * context)
 rmw_ret_t
 rmw_destroy_guard_condition(rmw_guard_condition_t * guard_condition)
 {
-  RMW_ZENOH_FUNC_ENTRY();
+  RMW_ZENOH_FUNC_ENTRY(guard_condition);
 
   RMW_CHECK_ARGUMENT_FOR_NULL(guard_condition, RMW_RET_INVALID_ARGUMENT);
 

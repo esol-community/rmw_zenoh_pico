@@ -24,6 +24,8 @@ rmw_take_dynamic_message(
   bool * taken,
   rmw_subscription_allocation_t * allocation)
 {
+  RMW_ZENOH_FUNC_ENTRY(subscription);
+
   (void)subscription;
   (void)dynamic_message;
   (void)taken;
@@ -42,6 +44,8 @@ rmw_take_dynamic_message_with_info(
   rmw_message_info_t * message_info,
   rmw_subscription_allocation_t * allocation)
 {
+  RMW_ZENOH_FUNC_ENTRY(subscription);
+
   (void)subscription;
   (void)dynamic_message;
   (void)taken;
@@ -59,6 +63,8 @@ rmw_serialization_support_init(
   rcutils_allocator_t * allocator,
   rosidl_dynamic_typesupport_serialization_support_t * serialization_support)
 {
+  RMW_ZENOH_FUNC_ENTRY(NULL);
+
   (void)serialization_lib_name;
   (void)allocator;
   (void)serialization_support;

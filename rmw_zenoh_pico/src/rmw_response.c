@@ -23,6 +23,8 @@ rmw_send_response(
   rmw_request_id_t * request_header,
   void * ros_response)
 {
+  RMW_ZENOH_FUNC_ENTRY(service);
+
   RMW_CHECK_TYPE_IDENTIFIERS_MATCH(
     service->implementation_identifier,
     return RMW_RET_INCORRECT_RMW_IMPLEMENTATION);
@@ -37,6 +39,8 @@ rmw_take_response(
   void * ros_response,
   bool * taken)
 {
+  RMW_ZENOH_FUNC_ENTRY(client);
+
   RMW_CHECK_TYPE_IDENTIFIERS_MATCH(
     client->implementation_identifier,
     return RMW_RET_INCORRECT_RMW_IMPLEMENTATION);

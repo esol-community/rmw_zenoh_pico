@@ -22,6 +22,8 @@ rmw_serialize(
   const rosidl_message_type_support_t * type_support,
   rmw_serialized_message_t * serialized_message)
 {
+  RMW_ZENOH_FUNC_ENTRY(NULL);
+
   (void)ros_message;
   (void)type_support;
   (void)serialized_message;
@@ -35,6 +37,8 @@ rmw_deserialize(
   const rosidl_message_type_support_t * type_support,
   void * ros_message)
 {
+  RMW_ZENOH_FUNC_ENTRY(NULL);
+
   (void)serialized_message;
   (void)type_support;
   (void)ros_message;
@@ -48,6 +52,8 @@ rmw_get_serialized_message_size(
   const rosidl_runtime_c__Sequence__bound * message_bounds,
   size_t * size)
 {
+  RMW_ZENOH_FUNC_ENTRY(NULL);
+
   (void)type_support;
   (void)message_bounds;
   (void)size;

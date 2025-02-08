@@ -29,7 +29,7 @@ rmw_publish(const rmw_publisher_t * publisher,
 	    const void * ros_message,
 	    rmw_publisher_allocation_t * allocation)
 {
-  RMW_ZENOH_FUNC_ENTRY();
+  RMW_ZENOH_FUNC_ENTRY(publisher);
 
   (void)allocation;
 
@@ -103,7 +103,7 @@ rmw_publish_serialized_message(const rmw_publisher_t * publisher,
 			       const rmw_serialized_message_t * serialized_message,
 			       rmw_publisher_allocation_t * allocation)
 {
-  RMW_ZENOH_FUNC_ENTRY();
+  RMW_ZENOH_FUNC_ENTRY(publisher);
 
   (void)publisher;
   (void)serialized_message;
@@ -117,7 +117,7 @@ rmw_publish_loaned_message(const rmw_publisher_t * publisher,
 			   void * ros_message,
 			   rmw_publisher_allocation_t * allocation)
 {
-  RMW_ZENOH_FUNC_ENTRY();
+  RMW_ZENOH_FUNC_ENTRY(publisher);
 
   (void)publisher;
   (void)ros_message;
@@ -131,7 +131,7 @@ rmw_ret_t
 rmw_publisher_wait_for_all_acked(const rmw_publisher_t * publisher,
 				 rmw_time_t wait_timeout)
 {
-  RMW_ZENOH_FUNC_ENTRY();
+  RMW_ZENOH_FUNC_ENTRY(publisher);
 
   (void)publisher;
   (void)wait_timeout;

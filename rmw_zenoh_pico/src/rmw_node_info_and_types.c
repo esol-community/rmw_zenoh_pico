@@ -28,6 +28,8 @@ rmw_get_publisher_names_and_types_by_node(
   bool demangle,
   rmw_names_and_types_t * topic_names_and_types)
 {
+  RMW_ZENOH_FUNC_ENTRY(node);
+
   (void)node;
   (void)allocator;
   (void)node_name;
@@ -48,6 +50,8 @@ rmw_get_subscriber_names_and_types_by_node(
   bool demangle,
   rmw_names_and_types_t * topic_names_and_types)
 {
+  RMW_ZENOH_FUNC_ENTRY(node);
+
   (void)node;
   (void)allocator;
   (void)node_name;
@@ -67,6 +71,8 @@ rmw_get_service_names_and_types_by_node(
   const char * node_namespace,
   rmw_names_and_types_t * service_names_and_types)
 {
+  RMW_ZENOH_FUNC_ENTRY(node);
+
   (void)node;
   (void)allocator;
   (void)node_name;
@@ -85,6 +91,8 @@ rmw_get_client_names_and_types_by_node(
   const char * node_namespace,
   rmw_names_and_types_t * service_names_and_types)
 {
+  RMW_ZENOH_FUNC_ENTRY(node);
+
   (void)node;
   (void)allocator;
   (void)node_name;

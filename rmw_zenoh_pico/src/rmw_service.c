@@ -32,6 +32,8 @@ rmw_create_service(
   const char * service_name,
   const rmw_qos_profile_t * qos_policies)
 {
+  RMW_ZENOH_FUNC_ENTRY(node);
+
   rmw_service_t * rmw_service = NULL;
   if (!node) {
     RMW_ZENOH_LOG_INFO("node handle is null");
@@ -51,6 +53,8 @@ rmw_destroy_service(
   rmw_node_t * node,
   rmw_service_t * service)
 {
+  RMW_ZENOH_FUNC_ENTRY(node);
+
   rmw_ret_t result_ret = RMW_RET_OK;
   if (!node) {
     RMW_ZENOH_LOG_INFO("node handle is null");
@@ -77,7 +81,7 @@ rmw_service_response_publisher_get_actual_qos(
   const rmw_service_t * service,
   rmw_qos_profile_t * qos)
 {
-  RMW_ZENOH_FUNC_ENTRY();
+  RMW_ZENOH_FUNC_ENTRY(service);
 
   RMW_CHECK_ARGUMENT_FOR_NULL(service, RMW_RET_INVALID_ARGUMENT);
   RMW_CHECK_ARGUMENT_FOR_NULL(qos, RMW_RET_INVALID_ARGUMENT);
@@ -90,7 +94,7 @@ rmw_service_request_subscription_get_actual_qos(
   const rmw_service_t * service,
   rmw_qos_profile_t * qos)
 {
-  RMW_ZENOH_FUNC_ENTRY();
+  RMW_ZENOH_FUNC_ENTRY(service);
 
   RMW_CHECK_ARGUMENT_FOR_NULL(service, RMW_RET_INVALID_ARGUMENT);
   RMW_CHECK_ARGUMENT_FOR_NULL(qos, RMW_RET_INVALID_ARGUMENT);

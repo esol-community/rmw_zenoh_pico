@@ -24,6 +24,8 @@ rmw_publisher_event_init(
   const rmw_publisher_t * publisher,
   rmw_event_type_t event_type)
 {
+  RMW_ZENOH_FUNC_ENTRY(rmw_event);
+
   (void)rmw_event;
   (void)publisher;
   (void)event_type;
@@ -37,6 +39,8 @@ rmw_subscription_event_init(
   const rmw_subscription_t * subscription,
   rmw_event_type_t event_type)
 {
+  RMW_ZENOH_FUNC_ENTRY(rmw_event);
+
   (void)rmw_event;
   (void)subscription;
   (void)event_type;

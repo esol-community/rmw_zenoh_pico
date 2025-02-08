@@ -27,6 +27,8 @@ rmw_get_node_names(
   rcutils_string_array_t * node_names,
   rcutils_string_array_t * node_namespaces)
 {
+  RMW_ZENOH_FUNC_ENTRY(node);
+
   (void)node;
   (void)node_names;
   (void)node_namespaces;
@@ -42,6 +44,8 @@ rmw_get_node_names_with_enclaves(
   rcutils_string_array_t * node_namespaces,
   rcutils_string_array_t * enclaves)
 {
+  RMW_ZENOH_FUNC_ENTRY(node);
+
   (void)enclaves;   // TODO(jamoralp): what is this used for?
   return rmw_get_node_names(node, node_names, node_namespaces);
 }

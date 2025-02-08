@@ -70,7 +70,7 @@ ZenohPicoNodeInfo *zenoh_pico_clone_node_info(ZenohPicoNodeInfo *src)
 
 bool zenoh_pico_destroy_node_info(ZenohPicoNodeInfo *node)
 {
-  RMW_ZENOH_FUNC_ENTRY();
+  RMW_ZENOH_FUNC_ENTRY(node);
 
   RMW_CHECK_ARGUMENT_FOR_NULL(node, false);
 

@@ -22,6 +22,8 @@ rmw_ret_t rmw_service_server_is_available(
   const rmw_client_t * client,
   bool * is_available)
 {
+  RMW_ZENOH_FUNC_ENTRY(node);
+
   (void)node;
   (void)client;
   (void)is_available;

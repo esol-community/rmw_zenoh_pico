@@ -24,7 +24,7 @@ rmw_compare_gids_equal(
   const rmw_gid_t * gid2,
   bool * result)
 {
-  RMW_ZENOH_FUNC_ENTRY();
+  RMW_ZENOH_FUNC_ENTRY(NULL);
 
   // Check
   RMW_CHECK_ARGUMENT_FOR_NULL(gid1, RMW_RET_INVALID_ARGUMENT);

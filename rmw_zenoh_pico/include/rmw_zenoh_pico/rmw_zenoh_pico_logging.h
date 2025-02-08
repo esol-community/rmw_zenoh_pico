@@ -18,6 +18,7 @@
 #define LOGGING_H
 
 #include <stddef.h>
+#include <string.h>
 #include <unistd.h>
 
 #include <rmw/rmw.h>
@@ -58,8 +59,6 @@ extern int rmw_zenoh_pico_debug_level_get(void);
 #undef _Z_LOG_PREFIX
 #endif
 
-#define _Z_LOG_PREFIX(prefix)    __z_log_prefix(#prefix, __func__)
-
 // Ignore print only if log deactivated and build is release
 
 #ifdef _Z_DEBUG
@@ -88,43 +87,132 @@ extern int rmw_zenoh_pico_debug_level_get(void);
 
 #else
 
-#define _Z_DEBUG(...)						\
+#define _Z_DEBUG(f, ...)					\
   do {								\
     if (rmw_zenoh_pico_debug_level_get() >= _Z_LOG_LVL_DEBUG) {	\
-      _Z_LOG_PREFIX(DEBUG);					\
+      __z_log_prefix("DEBUG", f);				\
       printf(__VA_ARGS__);					\
       printf("\r\n");						\
     }								\
   } while (false)
 
-#define _Z_INFO(...)						\
+#define _Z_INFO(f, ...)						\
   do {								\
     if (rmw_zenoh_pico_debug_level_get() >= _Z_LOG_LVL_INFO) {	\
-      _Z_LOG_PREFIX(INFO);					\
+      __z_log_prefix("INFO", f);				\
       printf(__VA_ARGS__);					\
       printf("\r\n");						\
     }								\
   } while (false)
 
-#define _Z_ERROR(...)						\
+#define _Z_ERROR(f, ...)					\
   do {								\
     if (rmw_zenoh_pico_debug_level_get() >= _Z_LOG_LVL_ERROR) {	\
-      _Z_LOG_PREFIX(ERROR);					\
+      __z_log_prefix("ERROR", f);				\
       printf(__VA_ARGS__);					\
       printf("\r\n");						\
     }								\
   } while (false)
 
-#define RMW_ZENOH_LOG_DEBUG(...) _Z_DEBUG(__VA_ARGS__)
-#define RMW_ZENOH_LOG_INFO(...)  _Z_INFO(__VA_ARGS__)
-#define RMW_ZENOH_LOG_ERROR(...) _Z_ERROR(__VA_ARGS__)
+#define RMW_ZENOH_LOG_DEBUG(...) _Z_DEBUG(__func__, __VA_ARGS__)
+#define RMW_ZENOH_LOG_INFO(...)  _Z_INFO(__func__, __VA_ARGS__)
+#define RMW_ZENOH_LOG_ERROR(...) _Z_ERROR(__func__, __VA_ARGS__)
+
+static inline void __entry_log_ptr(const void * v, const char *func) {
+  if(v == NULL)
+    _Z_DEBUG(func, "start()");
+  else
+    _Z_DEBUG(func, "start(%p)", v);
+}
+
+static inline void __entry_log_char(const char * v, const char *func) {
+  _Z_DEBUG(func,"start(%s)", v);
+}
+
+static inline void __entry_log_context(const rmw_context_t * v, const char *func) {
+  _Z_DEBUG(func,"start(%p)", v);
+}
+
+static inline void __entry_log_node(const rmw_node_t * v, const char *func) {
+  _Z_DEBUG(func,"start(%p)", v->context);
+}
+
+static inline void __entry_log_subscription(const rmw_subscription_t * v, const char *func) {
+  _Z_DEBUG(func,"start(%s)", v->topic_name);
+}
+
+static inline void __entry_log_publisher(const rmw_publisher_t * v, const char *func) {
+  _Z_DEBUG(func,"start(%s)", v->topic_name);
+}
+
+static inline void __entry_log_event(const rmw_event_t * v, const char *func) {
+  _Z_DEBUG(func,"start(%s)", v->implementation_identifier);
+}
+
+static inline void __entry_log_service(const rmw_service_t * v, const char *func) {
+  _Z_DEBUG(func,"start(%s)", v->service_name);
+}//
+
+static inline void __entry_log_client(const rmw_client_t * v, const char *func) {
+  _Z_DEBUG(func,"start(%s)", v->service_name);
+}
+
+static inline void __entry_log_guard_condition(const rmw_guard_condition_t * v, const char *func) {
+  _Z_DEBUG(func,"start(%s)", v->implementation_identifier);
+}
+
+static inline void __entry_log_init_options(const rmw_init_options_t * v, const char *func) {
+  _Z_DEBUG(func,"start(%s)", v->implementation_identifier);
+}
+
+static inline void __entry_log_wait_set(const rmw_wait_set_t * v, const char *func) {
+  _Z_DEBUG(func,"start(%s)", v->implementation_identifier);
+}
+
+static inline void __entry_log_loaned_string(const z_loaned_string_t * v, const char *func) {
+  char _work[64];
+  memset(_work, 0, sizeof(_work));
+  size_t _len = z_string_len(v) >= sizeof(_work) -1 ? sizeof(_work) -1 : z_string_len(v);
+  strncpy(_work, z_string_data(v), _len);
+
+  _Z_DEBUG(func,"start(%s)", _work);
+}
+
+static inline void __entry_log_loaned_sample(const z_loaned_sample_t * v, const char *func) {
+  const _z_keyexpr_t *key = &v->keyexpr;
+
+  char _work[64];
+  memset(_work, 0, sizeof(_work));
+  size_t _len = _z_string_len(&key->_suffix) >= sizeof(_work) -1 ? sizeof(_work) -1 : _z_string_len(&key->_suffix);
+  strncpy(_work, _z_string_data(&key->_suffix), _len);
+
+  _Z_DEBUG(func,"start(%s)", _work);
+}
+
 
 #define ZENOH_DEBUG_FUNC_ENTRY_ENABLE
 #ifdef ZENOH_DEBUG_FUNC_ENTRY_ENABLE
-#define RMW_ZENOH_FUNC_ENTRY() RMW_ZENOH_LOG_DEBUG("start()")
+#define RMW_ZENOH_FUNC_ENTRY(v)						\
+  _Generic((v),								\
+	   const char *				: __entry_log_char,	\
+	   const rmw_context_t *		: __entry_log_context,	\
+	   const rmw_node_t *			: __entry_log_node,	\
+	   const rmw_subscription_t *		: __entry_log_subscription, \
+	   const rmw_publisher_t *		: __entry_log_publisher, \
+	   const rmw_event_t *			: __entry_log_event,	\
+	   const rmw_service_t *		: __entry_log_service,	\
+	   const rmw_client_t *			: __entry_log_client,	\
+	   const rmw_guard_condition_t *	: __entry_log_guard_condition, \
+	   const rmw_init_options_t *		: __entry_log_init_options, \
+	   const z_loaned_string_t *		: __entry_log_loaned_string, \
+	   const z_loaned_sample_t *		: __entry_log_loaned_sample, \
+	   default				: __entry_log_ptr	\
+    )(v, __func__)
+
 #else
 #define RMW_ZENOH_FUNC_ENTRY() (void)(0)
 #endif
+
 
 #endif /* ! ZENOH_DEBUG_ENABLE */
 

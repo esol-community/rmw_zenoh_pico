@@ -143,7 +143,7 @@ z_result_t zenoh_pico_attachment_gen(zenoh_pico_attachemt_data *data, z_owned_by
 
 bool zenoh_pico_destroy_attachment(zenoh_pico_attachemt_data *attachmet_data)
 {
-  RMW_ZENOH_FUNC_ENTRY();
+  RMW_ZENOH_FUNC_ENTRY(NULL);
 
   RMW_CHECK_ARGUMENT_FOR_NULL(attachmet_data, false);
 

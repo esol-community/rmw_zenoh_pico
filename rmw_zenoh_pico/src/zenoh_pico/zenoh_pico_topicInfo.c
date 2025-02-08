@@ -31,7 +31,7 @@ ZenohPicoTopicInfo *zenoh_pico_generate_topic_info(const char *name,
 						   const z_loaned_string_t *type,
 						   const z_loaned_string_t *hash)
 {
-  RMW_ZENOH_FUNC_ENTRY();
+  RMW_ZENOH_FUNC_ENTRY(name);
 
   ZenohPicoTopicInfo *topic = NULL;
   ZenohPicoGenerateData(topic, ZenohPicoTopicInfo);
@@ -70,7 +70,7 @@ ZenohPicoTopicInfo *zenoh_pico_generate_topic_info(const char *name,
 
 bool zenoh_pico_destroy_topic_info(ZenohPicoTopicInfo *topic)
 {
-  RMW_ZENOH_FUNC_ENTRY();
+  RMW_ZENOH_FUNC_ENTRY(NULL);
 
   RMW_CHECK_ARGUMENT_FOR_NULL(topic, false);
 

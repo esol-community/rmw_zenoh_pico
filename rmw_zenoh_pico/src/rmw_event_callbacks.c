@@ -19,7 +19,7 @@
 
 void data_callback_init(DataCallbackManager *data_callback)
 {
-  RMW_ZENOH_FUNC_ENTRY();
+  RMW_ZENOH_FUNC_ENTRY(NULL);
 
   z_mutex_init(&data_callback->mutex);
   data_callback->callback = NULL;
@@ -31,7 +31,7 @@ void data_callback_set(DataCallbackManager *data_callback,
 		       const void * user_data,
 		       rmw_event_callback_t callback)
 {
-  RMW_ZENOH_FUNC_ENTRY();
+  RMW_ZENOH_FUNC_ENTRY(NULL);
 
   z_mutex_lock(z_loan_mut(data_callback->mutex));
 
@@ -54,7 +54,7 @@ void data_callback_set(DataCallbackManager *data_callback,
 
 void data_callback_trigger(DataCallbackManager *data_callback)
 {
-  RMW_ZENOH_FUNC_ENTRY();
+  RMW_ZENOH_FUNC_ENTRY(NULL);
 
   z_mutex_lock(z_loan_mut(data_callback->mutex));
   if(data_callback->callback != NULL){
@@ -70,7 +70,7 @@ rmw_subscription_set_on_new_message_callback(rmw_subscription_t * subscription,
 					     rmw_event_callback_t callback,
 					     const void * user_data)
 {
-  RMW_ZENOH_FUNC_ENTRY();
+  RMW_ZENOH_FUNC_ENTRY(subscription);
 
   RMW_CHECK_ARGUMENT_FOR_NULL(subscription, RMW_RET_INVALID_ARGUMENT);
 
@@ -89,7 +89,7 @@ rmw_service_set_on_new_request_callback(rmw_service_t * service,
 					rmw_event_callback_t callback,
 					const void * user_data)
 {
-  RMW_ZENOH_FUNC_ENTRY();
+  RMW_ZENOH_FUNC_ENTRY(service);
 
   (void) service;
   (void) callback;
@@ -104,7 +104,7 @@ rmw_client_set_on_new_response_callback(rmw_client_t * client,
 					rmw_event_callback_t callback,
 					const void * user_data)
 {
-  RMW_ZENOH_FUNC_ENTRY();
+  RMW_ZENOH_FUNC_ENTRY(client);
 
   (void) client;
   (void) callback;
@@ -119,7 +119,7 @@ rmw_event_set_callback(rmw_event_t * event,
 		       rmw_event_callback_t callback,
 		       const void * user_data)
 {
-  RMW_ZENOH_FUNC_ENTRY();
+  RMW_ZENOH_FUNC_ENTRY(event);
 
   (void) event;
   (void) callback;

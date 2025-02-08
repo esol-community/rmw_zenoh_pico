@@ -25,6 +25,8 @@ rmw_count_publishers(
   const char * topic_name,
   size_t * count)
 {
+  RMW_ZENOH_FUNC_ENTRY(node);
+
   (void)node;
   (void)topic_name;
   (void)count;
@@ -39,6 +41,8 @@ rmw_count_subscribers(
   const char * topic_name,
   size_t * count)
 {
+  RMW_ZENOH_FUNC_ENTRY(node);
+
   (void)node;
   (void)topic_name;
   (void)count;
@@ -53,6 +57,8 @@ rmw_count_clients(
   const char * service_name,
   size_t * count)
 {
+  RMW_ZENOH_FUNC_ENTRY(node);
+
   (void)node;
   (void)service_name;
   (void)count;

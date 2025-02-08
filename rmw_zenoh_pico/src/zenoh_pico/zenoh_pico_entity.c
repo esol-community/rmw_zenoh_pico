@@ -43,7 +43,7 @@ ZenohPicoEntity * zenoh_pico_generate_entity(z_id_t *zid,
 					     ZenohPicoNodeInfo *node_info,
 					     ZenohPicoTopicInfo *topic_info)
 {
-  RMW_ZENOH_FUNC_ENTRY();
+  RMW_ZENOH_FUNC_ENTRY(NULL);
 
   ZenohPicoEntity *entity = NULL;
   ZenohPicoGenerateData(entity, ZenohPicoEntity);
@@ -73,7 +73,7 @@ ZenohPicoEntity * zenoh_pico_generate_entity(z_id_t *zid,
 
 bool zenoh_pico_destroy_entity(ZenohPicoEntity *entity)
 {
-  RMW_ZENOH_FUNC_ENTRY();
+  RMW_ZENOH_FUNC_ENTRY(NULL);
 
   RMW_CHECK_ARGUMENT_FOR_NULL(entity, false);
 

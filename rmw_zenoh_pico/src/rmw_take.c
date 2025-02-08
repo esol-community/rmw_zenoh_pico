@@ -82,7 +82,7 @@ rmw_take(const rmw_subscription_t * subscription,
 	 bool * taken,
 	 rmw_subscription_allocation_t * allocation)
 {
-  RMW_ZENOH_FUNC_ENTRY();
+  RMW_ZENOH_FUNC_ENTRY(subscription);
 
   RMW_CHECK_ARGUMENT_FOR_NULL(subscription, RMW_RET_INVALID_ARGUMENT);
   RMW_CHECK_ARGUMENT_FOR_NULL(subscription->topic_name, RMW_RET_ERROR);
@@ -107,7 +107,7 @@ rmw_take_with_info(const rmw_subscription_t * subscription,
 		   rmw_message_info_t * message_info,
 		   rmw_subscription_allocation_t * allocation)
 {
-  RMW_ZENOH_FUNC_ENTRY();
+  RMW_ZENOH_FUNC_ENTRY(subscription);
 
   RMW_CHECK_ARGUMENT_FOR_NULL(subscription, RMW_RET_INVALID_ARGUMENT);
   RMW_CHECK_ARGUMENT_FOR_NULL(subscription->topic_name, RMW_RET_ERROR);
@@ -134,7 +134,7 @@ rmw_take_sequence(const rmw_subscription_t * subscription,
 		  size_t * taken,
 		  rmw_subscription_allocation_t * allocation)
 {
-  RMW_ZENOH_FUNC_ENTRY();
+  RMW_ZENOH_FUNC_ENTRY(subscription);
 
   RMW_CHECK_ARGUMENT_FOR_NULL(subscription, RMW_RET_INVALID_ARGUMENT);
   RMW_CHECK_ARGUMENT_FOR_NULL(subscription->topic_name, RMW_RET_ERROR);
@@ -212,7 +212,7 @@ rmw_take_serialized_message(const rmw_subscription_t * subscription,
 			    bool * taken,
 			    rmw_subscription_allocation_t * allocation)
 {
-  RMW_ZENOH_FUNC_ENTRY();
+  RMW_ZENOH_FUNC_ENTRY(subscription);
 
   (void)subscription;
   (void)serialized_message;
@@ -229,7 +229,7 @@ rmw_take_serialized_message_with_info(const rmw_subscription_t * subscription,
 				      rmw_message_info_t * message_info,
 				      rmw_subscription_allocation_t * allocation)
 {
-  RMW_ZENOH_FUNC_ENTRY();
+  RMW_ZENOH_FUNC_ENTRY(subscription);
 
   (void)subscription;
   (void)serialized_message;
@@ -246,7 +246,7 @@ rmw_take_loaned_message(const rmw_subscription_t * subscription,
 			bool * taken,
 			rmw_subscription_allocation_t * allocation)
 {
-  RMW_ZENOH_FUNC_ENTRY();
+  RMW_ZENOH_FUNC_ENTRY(subscription);
 
   (void)subscription;
   (void)loaned_message;
@@ -264,7 +264,7 @@ rmw_take_loaned_message_with_info(const rmw_subscription_t * subscription,
 				  rmw_message_info_t * message_info,
 				  rmw_subscription_allocation_t * allocation)
 {
-  RMW_ZENOH_FUNC_ENTRY();
+  RMW_ZENOH_FUNC_ENTRY(subscription);
 
   (void)subscription;
   (void)loaned_message;
@@ -280,7 +280,7 @@ rmw_ret_t
 rmw_return_loaned_message_from_subscription(const rmw_subscription_t * subscription,
 					    void * loaned_message)
 {
-  RMW_ZENOH_FUNC_ENTRY();
+  RMW_ZENOH_FUNC_ENTRY(subscription);
 
   (void)subscription;
   (void)loaned_message;
@@ -294,7 +294,7 @@ rmw_take_event(const rmw_event_t * event_handle,
 	       void * event_info,
 	       bool * taken)
 {
-  RMW_ZENOH_FUNC_ENTRY();
+  RMW_ZENOH_FUNC_ENTRY(event_handle);
 
   (void)event_handle;
   (void)event_info;

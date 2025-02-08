@@ -25,6 +25,8 @@ rmw_publisher_get_network_flow_endpoints(
   rcutils_allocator_t * allocator,
   rmw_network_flow_endpoint_array_t * network_flow_endpoint_array)
 {
+  RMW_ZENOH_FUNC_ENTRY(publisher);
+
   (void) publisher;
   (void) allocator;
   (void) network_flow_endpoint_array;
@@ -39,6 +41,8 @@ rmw_subscription_get_network_flow_endpoints(
   rcutils_allocator_t * allocator,
   rmw_network_flow_endpoint_array_t * network_flow_endpoint_array)
 {
+  RMW_ZENOH_FUNC_ENTRY(subscription);
+
   (void) subscription;
   (void) allocator;
   (void) network_flow_endpoint_array;

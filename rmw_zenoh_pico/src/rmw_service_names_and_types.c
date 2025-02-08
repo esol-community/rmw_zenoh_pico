@@ -29,6 +29,8 @@ rmw_get_service_names_and_types(
   rcutils_allocator_t * allocator,
   rmw_names_and_types_t * service_names_and_types)
 {
+  RMW_ZENOH_FUNC_ENTRY(node);
+
   (void)node;
   (void)allocator;
   (void)service_names_and_types;
