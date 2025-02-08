@@ -53,26 +53,26 @@ extern "C"
   {						\
     if ((D) == NULL) {				\
       (D) = (T *)z_malloc(sizeof(T));		\
-      if ((D) != NULL) {			\
-	memset((D), 0, sizeof(T));		\
-	z_mutex_lock(z_loan_mut(mutex_##T));	\
-	(D)->ref = 1;				\
-	z_mutex_unlock(z_loan_mut(mutex_##T));	\
-      }						\
     }						\
-  }						\
+    if ((D) != NULL) {				\
+      memset((D), 0, sizeof(T));		\
+      z_mutex_lock(z_loan_mut(mutex_##T));	\
+      (D)->ref = 1;				\
+      z_mutex_unlock(z_loan_mut(mutex_##T));	\
+    }						\
+  }
 
 #define ZenohPicoDestroyData(D, T)		\
   {						\
     if((D) != NULL) {				\
       z_mutex_lock(z_loan_mut(mutex_##T));	\
       (D)->ref -= 1;				\
-      if((D)->ref == 0) {			\
-	z_mutex_unlock(z_loan_mut(mutex_##T));	\
-	Z_FREE((D));				\
-      }else{					\
-	z_mutex_unlock(z_loan_mut(mutex_##T));	\
-      }						\
+    }						\
+    if((D)->ref == 0) {				\
+      z_mutex_unlock(z_loan_mut(mutex_##T));	\
+      Z_FREE((D));				\
+    }else{					\
+      z_mutex_unlock(z_loan_mut(mutex_##T));	\
     }						\
   }
 
@@ -81,7 +81,7 @@ extern "C"
     z_mutex_lock(z_loan_mut(mutex_##T));	\
     (D)->ref += 1;				\
     z_mutex_unlock(z_loan_mut(mutex_##T));	\
-  }						\
+  }
 
 //
 // zenoh-pico macro
