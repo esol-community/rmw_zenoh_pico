@@ -33,12 +33,19 @@ find_package(zenohpico REQUIRED)
 option(BUILD_DOCUMENTATION              "Use doxygen to create product documentation" OFF)
 
 # --- RMW CONFIGURATION ---
-set(RMW_ZENOH_PICO_TRANSPORT            "unicast"      CACHE STRING "Sets zenoh pico transport to use. (unicast | serial)")
+set(RMW_ZENOH_PICO_ZID                  "-1"           CACHE STRING "Sets zenoh (-1:autogen | value of uuid")
+
+set(RMW_ZENOH_PICO_TRANSPORT_TYPE       "unicast"      CACHE STRING "Sets zenoh pico transport to use. (unicast | serial)")
 set(RMW_ZENOH_PICO_TRANSPORT_MODE       "client"       CACHE STRING "zenoh transport connect mode")
+
 set(RMW_ZENOH_PICO_CONNECT              "127.0.0.1"    CACHE STRING "Sets the scout address.")
 set(RMW_ZENOH_PICO_CONNECT_PORT         "7447"         CACHE STRING "Sets the scout port.")
 set(RMW_ZENOH_PICO_LISTEN               "127.0.0.1"    CACHE STRING "Sets the listen address.")
 set(RMW_ZENOH_PICO_LISTEN_PORT          "-1"           CACHE STRING "Sets the listen port.")
+
+set(RMW_ZENOH_PICO_MCAST                "224.0.0.224"  CACHE STRING "Sets the multicast address")
+set(RMW_ZENOH_PICO_MCAST_PORT           "7446"         CACHE STRING "Sets the multicast port")
+set(RMW_ZENOH_PICO_MCAST_DEV            "lo"           CACHE STRING "Sets the multicast device")
 
 set(RMW_ZENOH_PICO_SERIAL_DEVICE        "/dev/ttyAMA0" CACHE STRING "Sets the agent serial port.")
 set(RMW_ZENOH_PICO_MAX_LINENESS_LEN     "256"          CACHE STRING "This value sets the number of max liveliness resource length")
@@ -48,11 +55,14 @@ set(RMW_ZENOH_PICO_C_STANDARD           "99"           CACHE STRING  "Version of
 # Transport handle define macros.
 set(RMW_ZENOH_PICO_TRANSPORT_SERIAL  OFF)
 set(RMW_ZENOH_PICO_TRANSPORT_UNICAST OFF)
+set(RMW_ZENOH_PICO_TRANSPORT_MULTICAST OFF)
 
-if(${RMW_ZENOH_PICO_TRANSPORT} STREQUAL "serial")
+if(${RMW_ZENOH_PICO_TRANSPORT_TYPE} STREQUAL "serial")
   set(RMW_ZENOH_PICO_TRANSPORT_SERIAL ON)
-elseif(${RMW_ZENOH_PICO_TRANSPORT} STREQUAL "unicast")
+elseif(${RMW_ZENOH_PICO_TRANSPORT_TYPE} STREQUAL "unicast")
   set(RMW_ZENOH_PICO_TRANSPORT_UNICAST ON)
+elseif(${RMW_ZENOH_PICO_TRANSPORT_TYPE} STREQUAL "multicast")
+  set(RMW_ZENOH_PICO_TRANSPORT_MULTICAST ON)
 else()
   message(FATAL_ERROR "Transport not supported. Use \"unicast\", \"serial\"")
 endif()

@@ -89,8 +89,8 @@ bool zenoh_pico_destroy_session(ZenohPicoSession *session)
 
 rmw_ret_t session_connect(ZenohPicoSession *session)
 {
-
   RMW_ZENOH_FUNC_ENTRY("Opening session...");
+
   if(_Z_IS_ERR(z_open(&session->session, z_move(session->config), NULL))){
     RMW_SET_ERROR_MSG("Error setting up zenoh session");
     return RMW_RET_ERROR;
@@ -114,48 +114,61 @@ static rmw_ret_t rmw_zenoh_pico_init_option(ZenohPicoTransportParams *params)
   params->mode = RMW_ZENOH_PICO_TRANSPORT_MODE;
 
 #if defined(RMW_ZENOH_PICO_TRANSPORT_SERIAL)
-  if(strlen(RMW_ZENOH_PICO_SERIAL_DEVICE) > sizeof(params->serial_device)){
+  memset(params->serial_device, 0, sizeof(params->serial_device));
+  if(strlen(RMW_ZENOH_PICO_SERIAL_DEVICE) > sizeof(params->serial_device) -1){
     RMW_ZENOH_LOG_INFO("default ip configuration overflow");
     return RMW_RET_INVALID_ARGUMENT;
   }
+  strcpy(params->serial_device, RMW_ZENOH_PICO_SERIAL_DEVICE);
 
-  strncpy(params->serial_device, RMW_ZENOH_PICO_SERIAL_DEVICE, sizeof(params->serial_device));
-
-#elif defined (RMW_ZENOH_PICO_TRANSPORT_UNICAST) || defined (RMW_ZENOH_PICO_TRANSPORT_MCAST)
+#elif defined (RMW_ZENOH_PICO_TRANSPORT_UNICAST) || defined (RMW_ZENOH_PICO_TRANSPORT_MULTICAST)
   char buf[256];
 
-  memset(buf, 0, sizeof(buf));
-
 #if defined (RMW_ZENOH_PICO_TRANSPORT_UNICAST)
-  snprintf(buf, sizeof(buf), "tcp/%s:%s", RMW_ZENOH_PICO_CONNECT, RMW_ZENOH_PICO_CONNECT_PORT);
-  if(strlen(buf) >= sizeof(params->connect_addr) -1) {
-    RMW_ZENOH_LOG_INFO("default ip configuration overflow");
-    return RMW_RET_INVALID_ARGUMENT;
-  }
+
   memset(params->connect_addr, 0, sizeof(params->connect_addr));
-  strcpy(params->connect_addr, buf);
-
-#elif defined (RMW_ZENOH_PICO_TRANSPORT_MCAST)
-  snprintf(buf, sizeof(buf), "udp/%s:%s", RMW_ZENOH_PICO_LOCATOR, RMW_ZENOH_PICO_LOCATOR_PORT);
-  if(strlen(buf) >= sizeof(params->locator_addr) -1) {
-    RMW_ZENOH_LOG_INFO("default ip configuration overflow");
-    return RMW_RET_INVALID_ARGUMENT;
+  if(strcmp(RMW_ZENOH_PICO_CONNECT_PORT, "-1") != 0){
+    memset(buf, 0, sizeof(buf));
+    snprintf(buf, sizeof(buf), "tcp/%s:%s",
+	     RMW_ZENOH_PICO_CONNECT,
+	     RMW_ZENOH_PICO_CONNECT_PORT);
+    if(strlen(buf) >= sizeof(params->connect_addr) -1) {
+      RMW_ZENOH_LOG_INFO("default ip configuration overflow");
+      return RMW_RET_INVALID_ARGUMENT;
+    }
+    strcpy(params->connect_addr, buf);
   }
-  memset(params->locator_addr, 0, sizeof(params->locator_addr));
-  strcpy(params->locator_addr, buf);
 
-#endif
+  memset(params->listen_addr, 0, sizeof(params->listen_addr));
   if(strcmp(RMW_ZENOH_PICO_LISTEN_PORT,"-1") != 0){
     memset(buf, 0, sizeof(buf));
-    snprintf(buf, sizeof(buf), "tcp/%s:%s", RMW_ZENOH_PICO_LISTEN, RMW_ZENOH_PICO_LISTEN_PORT);
+    snprintf(buf, sizeof(buf), "tcp/%s:%s",
+	     RMW_ZENOH_PICO_LISTEN,
+	     RMW_ZENOH_PICO_LISTEN_PORT);
     if(strlen(buf) >= sizeof(params->listen_addr) -1) {
       RMW_ZENOH_LOG_INFO("default ip configuration overflow");
       return RMW_RET_INVALID_ARGUMENT;
     }
-    memset(params->listen_addr, 0, sizeof(params->listen_addr));
     strcpy(params->listen_addr, buf);
   }
 
+#elif defined (RMW_ZENOH_PICO_TRANSPORT_MULTICAST)
+
+  memset(params->mcast_addr, 0, sizeof(params->mcast_addr));
+  if(strcmp(RMW_ZENOH_PICO_MCAST_PORT, "-1") != 0){
+    snprintf(buf, sizeof(buf), "udp/%s:%s#%s",
+	     RMW_ZENOH_PICO_MCAST,
+	     RMW_ZENOH_PICO_MCAST_PORT,
+	     RMW_ZENOH_PICO_MCAST_DEV);
+    if(strlen(buf) >= sizeof(params->mcast_addr) -1) {
+      RMW_ZENOH_LOG_INFO("default ip configuration overflow");
+      return RMW_RET_INVALID_ARGUMENT;
+    }
+    memset(params->mcast_addr, 0, sizeof(params->mcast_addr));
+    strcpy(params->mcast_addr, buf);
+  }
+
+#endif
 #endif
 
   return RMW_RET_OK;
@@ -254,18 +267,21 @@ rmw_init_options_fini(rmw_init_options_t * init_options)
 }
 
 static rmw_ret_t
-rmw_zenoh_pico_set_unicast_config(ZenohPicoTransportParams *params, z_owned_config_t *config)
+rmw_zenoh_pico_set_common_config(ZenohPicoTransportParams *params, z_owned_config_t *config)
 {
-  const char *mode = params->mode;
-
+  // RMW_ZENOH_LOG_INFO("Z_CONFIG_MODE_KEY = %s", params->mode);
   if(_Z_IS_ERR(zp_config_insert(z_config_loan_mut(config),
 				Z_CONFIG_MODE_KEY,
-				mode))){
+				params->mode))){
     RMW_SET_ERROR_MSG("mode param setting error.");
     return RMW_RET_ERROR;
   }
 
+#if defined (RMW_ZENOH_PICO_TRANSPORT_UNICAST)
+
   if(strlen(params->connect_addr) > 0){
+
+    // RMW_ZENOH_LOG_INFO("Z_CONFIG_CONNECT_KEY = %s", params->connect_addr);
     if(_Z_IS_ERR(zp_config_insert(z_config_loan_mut(config),
 				  Z_CONFIG_CONNECT_KEY,
 				  params->connect_addr))){
@@ -275,6 +291,8 @@ rmw_zenoh_pico_set_unicast_config(ZenohPicoTransportParams *params, z_owned_conf
   }
 
   if(strlen(params->listen_addr) > 0){
+
+    // RMW_ZENOH_LOG_INFO("Z_CONFIG_LISTEN_KEY = %s", params->listen_addr);
     if(_Z_IS_ERR(zp_config_insert(z_config_loan_mut(config),
 				  Z_CONFIG_LISTEN_KEY,
 				  params->listen_addr))){
@@ -283,14 +301,38 @@ rmw_zenoh_pico_set_unicast_config(ZenohPicoTransportParams *params, z_owned_conf
     }
   }
 
+#elif defined (RMW_ZENOH_PICO_TRANSPORT_MULTICAST)
+  if(strlen(params->mcast_addr) > 0){
+
+    // RMW_ZENOH_LOG_INFO("Z_CONFIG_MULTICAST_LOCATOR_KEY = %s", params->mcast_addr);
+    if(_Z_IS_ERR(zp_config_insert(z_config_loan_mut(config),
+				  Z_CONFIG_MULTICAST_LOCATOR_KEY,
+				  params->mcast_addr))){
+      RMW_SET_ERROR_MSG("multucast address param setting error.");
+      return RMW_RET_ERROR;
+    }
+  }
+#endif
+
   return RMW_RET_OK;
+}
+
+static rmw_ret_t
+rmw_zenoh_pico_set_unicast_config(ZenohPicoTransportParams *params, z_owned_config_t *config)
+{
+  if (strncmp(RMW_ZENOH_PICO_TRANSPORT_MODE, "client", strlen("client")) != 0)
+    return RMW_RET_ERROR;
+
+  return rmw_zenoh_pico_set_common_config(params, config);
 }
 
 static rmw_ret_t
 rmw_zenoh_pico_set_mcast_config(ZenohPicoTransportParams *params, z_owned_config_t *config)
 {
-  RMW_SET_ERROR_MSG("not support multicast transport, yet.");
-  return RMW_RET_ERROR;
+  if (strncmp(RMW_ZENOH_PICO_TRANSPORT_MODE, "peer", strlen("peer")) != 0)
+    return RMW_RET_ERROR;
+
+  return rmw_zenoh_pico_set_common_config(params, config);
 }
 
 static rmw_ret_t
@@ -381,17 +423,14 @@ rmw_init(const rmw_init_options_t * options, rmw_context_t * context)
 
   {
     rmw_ret_t ret = RMW_RET_OK;
-    const char *mode = params->mode;
 
-    if(strncmp(mode, "unicast", sizeof("unicast"))) {
+#if defined (RMW_ZENOH_PICO_TRANSPORT_UNICAST)
       ret = rmw_zenoh_pico_set_unicast_config(params, &config);
-
-    } else if(strncmp(mode, "mcast", sizeof("mcast"))) {
+#elif defined (RMW_ZENOH_PICO_TRANSPORT_MULTICAST)
       ret = rmw_zenoh_pico_set_mcast_config(params, &config);
-
-    } else if(strncmp(mode, "serial", sizeof("serial"))) {
+#elif defined(RMW_ZENOH_PICO_TRANSPORT_SERIAL)
       ret = rmw_zenoh_pico_set_serial_config(params, &config);
-    }
+#endif
 
     if(ret != RMW_RET_OK)
       return ret;
