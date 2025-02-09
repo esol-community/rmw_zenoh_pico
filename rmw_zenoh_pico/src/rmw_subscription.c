@@ -397,9 +397,7 @@ rmw_create_subscription(
   const rmw_qos_profile_t * qos_profile,
   const rmw_subscription_options_t * subscription_options)
 {
-  RMW_ZENOH_FUNC_ENTRY(node);
-
-  RMW_ZENOH_LOG_INFO("topic_name = %s", topic_name);
+  RMW_ZENOH_FUNC_ENTRY(topic_name);
 
   RMW_CHECK_ARGUMENT_FOR_NULL(node, NULL);
   RMW_CHECK_ARGUMENT_FOR_NULL(type_supports, NULL);
@@ -512,13 +510,14 @@ rmw_create_subscription(
   rmw_subscription_t * rmw_subscription = _rmw_subscription_generate(node->context,
 								     _sub_data,
 								     subscription_options);
+  z_drop(z_move(_hash_data));
+  z_drop(z_move(_type_name));
+
   if(rmw_subscription == NULL)
     goto error;
 
-  declaration_subscription_data(_sub_data);
-
-  z_drop(z_move(_hash_data));
-  z_drop(z_move(_type_name));
+  if(!declaration_subscription_data(_sub_data))
+    goto error;
 
   return rmw_subscription;
 

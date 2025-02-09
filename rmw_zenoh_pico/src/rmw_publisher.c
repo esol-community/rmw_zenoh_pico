@@ -416,13 +416,14 @@ rmw_create_publisher(
   rmw_publisher_t * rmw_publisher = _rmw_publisher_generate(node->context,
 							    _pub_data,
 							    publisher_options);
+  z_drop(z_move(_hash_data));
+  z_drop(z_move(_type_name));
+
   if(rmw_publisher == NULL)
     goto error;
 
-  declaration_publisher_data(_pub_data);
-
-  z_drop(z_move(_hash_data));
-  z_drop(z_move(_type_name));
+  if(!declaration_publisher_data(_pub_data))
+    goto error;
 
   return rmw_publisher;
 

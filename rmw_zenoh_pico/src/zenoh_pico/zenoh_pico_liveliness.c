@@ -261,7 +261,7 @@ z_result_t convert_hash(const rosidl_type_hash_t * type_hash, z_owned_string_t *
     }
   }
 
-  RMW_ZENOH_LOG_INFO("hash = [%s]", _hash_data);
+  // RMW_ZENOH_LOG_INFO("hash = [%s]", _hash_data);
 
   return z_string_copy_from_str(value, _hash_data);
 }
