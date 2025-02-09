@@ -135,6 +135,9 @@ static inline void __entry_log_context(const rmw_context_t * v, const char *func
 
 static inline void __entry_log_node(const rmw_node_t * v, const char *func) {
   _Z_DEBUG(func,"start(%p)", v->context);
+  _Z_INFO(func, "node->identifier = %s", v->implementation_identifier);
+  _Z_INFO(func, "node->namespace  = %s", v->namespace_);
+  _Z_INFO(func, "node->data       = %p", v->data);
 }
 
 static inline void __entry_log_subscription(const rmw_subscription_t * v, const char *func) {

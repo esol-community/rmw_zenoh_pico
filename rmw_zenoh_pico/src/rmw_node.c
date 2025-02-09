@@ -15,6 +15,7 @@
 
 #include "rmw_zenoh_pico/rmw_zenoh_pico_logging.h"
 #include "rmw_zenoh_pico/rmw_zenoh_pico_macros.h"
+#include "zenoh-pico/api/macros.h"
 #include "zenoh-pico/api/primitives.h"
 #include <rmw_zenoh_pico/rmw_zenoh_pico.h>
 
@@ -238,7 +239,8 @@ rmw_create_node(rmw_context_t * context, const char * name, const char * namespa
   if(node == NULL)
     goto error;
 
-  declaration_node_data(_node_data);
+  if(!declaration_node_data(_node_data))
+    goto error;
 
   return node;
 
@@ -293,7 +295,6 @@ const rmw_guard_condition_t *
 rmw_node_get_graph_guard_condition(const rmw_node_t * node)
 {
   RMW_ZENOH_FUNC_ENTRY(node);
-  RMW_ZENOH_LOG_INFO("start(%p)", node);
 
   ZenohPicoNodeData *node_data = (ZenohPicoNodeData *)node->data;
   ZenohPicoSession *session = node_data->session;
