@@ -200,14 +200,6 @@ static void _sub_data_handler(z_loaned_sample_t *sample, void *ctx) {
   (void)add_new_message(sub_data, recv_data);
 }
 
-static void _token_handler(z_loaned_sample_t *sample, void *ctx) {
-  RMW_ZENOH_FUNC_ENTRY(sample);
-
-  ZenohPicoSubData *sub_data = (ZenohPicoSubData *)ctx;
-
-  return;
-}
-
 // callback: the typical ``callback`` function. ``context`` will be passed as its last argument.
 // dropper: allows the callback's state to be freed. ``context`` will be passed as its last argument.
 // context: a pointer to an arbitrary state.
@@ -241,17 +233,13 @@ bool declaration_subscription_data(ZenohPicoSubData *sub_data)
 
   {
     // liveliness tokendeclare
-    z_owned_closure_sample_t token_callback;
-    z_closure(&token_callback, _token_handler, 0, (void *)sub_data);
-
     z_view_keyexpr_t ke;
     const z_loaned_string_t *keyexpr = z_loan(sub_data->topic_key);
     z_view_keyexpr_from_substr(&ke, z_string_data(keyexpr), z_string_len(keyexpr));
-    if(_Z_IS_ERR(z_declare_subscriber(z_loan(session->session),
-				      &sub_data->token,
-				      z_loan(ke),
-				      z_move(token_callback),
-				      NULL))){
+    if(_Z_IS_ERR(z_liveliness_declare_token(z_loan(session->session),
+					    &sub_data->token,
+					    z_loan(ke),
+					    NULL))){
       RMW_ZENOH_LOG_INFO("Unable to declare token.");
       return false;
     }
@@ -264,10 +252,9 @@ bool undeclaration_subscription_data(ZenohPicoSubData *sub_data)
 {
   RMW_ZENOH_FUNC_ENTRY(NULL);
 
-  ZenohPicoSession *session = sub_data->node->session;
-
-  z_undeclare_subscriber(z_move(sub_data->token));
   z_undeclare_subscriber(z_move(sub_data->subscriber));
+
+  z_liveliness_undeclare_token(z_move(sub_data->token));
 
   return true;
 }

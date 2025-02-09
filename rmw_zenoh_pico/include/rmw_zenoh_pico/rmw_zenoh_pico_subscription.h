@@ -17,6 +17,7 @@
 #ifndef RMW_ZENOH_PICO_SUBSCRIPTION_H
 #define RMW_ZENOH_PICO_SUBSCRIPTION_H
 
+#include "zenoh-pico/api/types.h"
 #include <rmw/rmw.h>
 #include <zenoh-pico.h>
 
@@ -41,13 +42,13 @@ extern "C"
 
     size_t id;
 
-    // Liveliness key for the subscriber.
-    z_owned_string_t topic_key;
-    z_owned_string_t token_key;
-
     // Liveliness token for the subscriber.
+    z_owned_string_t token_key;
+    z_owned_liveliness_token_t token;
+
+    // the subscriber topic.
+    z_owned_string_t topic_key;
     z_owned_subscriber_t subscriber;
-    z_owned_subscriber_t token;
 
     // this node
     ZenohPicoNodeData *node;

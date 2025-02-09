@@ -94,8 +94,9 @@ static bool undeclaration_publisher_data(ZenohPicoPubData *pub_data)
 {
   RMW_ZENOH_FUNC_ENTRY(NULL);
 
-  z_undeclare_subscriber(z_move(pub_data->token));
   z_undeclare_publisher(z_move(pub_data->publisher));
+
+  z_liveliness_undeclare_token(z_move(pub_data->token));
 
   return true;
 }
@@ -147,14 +148,6 @@ void zenoh_pico_debug_publisher_data(ZenohPicoPubData *pub_data)
   zenoh_pico_debug_entity(pub_data->entity);
 }
 
-static void _token_handler(z_loaned_sample_t *sample, void *ctx) {
-  RMW_ZENOH_FUNC_ENTRY(sample);
-
-  ZenohPicoPubData *pub_data = (ZenohPicoPubData *)ctx;
-
-  return;
-}
-
 bool declaration_publisher_data(ZenohPicoPubData *pub_data)
 {
   RMW_ZENOH_FUNC_ENTRY(NULL);
@@ -186,17 +179,13 @@ bool declaration_publisher_data(ZenohPicoPubData *pub_data)
 
   {
     // liveliness token declare
-    z_owned_closure_sample_t token_callback;
-    z_closure(&token_callback, _token_handler, NULL, (void *)pub_data);
-
     z_view_keyexpr_t ke;
     const z_loaned_string_t *keyexpr = z_loan(pub_data->token_key);
     z_view_keyexpr_from_substr(&ke, z_string_data(keyexpr), z_string_len(keyexpr));
-    if(_Z_IS_ERR(z_declare_subscriber(z_loan(session->session),
-				      &pub_data->token,
-				      z_loan(ke),
-				      z_move(token_callback),
-				      NULL))){
+    if(_Z_IS_ERR(z_liveliness_declare_token(z_loan(session->session),
+					    &pub_data->token,
+					    z_loan(ke),
+					    NULL))){
       RMW_ZENOH_LOG_INFO("Unable to declare token.");
       return false;
     }

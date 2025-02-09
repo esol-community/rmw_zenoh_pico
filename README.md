@@ -282,16 +282,6 @@ For a list of other open-source components included in this repository, see the 
 
 ## Known Issues/Limitations
 
-1. How to share liveliness information data.  
-The rmw_zenoh pico can use some ROS 2 CLI commands. However, this implementation is provisional.  
-The rmw_zenoh is controlled by liveliness information, which generates keyexpr data by `z_declare_keyexpr()`.
-And their information saves resource data in each internal memory.  
-The rmw_zenoh is executed in the Zenoh P2P mode. This P2P mode can be exchanged when a Zenoh peer connects to another peer.  
-Conversely, rmw_zenoh_pico connects to the Zenoh network in client mode.
-The zenohd does not forward keyexpr data. In client mode, there is no way to exchange internal resource keyexpr data with other peers because no P2P connection is performed.  
-Currently, the rmw_zenoh_pico works around this problem by creating a new subscribe key for liveliness information. This new subscribe key is used only in the future.  
-We feel that this implementation is not very suitable for poor MPCs and upper-layer applications. And if we find a more effective way to approach this issue, we will need to change this implementation.  
-
 1. The rmw_zenoh_pico using malloc() system futures when there is a new memory region.  
 The XRCE-DDS implementation has simple memory futures in its layer.
 This memory future is designed to run ROS 2 communication for small resource systems.  

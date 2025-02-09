@@ -63,7 +63,8 @@ bool zenoh_pico_destroy_node_data(ZenohPicoNodeData *node_data)
 
   RMW_CHECK_ARGUMENT_FOR_NULL(node_data, false);
 
-  z_undeclare_subscriber(z_move(node_data->token));
+  z_liveliness_undeclare_token(z_move(node_data->token));
+
   z_drop(z_move(node_data->token_key));
 
   // delete entity
@@ -88,31 +89,19 @@ void zenoh_pico_debug_node_data(ZenohPicoNodeData *node_data)
   zenoh_pico_debug_entity(node_data->entity);
 }
 
-static void _token_handler(z_loaned_sample_t *sample, void *ctx) {
-  RMW_ZENOH_FUNC_ENTRY(NULL);
-
-  ZenohPicoNodeData *node_data = (ZenohPicoNodeData *)ctx;
-
-  return;
-}
-
 bool declaration_node_data(ZenohPicoNodeData *node_data)
 {
   RMW_ZENOH_FUNC_ENTRY(NULL);
 
   ZenohPicoSession *session = node_data->session;
 
-  z_owned_closure_sample_t callback;
-  z_closure(&callback, _token_handler, NULL, (void *)node_data);
-
   z_view_keyexpr_t ke;
   const z_loaned_string_t *keyexpr = z_loan(node_data->token_key);
   z_view_keyexpr_from_substr(&ke, z_string_data(keyexpr), z_string_len(keyexpr));
-  if(_Z_IS_ERR(z_declare_subscriber(z_loan(session->session),
-				    &node_data->token,
-				    z_loan(ke),
-				    z_move(callback),
-				    NULL))){
+  if(_Z_IS_ERR(z_liveliness_declare_token(z_loan(session->session),
+					  &node_data->token,
+					  z_loan(ke),
+					  NULL))){
     return false;
   }
 
