@@ -38,14 +38,14 @@ extern "C"
 
     // An owned session.
     z_owned_session_t session;
+    bool enable_session;
 
     // graph infomation
     rmw_guard_condition_t graph_guard_condition;
 
   } ZenohPicoSession;
 
-  extern ZenohPicoSession *zenoh_pico_generate_session(ZenohPicoSession *session,
-						       const z_loaned_config_t *config,
+  extern ZenohPicoSession *zenoh_pico_generate_session(const z_loaned_config_t *config,
 						       const char *enclave);
   extern bool zenoh_pico_destroy_session(ZenohPicoSession *session);
   extern rmw_ret_t session_connect(ZenohPicoSession *session);

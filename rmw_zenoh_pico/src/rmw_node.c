@@ -197,6 +197,12 @@ rmw_create_node(rmw_context_t * context, const char * name, const char * namespa
 
   ZenohPicoSession *session = (ZenohPicoSession *)context->impl;
 
+  // open zenoh session
+  if(session_connect(session) != RMW_RET_OK){
+    RMW_ZENOH_LOG_ERROR("zenoh session open error...");
+    return NULL;
+  }
+
   ZenohPicoNodeInfo *_node_info = NULL;
   ZenohPicoEntity *_entity = NULL;
   ZenohPicoNodeData *_node_data = NULL;

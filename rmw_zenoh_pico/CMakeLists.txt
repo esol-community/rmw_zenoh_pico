@@ -87,6 +87,7 @@ set(SRCS
   src/zenoh_pico/zenoh_pico_attach.c
   src/zenoh_pico/zenoh_pico_condition.c
   src/zenoh_pico/zenoh_pico_gid.c
+  src/zenoh_pico/zenoh_pico_session.c
 
   src/utilities/test_qos_profile.c
 

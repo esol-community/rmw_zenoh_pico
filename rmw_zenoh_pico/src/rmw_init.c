@@ -18,7 +18,6 @@
 #include <rmw_zenoh_pico/rmw_zenoh_pico.h>
 
 z_owned_mutex_t mutex_ZenohPicoTransportParams;
-z_owned_mutex_t mutex_ZenohPicoSession;
 
 ZenohPicoTransportParams *zenoh_pico_generate_param(ZenohPicoTransportParams *param)
 {
@@ -46,65 +45,6 @@ bool zenoh_pico_clone_param(ZenohPicoTransportParams *dst, ZenohPicoTransportPar
   memcpy(dst, src, sizeof(ZenohPicoTransportParams));
 
   return true;
-}
-
-ZenohPicoSession *zenoh_pico_generate_session(ZenohPicoSession *session,
-					      const z_loaned_config_t *config,
-					      const char *enclave)
-{
-  RMW_ZENOH_FUNC_ENTRY(NULL);
-
-  ZenohPicoGenerateData(session, ZenohPicoSession);
-  RMW_CHECK_FOR_NULL_WITH_MSG(
-    session,
-    "failed to allocate struct for the ZenohPicoSession",
-    return NULL);
-
-  z_config_clone(&session->config, config);
-
-  if(enclave != NULL) {
-    z_string_copy_from_str(&session->enclave, enclave);
-  }
-
-  session->graph_guard_condition.implementation_identifier = rmw_get_implementation_identifier();
-  session->graph_guard_condition.data = NULL;
-
-  return session;
-}
-
-bool zenoh_pico_destroy_session(ZenohPicoSession *session)
-{
-  RMW_ZENOH_FUNC_ENTRY(NULL);
-
-  RMW_CHECK_ARGUMENT_FOR_NULL(session, false);
-
-  z_drop(z_move(session->config));
-  z_drop(z_move(session->session));
-  z_drop(z_move(session->enclave));
-
-  ZenohPicoDestroyData(session, ZenohPicoSession);
-
-  return true;
-}
-
-rmw_ret_t session_connect(ZenohPicoSession *session)
-{
-  RMW_ZENOH_FUNC_ENTRY("Opening session...");
-
-  if(_Z_IS_ERR(z_open(&session->session, z_move(session->config), NULL))){
-    RMW_SET_ERROR_MSG("Error setting up zenoh session");
-    return RMW_RET_ERROR;
-  }
-
-  if (_Z_IS_ERR(zp_start_read_task(z_loan_mut(session->session), NULL))
-      || _Z_IS_ERR(zp_start_lease_task(z_loan_mut(session->session), NULL))) {
-    RMW_SET_ERROR_MSG("Unable to start read and lease tasks");
-    z_drop(z_move(session->config));
-    z_drop(z_move(session->session));
-    return RMW_RET_ERROR;
-  }
-
-  return RMW_RET_OK;
 }
 
 static rmw_ret_t rmw_zenoh_pico_init_option(ZenohPicoTransportParams *params)
@@ -436,9 +376,7 @@ rmw_init(const rmw_init_options_t * options, rmw_context_t * context)
       return ret;
   }
 
-  ZenohPicoSession *session = zenoh_pico_generate_session(NULL,
-							  z_loan(config),
-							  options->enclave);
+  ZenohPicoSession *session = zenoh_pico_generate_session(z_loan(config), options->enclave);
   if(session == NULL){
     RMW_SET_ERROR_MSG("falid generate session data");
     z_drop(z_config_move(&config));
@@ -447,7 +385,7 @@ rmw_init(const rmw_init_options_t * options, rmw_context_t * context)
 
   context->impl = (rmw_context_impl_t *)session;
 
-  return session_connect(session);
+  return RMW_RET_OK;
 }
 
 rmw_ret_t
@@ -459,14 +397,6 @@ rmw_shutdown(rmw_context_t * context)
   RMW_CHECK_TYPE_IDENTIFIERS_MATCH(
     context->implementation_identifier,
     return RMW_RET_INCORRECT_RMW_IMPLEMENTATION);
-
-  ZenohPicoSession *session = (ZenohPicoSession *)context->impl;
-
-  // stop background zenoh task
-  zp_stop_read_task(z_loan_mut(session->session));
-  zp_stop_lease_task(z_loan_mut(session->session));
-
-  z_drop(z_move(session->session));
 
   // free context area
   rmw_ret_t ret = rmw_context_fini(context);

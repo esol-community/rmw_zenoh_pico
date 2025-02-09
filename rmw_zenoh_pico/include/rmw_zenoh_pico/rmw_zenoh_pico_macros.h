@@ -83,6 +83,13 @@ extern "C"
     z_mutex_unlock(z_loan_mut(mutex_##T));	\
   }
 
+#define ZenohPicoReturnData(D, T)		\
+  {						\
+    z_mutex_lock(z_loan_mut(mutex_##T));	\
+    (D)->ref -= 1;				\
+    z_mutex_unlock(z_loan_mut(mutex_##T));	\
+  }
+
 //
 // zenoh-pico macro
 //
