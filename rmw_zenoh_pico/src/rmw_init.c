@@ -201,6 +201,7 @@ rmw_init_options_fini(rmw_init_options_t * init_options)
 
   if(init_options->impl != NULL){
     zenoh_pico_destroy_param((ZenohPicoTransportParams*)init_options->impl);
+    init_options->impl = NULL;
   }
 
   return RMW_RET_OK;
