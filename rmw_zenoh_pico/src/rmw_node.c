@@ -285,8 +285,14 @@ rmw_node_get_graph_guard_condition(const rmw_node_t * node)
 {
   RMW_ZENOH_FUNC_ENTRY(node);
 
+  RMW_CHECK_ARGUMENT_FOR_NULL(node, NULL);
+  RMW_CHECK_TYPE_IDENTIFIERS_MATCH(
+    node->implementation_identifier,
+    return NULL);
+
   ZenohPicoNodeData *node_data = (ZenohPicoNodeData *)node->data;
   ZenohPicoSession *session = node_data->session;
+
   rmw_guard_condition_t * graph_guard_condition = &session->graph_guard_condition;
 
   return graph_guard_condition;

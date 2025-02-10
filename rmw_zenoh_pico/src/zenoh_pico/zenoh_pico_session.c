@@ -15,6 +15,7 @@
 
 #include "rmw_zenoh_pico/rmw_zenoh_pico_logging.h"
 #include <rmw_zenoh_pico/rmw_zenoh_pico.h>
+#include <string.h>
 
 z_owned_mutex_t mutex_ZenohPicoSession;
 
@@ -36,6 +37,7 @@ ZenohPicoSession *zenoh_pico_generate_session(const z_loaned_config_t *config,
     session,
     "failed to allocate struct for the ZenohPicoSession",
     return NULL);
+  memset(session, 0, sizeof(ZenohPicoSession));
 
   z_config_clone(&session->config, config);
 
@@ -44,7 +46,7 @@ ZenohPicoSession *zenoh_pico_generate_session(const z_loaned_config_t *config,
   }
 
   session->graph_guard_condition.implementation_identifier = rmw_get_implementation_identifier();
-  session->graph_guard_condition.data = NULL;
+  session->graph_guard_condition.data = zenoh_pico_guard_condition_data;
 
   session->enable_session = false;
   ZenohPicoLoanData(session, ZenohPicoSession);
@@ -69,6 +71,8 @@ bool zenoh_pico_destroy_session(ZenohPicoSession *session)
     zp_stop_read_task(z_loan_mut(session->session));
     zp_stop_lease_task(z_loan_mut(session->session));
   }
+
+  zenoh_pico_destroy_guard_condition_data((ZenohPicoGuardConditionData *)session->graph_guard_condition.data);
 
   z_drop(z_move(session->session));
 
