@@ -96,8 +96,6 @@ set(SRCS
   src/rmw_count.c
   src/rmw_event.c
   src/rmw_features.c
-  src/rmw_get_gid_for_publisher.c
-  src/rmw_get_gid_for_client.c
   src/rmw_get_implementation_identifier.c
   src/rmw_get_topic_endpoint_info.c
   src/rmw_get_endpoint_network_flow.c

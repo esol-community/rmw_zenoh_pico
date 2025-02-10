@@ -80,3 +80,19 @@ rmw_client_response_subscription_get_actual_qos(
 
   return RMW_RET_OK;
 }
+
+rmw_ret_t
+rmw_get_gid_for_client(
+  const rmw_client_t * client,
+  rmw_gid_t * gid)
+{
+  RMW_ZENOH_FUNC_ENTRY(client);
+
+  RMW_CHECK_ARGUMENT_FOR_NULL(client, RMW_RET_INVALID_ARGUMENT);
+  RMW_CHECK_ARGUMENT_FOR_NULL(gid, RMW_RET_INVALID_ARGUMENT);
+  RMW_CHECK_TYPE_IDENTIFIERS_MATCH(
+    client->implementation_identifier,
+    return RMW_RET_INCORRECT_RMW_IMPLEMENTATION);
+
+  return RMW_RET_ERROR;
+}
