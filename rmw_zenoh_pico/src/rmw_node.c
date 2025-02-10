@@ -280,17 +280,6 @@ rmw_ret_t rmw_destroy_node(rmw_node_t * node)
   return rmw_node_destroy(node);
 }
 
-rmw_ret_t
-rmw_node_assert_liveliness(const rmw_node_t * node)
-{
-  RMW_ZENOH_FUNC_ENTRY(node);
-  RMW_ZENOH_LOG_INFO("start(%p)", node);
-
-  (void)node;
-  RMW_ZENOH_LOG_INFO("function not implemented");
-  return RMW_RET_UNSUPPORTED;
-}
-
 const rmw_guard_condition_t *
 rmw_node_get_graph_guard_condition(const rmw_node_t * node)
 {
