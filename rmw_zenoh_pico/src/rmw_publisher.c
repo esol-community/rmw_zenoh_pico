@@ -18,6 +18,7 @@
 #include "zenoh-pico/api/macros.h"
 #include "zenoh-pico/api/primitives.h"
 #include "zenoh-pico/api/types.h"
+
 #include <rmw_zenoh_pico/config.h>
 
 #include <rosidl_typesupport_microxrcedds_c/identifier.h>
@@ -286,19 +287,18 @@ rmw_create_publisher(
   RMW_CHECK_ARGUMENT_FOR_NULL(qos_profile, NULL);
   RMW_CHECK_ARGUMENT_FOR_NULL(node->data, NULL);
 
+  RMW_CHECK_FOR_NULL_WITH_MSG(
+    node->context,
+    "expected initialized context",
+    return NULL);
+  RMW_CHECK_FOR_NULL_WITH_MSG(
+    node->context->impl,
+    "expected initialized context impl",
+    return NULL);
+
   if (!qos_profile->avoid_ros_namespace_conventions) {
-    int validation_result = RMW_TOPIC_VALID;
-    rmw_ret_t ret = rmw_validate_full_topic_name(topic_name,
-						 &validation_result,
-						 NULL);
-    if (RMW_RET_OK != ret) {
+    if(!rmw_zenoh_pico_check_validate_name(topic_name))
       return NULL;
-    }
-    if (RMW_TOPIC_VALID != validation_result) {
-      const char * reason = rmw_full_topic_name_validation_result_string(validation_result);
-      RMW_SET_ERROR_MSG_WITH_FORMAT_STRING("invalid topic name: %s", reason);
-      return NULL;
-    }
   }
 
   RMW_CHECK_ARGUMENT_FOR_NULL(publisher_options, NULL);
@@ -309,17 +309,10 @@ rmw_create_publisher(
       return NULL;
     }
 
+  // Get node data
   ZenohPicoNodeData *node_data = (ZenohPicoNodeData *)node->data;
   RMW_CHECK_FOR_NULL_WITH_MSG(
     node_data, "unable to create subscription as node_data is invalid.",
-    return NULL);
-  RMW_CHECK_FOR_NULL_WITH_MSG(
-    node->context,
-    "expected initialized context",
-    return NULL);
-  RMW_CHECK_FOR_NULL_WITH_MSG(
-    node->context->impl,
-    "expected initialized context impl",
     return NULL);
 
   // Get the RMW type support.

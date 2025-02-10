@@ -53,7 +53,7 @@
 #include <rmw_zenoh_pico/rmw_zenoh_pico_messageType.h>
 
 #include <rmw_zenoh_pico/rmw_zenoh_pico_identifiers.h>
-#include <rmw_zenoh_pico/rmw_zenoh_pico_param.h>
+#include <rmw_zenoh_pico/rmw_zenoh_pico_init.h>
 #include <rmw_zenoh_pico/rmw_zenoh_pico_session.h>
 
 #include <rmw_zenoh_pico/rmw_zenoh_pico_node.h>

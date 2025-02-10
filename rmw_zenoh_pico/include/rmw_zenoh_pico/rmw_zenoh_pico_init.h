@@ -14,8 +14,8 @@
  * limitations under the License.
  */
 
-#ifndef RMW_ZENOH_PICO_PARAM_H
-#define RMW_ZENOH_PICO_PARAM_H
+#ifndef RMW_ZENOH_PICO_INIT_H
+#define RMW_ZENOH_PICO_INIT_H
 
 #include <rmw_zenoh_pico/config.h>
 
@@ -48,10 +48,7 @@ extern "C"
 #endif
   } ZenohPicoTransportParams;
 
-  extern ZenohPicoTransportParams *zenoh_pico_generate_param(ZenohPicoTransportParams *param);
-  extern bool zenoh_pico_destroy_param(ZenohPicoTransportParams *param);
-
-  extern bool zenoh_pico_clone_param(ZenohPicoTransportParams *dst, ZenohPicoTransportParams *src);
+  extern bool rmw_zenoh_pico_check_validate_name(const char * name);
 
 #if defined(__cplusplus)
 }

@@ -33,6 +33,7 @@
 #include <rmw/types.h>
 #include <rmw/allocators.h>
 #include <rmw/error_handling.h>
+#include <rmw/validate_full_topic_name.h>
 
 #include <rosidl_runtime_c/message_type_support_struct.h>
 #include <rosidl_typesupport_microxrcedds_c/message_type_support.h>
@@ -408,12 +409,7 @@ rmw_create_subscription(
   }
   RMW_CHECK_ARGUMENT_FOR_NULL(qos_profile, NULL);
   RMW_CHECK_ARGUMENT_FOR_NULL(subscription_options, NULL);
-  RMW_CHECK_ARGUMENT_FOR_NULL(node->data, NULL);
 
-  ZenohPicoNodeData *node_data = (ZenohPicoNodeData *)node->data;
-  RMW_CHECK_FOR_NULL_WITH_MSG(
-    node_data, "unable to create subscription as node_data is invalid.",
-    return NULL);
   RMW_CHECK_FOR_NULL_WITH_MSG(
     node->context,
     "expected initialized context",
@@ -421,6 +417,18 @@ rmw_create_subscription(
   RMW_CHECK_FOR_NULL_WITH_MSG(
     node->context->impl,
     "expected initialized context impl",
+    return NULL);
+  RMW_CHECK_ARGUMENT_FOR_NULL(node->data, NULL);
+
+  if (!qos_profile->avoid_ros_namespace_conventions) {
+    if(!rmw_zenoh_pico_check_validate_name(topic_name))
+      return NULL;
+  }
+
+  // Get node data
+  ZenohPicoNodeData *node_data = (ZenohPicoNodeData *)node->data;
+  RMW_CHECK_FOR_NULL_WITH_MSG(
+    node_data, "unable to create subscription as node_data is invalid.",
     return NULL);
 
   // scan hash data by type_support

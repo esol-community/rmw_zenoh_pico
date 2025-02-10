@@ -13,13 +13,15 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
+#include <rmw/validate_full_topic_name.h>
+
 #include "zenoh-pico/api/macros.h"
 #include "zenoh-pico/api/primitives.h"
 #include <rmw_zenoh_pico/rmw_zenoh_pico.h>
 
 z_owned_mutex_t mutex_ZenohPicoTransportParams;
 
-ZenohPicoTransportParams *zenoh_pico_generate_param(ZenohPicoTransportParams *param)
+static ZenohPicoTransportParams *zenoh_pico_generate_param(ZenohPicoTransportParams *param)
 {
   ZenohPicoGenerateData(param, ZenohPicoTransportParams);
   RMW_CHECK_FOR_NULL_WITH_MSG(
@@ -30,14 +32,14 @@ ZenohPicoTransportParams *zenoh_pico_generate_param(ZenohPicoTransportParams *pa
   return param;
 }
 
-bool zenoh_pico_destroy_param(ZenohPicoTransportParams *param)
+static bool zenoh_pico_destroy_param(ZenohPicoTransportParams *param)
 {
   ZenohPicoDestroyData(param, ZenohPicoTransportParams);
 
   return true;
 }
 
-bool zenoh_pico_clone_param(ZenohPicoTransportParams *dst, ZenohPicoTransportParams *src)
+static bool zenoh_pico_clone_param(ZenohPicoTransportParams *dst, ZenohPicoTransportParams *src)
 {
   if ((dst == NULL) || (src == NULL))
     return false;
@@ -318,6 +320,24 @@ void rmw_zenoh_pico_debug_level_init(void)
 int rmw_zenoh_pico_debug_level_get(void)
 {
   return rmw_zenoh_pico_debug_level;
+}
+
+bool rmw_zenoh_pico_check_validate_name(const char * name)
+{
+  int validation_result = RMW_TOPIC_VALID;
+  rmw_ret_t ret = rmw_validate_full_topic_name(name,
+					       &validation_result,
+					       NULL);
+  if (RMW_RET_OK != ret) {
+    return false;
+  }
+  if (RMW_TOPIC_VALID != validation_result) {
+    const char * reason = rmw_full_topic_name_validation_result_string(validation_result);
+    RMW_SET_ERROR_MSG_WITH_FORMAT_STRING("invalid topic name: %s", reason);
+    return false;
+  }
+
+  return true;
 }
 
 rmw_ret_t
