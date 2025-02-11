@@ -42,12 +42,17 @@
 
 z_owned_mutex_t mutex_ZenohPicoSubData;
 
-ZenohPicoSubData * zenoh_pico_generate_subscription_data(
+static bool declaration_subscription_data(ZenohPicoSubData *sub_data);
+static bool undeclaration_subscription_data(ZenohPicoSubData *sub_data);
+
+static void add_new_message(ZenohPicoSubData *sub_data, ReceiveMessageData *recv_data);
+static void subscription_condition_trigger(ZenohPicoSubData *sub_data);
+
+static ZenohPicoSubData * zenoh_pico_generate_subscription_data(
   size_t sub_id,
   ZenohPicoNodeData *node,
   ZenohPicoEntity *entity,
   const rmw_qos_profile_t *qos_profile,
-  const rosidl_message_type_support_t * type_support,
   const message_type_support_callbacks_t *callbacks)
 {
   RMW_ZENOH_FUNC_ENTRY(node);
@@ -101,7 +106,7 @@ ZenohPicoSubData * zenoh_pico_generate_subscription_data(
   return sub_data;
 }
 
-bool zenoh_pico_destroy_subscription_data(ZenohPicoSubData *sub_data)
+static bool zenoh_pico_destroy_subscription_data(ZenohPicoSubData *sub_data)
 {
   RMW_ZENOH_FUNC_ENTRY(NULL);
 
@@ -147,7 +152,7 @@ bool zenoh_pico_destroy_subscription_data(ZenohPicoSubData *sub_data)
   return true;
 }
 
-void zenoh_pico_debug_subscription_data(ZenohPicoSubData *sub_data)
+static void zenoh_pico_debug_subscription_data(ZenohPicoSubData *sub_data)
 {
   printf("--------- subscription data ----------\n");
   printf("ref = %d\n", sub_data->ref);
@@ -205,7 +210,7 @@ static void _sub_data_handler(z_loaned_sample_t *sample, void *ctx) {
 // dropper: allows the callback's state to be freed. ``context`` will be passed as its last argument.
 // context: a pointer to an arbitrary state.
 
-bool declaration_subscription_data(ZenohPicoSubData *sub_data)
+static bool declaration_subscription_data(ZenohPicoSubData *sub_data)
 {
   RMW_ZENOH_FUNC_ENTRY(NULL);
 
@@ -249,7 +254,7 @@ bool declaration_subscription_data(ZenohPicoSubData *sub_data)
   return true;
 }
 
-bool undeclaration_subscription_data(ZenohPicoSubData *sub_data)
+static bool undeclaration_subscription_data(ZenohPicoSubData *sub_data)
 {
   RMW_ZENOH_FUNC_ENTRY(NULL);
 
@@ -260,7 +265,7 @@ bool undeclaration_subscription_data(ZenohPicoSubData *sub_data)
   return true;
 }
 
-void subscription_condition_trigger(ZenohPicoSubData *sub_data)
+static void subscription_condition_trigger(ZenohPicoSubData *sub_data)
 {
   RMW_ZENOH_FUNC_ENTRY(NULL);
 
@@ -506,7 +511,6 @@ rmw_create_subscription(
 						      _node,
 						      _entity,
 						      qos_profile,
-						      type_support,
 						      callbacks);
     if(_sub_data == NULL) goto error;
   }

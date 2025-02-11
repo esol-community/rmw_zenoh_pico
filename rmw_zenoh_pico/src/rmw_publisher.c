@@ -32,12 +32,11 @@
 
 z_owned_mutex_t mutex_ZenohPicoPubData;
 
-ZenohPicoPubData * zenoh_pico_generate_publisher_data(
+static ZenohPicoPubData * zenoh_pico_generate_publisher_data(
   size_t pub_id,
   ZenohPicoNodeData *node,
   ZenohPicoEntity *entity,
   const rmw_qos_profile_t *qos_profile,
-  const rosidl_message_type_support_t * type_support,
   const message_type_support_callbacks_t *callbacks)
 {
   RMW_ZENOH_FUNC_ENTRY(node);
@@ -102,7 +101,7 @@ static bool undeclaration_publisher_data(ZenohPicoPubData *pub_data)
   return true;
 }
 
-bool zenoh_pico_destroy_publisher_data(ZenohPicoPubData *pub_data)
+static bool zenoh_pico_destroy_publisher_data(ZenohPicoPubData *pub_data)
 {
   RMW_ZENOH_FUNC_ENTRY(NULL);
 
@@ -131,7 +130,7 @@ bool zenoh_pico_destroy_publisher_data(ZenohPicoPubData *pub_data)
   return true;
 }
 
-void zenoh_pico_debug_publisher_data(ZenohPicoPubData *pub_data)
+static void zenoh_pico_debug_publisher_data(ZenohPicoPubData *pub_data)
 {
   printf("--------- publisher data ----------\n");
   printf("ref = %d\n", pub_data->ref);
@@ -149,7 +148,7 @@ void zenoh_pico_debug_publisher_data(ZenohPicoPubData *pub_data)
   zenoh_pico_debug_entity(pub_data->entity);
 }
 
-bool declaration_publisher_data(ZenohPicoPubData *pub_data)
+static bool declaration_publisher_data(ZenohPicoPubData *pub_data)
 {
   RMW_ZENOH_FUNC_ENTRY(NULL);
 
@@ -395,7 +394,6 @@ rmw_create_publisher(
 						   _node,
 						   _entity,
 						   qos_profile,
-						   type_support,
 						   callbacks);
     if(_pub_data == NULL){
       goto error;

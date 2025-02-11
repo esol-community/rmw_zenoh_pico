@@ -74,21 +74,6 @@ extern "C"
 
   } ZenohPicoSubData;
 
-  extern ZenohPicoSubData * zenoh_pico_generate_subscription_data(
-    size_t sub_id,
-    ZenohPicoNodeData *node,
-    ZenohPicoEntity *entity,
-    const rmw_qos_profile_t *qos_profile,
-    const rosidl_message_type_support_t * type_support,
-    const message_type_support_callbacks_t *callbacks);
-
-  extern bool zenoh_pico_destroy_subscription_data(ZenohPicoSubData *sub_data);
-  extern void zenoh_pico_debug_subscription_data(ZenohPicoSubData *sub_data);
-
-  extern bool declaration_subscription_data(ZenohPicoSubData *sub_data);
-  extern bool undeclaration_subscription_data(ZenohPicoSubData *sub_data);
-
-  extern void subscription_condition_trigger(ZenohPicoSubData *sub_data);
   extern bool subscription_condition_check_and_attach(ZenohPicoSubData *sub_data,
 						      ZenohPicoWaitSetData * wait_set_data);
   extern bool subscription_condition_detach_and_queue_is_empty(ZenohPicoSubData *sub_data);

@@ -67,17 +67,6 @@ extern "C"
 
   } ZenohPicoPubData;
 
-  extern ZenohPicoPubData * zenoh_pico_generate_publisher_data(
-    size_t pub_id,
-    ZenohPicoNodeData *node,
-    ZenohPicoEntity *entity,
-    const rmw_qos_profile_t *qos_profile,
-    const rosidl_message_type_support_t * type_support,
-    const message_type_support_callbacks_t *callbacks);
-  extern bool zenoh_pico_destroy_publisher_data(ZenohPicoPubData *pub_data);
-  extern void zenoh_pico_debug_publisher_data(ZenohPicoPubData *pub_data);
-  extern bool declaration_publisher_data(ZenohPicoPubData *pub_data);
-
 #if defined(__cplusplus)
 }
 #endif  // if defined(__cplusplus)
