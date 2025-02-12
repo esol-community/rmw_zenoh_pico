@@ -251,7 +251,7 @@ static bool declaration_subscription_data(ZenohPicoSubData *sub_data)
   {
     // liveliness tokendeclare
     z_view_keyexpr_t ke;
-    const z_loaned_string_t *keyexpr = z_loan(sub_data->topic_key);
+    const z_loaned_string_t *keyexpr = z_loan(sub_data->token_key);
     z_view_keyexpr_from_substr(&ke, z_string_data(keyexpr), z_string_len(keyexpr));
     if(_Z_IS_ERR(z_liveliness_declare_token(z_loan(session->session),
 					    &sub_data->token,
