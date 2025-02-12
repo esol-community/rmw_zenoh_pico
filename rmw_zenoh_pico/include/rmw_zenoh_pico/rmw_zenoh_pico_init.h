@@ -48,8 +48,6 @@ extern "C"
 #endif
   } ZenohPicoTransportParams;
 
-  extern bool rmw_zenoh_pico_check_validate_name(const char * name);
-
 #if defined(__cplusplus)
 }
 #endif  // if defined(__cplusplus)

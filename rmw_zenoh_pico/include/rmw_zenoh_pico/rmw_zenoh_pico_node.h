@@ -53,16 +53,14 @@ extern "C"
 
   } ZenohPicoNodeData;
 
-  extern ZenohPicoNodeData * zenoh_pico_generate_node_data(size_t node_id,
-							   ZenohPicoSession *session,
-							   ZenohPicoEntity *entity);
-
+  extern ZenohPicoNodeData * zenoh_pico_generate_node_data(size_t domain_id,
+							   const char *name,
+							   const char *namespace,
+							   ZenohPicoSession *session);
   extern ZenohPicoNodeData *zenoh_pico_loan_node_data(ZenohPicoNodeData *node_data);
   extern bool zenoh_pico_destroy_node_data(ZenohPicoNodeData *node_data);
-  extern void zenoh_pico_debug_node_data(ZenohPicoNodeData *node_data);
 
-  extern bool declaration_node_data(ZenohPicoNodeData *node_data);
-  extern bool undeclaration_node_data(ZenohPicoNodeData *node_data);
+  extern void zenoh_pico_debug_node_data(ZenohPicoNodeData *node_data);
 
 #if defined(__cplusplus)
 }
