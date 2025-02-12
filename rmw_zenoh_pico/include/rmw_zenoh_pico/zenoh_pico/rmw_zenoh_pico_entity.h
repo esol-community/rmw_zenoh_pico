@@ -22,6 +22,8 @@
 
 #include <zenoh-pico.h>
 
+#include <rosidl_typesupport_microxrcedds_c/message_type_support.h>
+
 #include "rmw_zenoh_pico/zenoh_pico/rmw_zenoh_pico_nodeInfo.h"
 #include "rmw_zenoh_pico/zenoh_pico/rmw_zenoh_pico_topicInfo.h"
 #include "zenoh-pico/api/types.h"
@@ -72,11 +74,19 @@ extern "C"
 
   // functions
   extern ZenohPicoEntity * zenoh_pico_generate_entity(z_id_t *zid,
-						      size_t id,
 						      size_t nid,
 						      ZenohPicoEntityType type,
 						      ZenohPicoNodeInfo *node_info,
 						      ZenohPicoTopicInfo *topic_info);
+
+  extern ZenohPicoEntity * zenoh_pico_generate_topic_entity(z_id_t *zid,
+							    size_t nid,
+							    ZenohPicoNodeInfo *node_info,
+							    const char * topic_name,
+							    const rosidl_message_type_support_t * type_support,
+							    const rmw_qos_profile_t *qos_profile,
+							    ZenohPicoEntityType type);
+
   extern bool zenoh_pico_destroy_entity(ZenohPicoEntity *entity);
   extern void zenoh_pico_debug_entity(ZenohPicoEntity *entity);
 

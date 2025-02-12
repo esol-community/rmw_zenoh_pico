@@ -29,7 +29,15 @@
 
 #include <rmw/rmw.h>
 #include <rmw/ret_types.h>
+#include <rmw/allocators.h>
 #include <rmw/init_options.h>
+#include <rmw/error_handling.h>
+#include <rmw/validate_full_topic_name.h>
+
+#include <rosidl_runtime_c/message_type_support_struct.h>
+
+#include <rosidl_typesupport_microxrcedds_c/identifier.h>
+#include <rosidl_typesupport_microxrcedds_c/message_type_support.h>
 
 #include <ucdr/microcdr.h>
 

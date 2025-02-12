@@ -261,9 +261,15 @@ z_result_t convert_hash(const rosidl_type_hash_t * type_hash, z_owned_string_t *
     }
   }
 
-  // RMW_ZENOH_LOG_INFO("hash = [%s]", _hash_data);
+  z_result_t ret = z_string_copy_from_str(value, _hash_data);
+  if(rmw_zenoh_pico_debug_level_get() == _Z_LOG_LVL_DEBUG){
+    RMW_ZENOH_LOG_INFO("hash = [%*s][%d]",
+		       Z_STRING_LEN(*value),
+		       Z_STRING_VAL(*value),
+		       Z_STRING_LEN(*value));
+  }
 
-  return z_string_copy_from_str(value, _hash_data);
+  return ret;
 }
 
 #define TYPE_NAME_LEN 128
@@ -279,7 +285,16 @@ z_result_t convert_message_type(const message_type_support_callbacks_t *callback
     snprintf(_type_name, sizeof(_type_name), "dds_::%s_",
 	     callbacks->message_name_);
 
-  return z_string_copy_from_str(value, _type_name);
+  z_result_t ret = z_string_copy_from_str(value, _type_name);
+
+  if(rmw_zenoh_pico_debug_level_get() == _Z_LOG_LVL_DEBUG){
+    RMW_ZENOH_LOG_INFO("type_name = [%.*s][%d]",
+		       Z_STRING_LEN(*value),
+		       Z_STRING_VAL(*value),
+		       Z_STRING_LEN(*value));
+  }
+
+  return ret;
 }
 
 z_result_t qos_to_keyexpr(rmw_qos_profile_t *qos, z_owned_string_t *value)

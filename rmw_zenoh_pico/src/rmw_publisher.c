@@ -18,9 +18,6 @@
 
 #include <rmw_zenoh_pico/config.h>
 
-#include <rosidl_typesupport_microxrcedds_c/identifier.h>
-#include <rosidl_typesupport_microxrcedds_c/message_type_support.h>
-
 #include <rmw/allocators.h>
 #include <rmw/rmw.h>
 #include <rmw/validate_full_topic_name.h>
@@ -46,58 +43,23 @@ static ZenohPicoPubData * zenoh_pico_generate_publisher_data(
 
   RMW_CHECK_ARGUMENT_FOR_NULL(node, NULL);
 
-  ZenohPicoTopicInfo *topic_info	= NULL;
-  ZenohPicoNodeInfo *node_info		= NULL;
-  ZenohPicoEntity *entity		= NULL;
-  ZenohPicoPubData *pub_data		= NULL;
-
-  z_owned_string_t hash_data;
-  z_owned_string_t type_name;
-
-  // get hash data
-  const rosidl_type_hash_t * type_hash = type_support->get_type_hash_func(type_support);
-
-  // convert hash
-  convert_hash(type_hash, &hash_data);
-  if(rmw_zenoh_pico_debug_level_get() == _Z_LOG_LVL_DEBUG){
-    RMW_ZENOH_LOG_INFO("hash = [%s][%.*s]", topic_name,
-		       Z_STRING_LEN(hash_data),
-		       Z_STRING_VAL(hash_data));
-  }
-
-  // generate message type
-  const message_type_support_callbacks_t *callbacks
-    = (const message_type_support_callbacks_t *)(type_support->data);
-
-  convert_message_type(callbacks, &type_name);
-  if(rmw_zenoh_pico_debug_level_get() == _Z_LOG_LVL_DEBUG){
-    RMW_ZENOH_LOG_INFO("type_name = [%.*s]",
-		       Z_STRING_LEN(type_name),
-		       Z_STRING_VAL(type_name));
-  }
+  ZenohPicoNodeInfo *node_info	= NULL;
+  ZenohPicoEntity *entity	= NULL;
+  ZenohPicoPubData *pub_data	= NULL;
 
   // clone node_info
   node_info = zenoh_pico_clone_node_info(node->entity->node_info);
 
-  // generate topic data
-  topic_info = zenoh_pico_generate_topic_info(topic_name,
-					      qos_profile,
-					      z_loan(type_name),
-					      z_loan(hash_data));
-  if(topic_info == NULL)
-    goto error;
-
   // generate entity data
-  size_t entity_id = zenoh_pico_get_next_entity_id();
-
   ZenohPicoSession *session = node->session;
   z_id_t zid = z_info_zid(z_loan(session->session));
-  entity = zenoh_pico_generate_entity( &zid,
-				       entity_id,
-				       node->id,
-				       Publisher,
-				       node_info,
-				       topic_info);
+  entity = zenoh_pico_generate_topic_entity(&zid,
+					    node->id,
+					    node_info,
+					    topic_name,
+					    type_support,
+					    qos_profile,
+					    Publisher);
   if(entity == NULL)
     goto error;
 
@@ -107,10 +69,10 @@ static ZenohPicoPubData * zenoh_pico_generate_publisher_data(
     "failed to allocate struct for the ZenohPicoPubData",
     goto error);
 
-  pub_data->id				= entity_id;
+  pub_data->id				= entity->id;
   pub_data->node			= node;
   pub_data->entity			= entity;
-  pub_data->callbacks			= callbacks;
+  pub_data->callbacks			= (const message_type_support_callbacks_t *)(type_support->data);
   pub_data->adapted_qos_profile		= *qos_profile;
 
   // generate key from entity data
@@ -122,6 +84,7 @@ static ZenohPicoPubData * zenoh_pico_generate_publisher_data(
 
   // generate topic key
   z_string_empty(&pub_data->topic_key);
+  ZenohPicoTopicInfo *topic_info = entity->topic_info;
   if(_Z_IS_ERR(ros_topic_name_to_zenoh_key(z_loan(node_info->domain),
 					   z_loan(topic_info->name),
 					   z_loan(topic_info->type),
@@ -141,9 +104,6 @@ static ZenohPicoPubData * zenoh_pico_generate_publisher_data(
   z_slice_copy_from_buf(&pub_data->attachment.gid, _gid, sizeof(_gid));
   pub_data->attachment.sequence_num = 0;
 
-  z_drop(z_move(hash_data));
-  z_drop(z_move(type_name));
-
   return pub_data;
 
   error:
@@ -158,9 +118,6 @@ static ZenohPicoPubData * zenoh_pico_generate_publisher_data(
 
   if(pub_data != NULL)
     ZenohPicoDestroyData(pub_data, ZenohPicoPubData);
-
-  z_drop(z_move(hash_data));
-  z_drop(z_move(type_name));
 
   return NULL;
 }

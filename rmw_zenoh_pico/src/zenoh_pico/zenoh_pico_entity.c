@@ -36,12 +36,12 @@ const z_loaned_string_t *get_topic_qos(ZenohPicoEntity *entity)		{ return topic_
 
 z_owned_mutex_t mutex_ZenohPicoEntity;
 
-ZenohPicoEntity * zenoh_pico_generate_entity(z_id_t *zid,
-					     size_t id,
-					     size_t nid,
-					     ZenohPicoEntityType type,
-					     ZenohPicoNodeInfo *node_info,
-					     ZenohPicoTopicInfo *topic_info)
+ZenohPicoEntity * zenoh_pico_generate_entity(
+  z_id_t *zid,
+  size_t nid,
+  ZenohPicoEntityType type,
+  ZenohPicoNodeInfo *node_info,
+  ZenohPicoTopicInfo *topic_info)
 {
   RMW_ZENOH_FUNC_ENTRY(NULL);
 
@@ -57,7 +57,7 @@ ZenohPicoEntity * zenoh_pico_generate_entity(z_id_t *zid,
   else
     z_string_copy_from_str(&entity->zid, "");
 
-  entity->id		= id;
+  entity->id		= zenoh_pico_get_next_entity_id();
   entity->nid		= nid;
   entity->type		= type;
 
@@ -69,6 +69,45 @@ ZenohPicoEntity * zenoh_pico_generate_entity(z_id_t *zid,
   // }
 
   return entity;
+}
+
+ZenohPicoEntity * zenoh_pico_generate_topic_entity(
+  z_id_t *zid,
+  size_t nid,
+  ZenohPicoNodeInfo *node_info,
+  const char * topic_name,
+  const rosidl_message_type_support_t * type_support,
+  const rmw_qos_profile_t *qos_profile,
+  ZenohPicoEntityType type)
+{
+  RMW_ZENOH_FUNC_ENTRY(NULL);
+
+  z_owned_string_t hash_data;
+  z_owned_string_t type_name;
+
+  // get hash data
+  const rosidl_type_hash_t * type_hash = type_support->get_type_hash_func(type_support);
+  (void)convert_hash(type_hash, &hash_data);
+
+  // generate message type
+  const message_type_support_callbacks_t *callbacks
+    = (const message_type_support_callbacks_t *)(type_support->data);
+  (void)convert_message_type(callbacks, &type_name);
+
+  // generate topic data
+  ZenohPicoTopicInfo *topic_info;
+  topic_info = zenoh_pico_generate_topic_info(topic_name,
+					      qos_profile,
+					      z_loan(type_name),
+					      z_loan(hash_data));
+
+  z_drop(z_move(hash_data));
+  z_drop(z_move(type_name));
+
+  if(topic_info == NULL)
+    return NULL;
+
+  return zenoh_pico_generate_entity(zid, nid, type, node_info, topic_info);
 }
 
 bool zenoh_pico_destroy_entity(ZenohPicoEntity *entity)

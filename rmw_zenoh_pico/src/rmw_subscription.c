@@ -47,72 +47,38 @@ static ZenohPicoSubData * zenoh_pico_generate_subscription_data(
 
   RMW_CHECK_ARGUMENT_FOR_NULL(node, NULL);
 
-  ZenohPicoTopicInfo *topic_info	= NULL;
-  ZenohPicoNodeInfo *node_info		= NULL;
-  ZenohPicoEntity *entity		= NULL;
-  ZenohPicoSubData *sub_data		= NULL;
-
-  z_owned_string_t hash_data;
-  z_owned_string_t type_name;
-
-  // get hash data
-  const rosidl_type_hash_t * type_hash = type_support->get_type_hash_func(type_support);
-
-  // convert hash
-  convert_hash(type_hash, &hash_data);
-  if(rmw_zenoh_pico_debug_level_get() == _Z_LOG_LVL_DEBUG){
-    RMW_ZENOH_LOG_INFO("hash[%s] = [%*s][%d]", topic_name,
-		       Z_STRING_LEN(hash_data),
-		       Z_STRING_VAL(hash_data),
-		       Z_STRING_LEN(hash_data));
-  }
-
-  // generate message type
-  const message_type_support_callbacks_t *callbacks
-    = (const message_type_support_callbacks_t *)(type_support->data);
-
-  convert_message_type(callbacks, &type_name);
-  if(rmw_zenoh_pico_debug_level_get() == _Z_LOG_LVL_DEBUG){
-    RMW_ZENOH_LOG_INFO("type_name = [%.*s][%d]",
-		       Z_STRING_LEN(type_name),
-		       Z_STRING_VAL(type_name),
-		       Z_STRING_LEN(type_name));
-  }
+  ZenohPicoNodeInfo *node_info	= NULL;
+  ZenohPicoEntity *entity	= NULL;
 
   // clone node_info
   node_info = zenoh_pico_clone_node_info(node->entity->node_info);
 
-  // generate topic data
-  topic_info = zenoh_pico_generate_topic_info(topic_name,
-					      qos_profile,
-					      z_loan(type_name),
-					      z_loan(hash_data));
-  if(topic_info == NULL)
-    goto error;
-
   // generate entity data
-  size_t entity_id = zenoh_pico_get_next_entity_id();
   ZenohPicoSession *session = node->session;
   z_id_t zid = z_info_zid(z_loan(session->session));
-  entity = zenoh_pico_generate_entity( &zid,
-				       entity_id,
-				       node->id,
-				       Subscription,
-				       node_info,
-				       topic_info);
+
+  entity = zenoh_pico_generate_topic_entity(&zid,
+					    node->id,
+					    node_info,
+					    topic_name,
+					    type_support,
+					    qos_profile,
+					    Publisher);
+
   if(entity == NULL)
     goto error;
 
+  ZenohPicoSubData *sub_data = NULL;
   ZenohPicoGenerateData(sub_data, ZenohPicoSubData);
   RMW_CHECK_FOR_NULL_WITH_MSG(
     sub_data,
     "failed to allocate struct for the ZenohPicoSubData",
     goto error);
 
-  sub_data->id			= entity_id;
+  sub_data->id			= entity->id;
   sub_data->node		= node;
   sub_data->entity		= entity;
-  sub_data->callbacks		= callbacks;
+  sub_data->callbacks		= (const message_type_support_callbacks_t *)(type_support->data);
   sub_data->adapted_qos_profile = *qos_profile;
 
   // generate key from entity data
@@ -122,6 +88,7 @@ static ZenohPicoSubData * zenoh_pico_generate_subscription_data(
   }
 
   // generate topic key
+  ZenohPicoTopicInfo *topic_info = entity->topic_info;
   if(_Z_IS_ERR(ros_topic_name_to_zenoh_key(z_loan(node_info->domain),
 					   z_loan(topic_info->name),
 					   z_loan(topic_info->type),
@@ -141,24 +108,14 @@ static ZenohPicoSubData * zenoh_pico_generate_subscription_data(
   z_mutex_init(&sub_data->condition_mutex);
   sub_data->wait_set_data = NULL;
 
-  z_drop(z_move(hash_data));
-  z_drop(z_move(type_name));
-
   return sub_data;
 
   error:
-
-  if(topic_info != NULL)
-    zenoh_pico_destroy_topic_info(topic_info);
-
   if(node_info != NULL)
     zenoh_pico_destroy_node_info(node_info);
 
   if(entity != NULL)
     zenoh_pico_destroy_entity(entity);
-
-  z_drop(z_move(hash_data));
-  z_drop(z_move(type_name));
 
   return NULL;
 }

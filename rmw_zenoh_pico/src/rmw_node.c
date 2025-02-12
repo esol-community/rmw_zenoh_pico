@@ -48,7 +48,6 @@ ZenohPicoNodeData * zenoh_pico_generate_node_data(size_t domain_id,
   z_id_t _zid = z_info_zid(z_loan(session->session));
   size_t node_id = zenoh_pico_get_next_node_id();
   entity = zenoh_pico_generate_entity(&_zid,
-				      zenoh_pico_get_next_entity_id(),
 				      node_id,
 				      Node,
 				      node_info,
