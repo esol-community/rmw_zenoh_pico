@@ -111,3 +111,19 @@ rmw_ret_t session_connect(ZenohPicoSession *session)
 
   return RMW_RET_OK;
 }
+
+bool declaration_liveliness(ZenohPicoSession *session,
+			    const z_loaned_string_t *keyexpr,
+			    z_owned_liveliness_token_t *token)
+{
+    z_view_keyexpr_t ke;
+    z_view_keyexpr_from_substr(&ke, z_string_data(keyexpr), z_string_len(keyexpr));
+    if(_Z_IS_ERR(z_liveliness_declare_token(z_loan(session->session),
+					    token,
+					    z_loan(ke),
+					    NULL))){
+      RMW_ZENOH_LOG_INFO("Unable to declare token.");
+      return false;
+    }
+    return true;
+}

@@ -175,6 +175,10 @@ static bool declaration_publisher_data(ZenohPicoPubData *pub_data)
 
   ZenohPicoSession *session = pub_data->node->session;
 
+  // liveliness token declare
+  (void)declaration_liveliness(session, z_loan(pub_data->token_key), &pub_data->token);
+
+
   z_publisher_options_t options;
   z_publisher_options_default(&options);
   options.congestion_control = Z_CONGESTION_CONTROL_DROP;
@@ -184,32 +188,16 @@ static bool declaration_publisher_data(ZenohPicoPubData *pub_data)
       options.congestion_control = Z_CONGESTION_CONTROL_BLOCK;
     }
 
-  {
-    // topic declare
-    z_view_keyexpr_t ke;
-    const z_loaned_string_t *keyexpr = z_loan(pub_data->topic_key);
-    z_view_keyexpr_from_substr(&ke, z_string_data(keyexpr), z_string_len(keyexpr));
-    if(_Z_IS_ERR(z_declare_publisher(z_loan(session->session),
-				     &pub_data->publisher,
-				     z_loan(ke),
-				     &options))){
-      RMW_ZENOH_LOG_INFO("Unable to declare publisher.");
-      return false;
-    }
-  }
-
-  {
-    // liveliness token declare
-    z_view_keyexpr_t ke;
-    const z_loaned_string_t *keyexpr = z_loan(pub_data->token_key);
-    z_view_keyexpr_from_substr(&ke, z_string_data(keyexpr), z_string_len(keyexpr));
-    if(_Z_IS_ERR(z_liveliness_declare_token(z_loan(session->session),
-					    &pub_data->token,
-					    z_loan(ke),
-					    NULL))){
-      RMW_ZENOH_LOG_INFO("Unable to declare token.");
-      return false;
-    }
+  // topic declare
+  z_view_keyexpr_t ke;
+  const z_loaned_string_t *keyexpr = z_loan(pub_data->topic_key);
+  z_view_keyexpr_from_substr(&ke, z_string_data(keyexpr), z_string_len(keyexpr));
+  if(_Z_IS_ERR(z_declare_publisher(z_loan(session->session),
+				   &pub_data->publisher,
+				   z_loan(ke),
+				   &options))){
+    RMW_ZENOH_LOG_INFO("Unable to declare publisher.");
+    return false;
   }
 
   return true;

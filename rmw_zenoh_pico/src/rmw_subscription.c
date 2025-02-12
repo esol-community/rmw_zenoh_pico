@@ -227,39 +227,26 @@ static bool declaration_subscription_data(ZenohPicoSubData *sub_data)
 
   ZenohPicoSession *session = sub_data->node->session;
 
-  {
-    // declare subscriber
-    z_subscriber_options_t options;
-    z_subscriber_options_default(&options);
+  // liveliness token declare
+  (void)declaration_liveliness(session, z_loan(sub_data->token_key), &sub_data->token);
 
-    z_owned_closure_sample_t sub_callback;
-    z_closure(&sub_callback, _sub_data_handler, 0, (void *)sub_data);
+  // declare subscriber
+  z_subscriber_options_t options;
+  z_subscriber_options_default(&options);
 
-    z_view_keyexpr_t ke;
-    const z_loaned_string_t *keyexpr = z_loan(sub_data->topic_key);
-    z_view_keyexpr_from_substr(&ke, z_string_data(keyexpr), z_string_len(keyexpr));
-    if(_Z_IS_ERR(z_declare_subscriber(z_loan(session->session),
-				      &sub_data->subscriber,
-				      z_loan(ke),
-				      z_move(sub_callback),
-				      &options))){
-      RMW_ZENOH_LOG_INFO("Unable to declare subscriber.");
-      return false;
-    }
-  }
+  z_owned_closure_sample_t sub_callback;
+  z_closure(&sub_callback, _sub_data_handler, 0, (void *)sub_data);
 
-  {
-    // liveliness tokendeclare
-    z_view_keyexpr_t ke;
-    const z_loaned_string_t *keyexpr = z_loan(sub_data->token_key);
-    z_view_keyexpr_from_substr(&ke, z_string_data(keyexpr), z_string_len(keyexpr));
-    if(_Z_IS_ERR(z_liveliness_declare_token(z_loan(session->session),
-					    &sub_data->token,
-					    z_loan(ke),
-					    NULL))){
-      RMW_ZENOH_LOG_INFO("Unable to declare token.");
-      return false;
-    }
+  z_view_keyexpr_t ke;
+  const z_loaned_string_t *keyexpr = z_loan(sub_data->topic_key);
+  z_view_keyexpr_from_substr(&ke, z_string_data(keyexpr), z_string_len(keyexpr));
+  if(_Z_IS_ERR(z_declare_subscriber(z_loan(session->session),
+				    &sub_data->subscriber,
+				    z_loan(ke),
+				    z_move(sub_callback),
+				    &options))){
+    RMW_ZENOH_LOG_INFO("Unable to declare subscriber.");
+    return false;
   }
 
   return true;

@@ -50,6 +50,10 @@ extern "C"
   extern bool zenoh_pico_destroy_session(ZenohPicoSession *session);
   extern rmw_ret_t session_connect(ZenohPicoSession *session);
 
+  extern bool declaration_liveliness(ZenohPicoSession *session,
+				     const z_loaned_string_t *keyexpr,
+				     z_owned_liveliness_token_t *token);
+
 #if defined(__cplusplus)
 }
 #endif  // if defined(__cplusplus)
