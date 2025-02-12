@@ -109,12 +109,8 @@ set(SRCS
   src/rmw_node_names.c
   src/rmw_publish.c
   src/rmw_publisher.c
-  src/rmw_request.c
-  src/rmw_response.c
   src/rmw_serialize.c
   src/rmw_service.c
-  src/rmw_service_names_and_types.c
-  src/rmw_service_server_is_available.c
   src/rmw_subscription.c
   src/rmw_take.c
   src/rmw_topic_names_and_types.c

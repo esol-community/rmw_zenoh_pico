@@ -37,7 +37,7 @@ rmw_get_publisher_names_and_types_by_node(
   (void)demangle;
   (void)topic_names_and_types;
   RMW_ZENOH_LOG_INFO(
-    "Function not available: enable RMW_UXRCE_GRAPH configuration profile before using");
+    "Function not available");
   return RMW_RET_UNSUPPORTED;
 }
 
@@ -59,7 +59,7 @@ rmw_get_subscriber_names_and_types_by_node(
   (void)demangle;
   (void)topic_names_and_types;
   RMW_ZENOH_LOG_INFO(
-    "Function not available: enable RMW_UXRCE_GRAPH configuration profile before using");
+    "Function not available");
   return RMW_RET_UNSUPPORTED;
 }
 
@@ -79,7 +79,7 @@ rmw_get_service_names_and_types_by_node(
   (void)node_namespace;
   (void)service_names_and_types;
   RMW_ZENOH_LOG_INFO(
-    "Function not available: enable RMW_UXRCE_GRAPH configuration profile before using");
+    "Function not available");
   return RMW_RET_UNSUPPORTED;
 }
 
@@ -99,6 +99,22 @@ rmw_get_client_names_and_types_by_node(
   (void)node_namespace;
   (void)service_names_and_types;
   RMW_ZENOH_LOG_INFO(
-    "Function not available: enable RMW_UXRCE_GRAPH configuration profile before using");
+    "Function not available");
+  return RMW_RET_UNSUPPORTED;
+}
+
+rmw_ret_t
+rmw_get_service_names_and_types(
+  const rmw_node_t * node,
+  rcutils_allocator_t * allocator,
+  rmw_names_and_types_t * service_names_and_types)
+{
+  RMW_ZENOH_FUNC_ENTRY(node);
+
+  (void)node;
+  (void)allocator;
+  (void)service_names_and_types;
+  RMW_ZENOH_LOG_INFO(
+    "Function not available");
   return RMW_RET_UNSUPPORTED;
 }

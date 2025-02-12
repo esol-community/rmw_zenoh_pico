@@ -96,3 +96,52 @@ rmw_get_gid_for_client(
 
   return RMW_RET_ERROR;
 }
+
+rmw_ret_t
+rmw_take_response(
+  const rmw_client_t * client,
+  rmw_service_info_t * request_header,
+  void * ros_response,
+  bool * taken)
+{
+  RMW_ZENOH_FUNC_ENTRY(client);
+
+  RMW_CHECK_TYPE_IDENTIFIERS_MATCH(
+    client->implementation_identifier,
+    return RMW_RET_INCORRECT_RMW_IMPLEMENTATION);
+
+  if (taken != NULL) {
+    *taken = false;
+  }
+
+  return RMW_RET_OK;
+}
+
+rmw_ret_t
+rmw_send_request(
+  const rmw_client_t * client,
+  const void * ros_request,
+  int64_t * sequence_id)
+{
+  RMW_ZENOH_FUNC_ENTRY(client);
+
+  RMW_CHECK_TYPE_IDENTIFIERS_MATCH(
+    client->implementation_identifier,
+    return RMW_RET_INCORRECT_RMW_IMPLEMENTATION);
+
+  return RMW_RET_OK;
+}
+
+rmw_ret_t rmw_service_server_is_available(
+  const rmw_node_t * node,
+  const rmw_client_t * client,
+  bool * is_available)
+{
+  RMW_ZENOH_FUNC_ENTRY(node);
+
+  (void)node;
+  (void)client;
+  (void)is_available;
+  RMW_ZENOH_LOG_INFO("function not implemented");
+  return RMW_RET_UNSUPPORTED;
+}

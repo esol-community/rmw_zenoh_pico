@@ -101,3 +101,38 @@ rmw_service_request_subscription_get_actual_qos(
 
   return RMW_RET_OK;
 }
+
+rmw_ret_t
+rmw_send_response(
+  const rmw_service_t * service,
+  rmw_request_id_t * request_header,
+  void * ros_response)
+{
+  RMW_ZENOH_FUNC_ENTRY(service);
+
+  RMW_CHECK_TYPE_IDENTIFIERS_MATCH(
+    service->implementation_identifier,
+    return RMW_RET_INCORRECT_RMW_IMPLEMENTATION);
+
+  return RMW_RET_OK;
+}
+
+rmw_ret_t
+rmw_take_request(
+  const rmw_service_t * service,
+  rmw_service_info_t * request_header,
+  void * ros_request,
+  bool * taken)
+{
+  RMW_ZENOH_FUNC_ENTRY(service);
+
+  RMW_CHECK_TYPE_IDENTIFIERS_MATCH(
+    service->implementation_identifier,
+    return RMW_RET_INCORRECT_RMW_IMPLEMENTATION);
+
+  if (taken != NULL) {
+    *taken = false;
+  }
+
+  return RMW_RET_OK;
+}
