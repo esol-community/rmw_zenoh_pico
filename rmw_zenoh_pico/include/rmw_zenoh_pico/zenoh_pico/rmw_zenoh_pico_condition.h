@@ -14,7 +14,7 @@
  * limitations under the License.
  */
 
-#include <rmw_zenoh_pico/rmw_zenoh_pico_receiveMessage.h>
+#include <rmw_zenoh_pico/rmw_zenoh_pico_rosMessage.h>
 #include <rmw_zenoh_pico/rmw_zenoh_pico_wait.h>
 
 #ifndef RMW_ZENOH_PICO_CONDITION_H

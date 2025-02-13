@@ -57,7 +57,7 @@
 #include <rmw_zenoh_pico/zenoh_pico/rmw_zenoh_pico_string.h>
 #include <rmw_zenoh_pico/zenoh_pico/rmw_zenoh_pico_condition.h>
 
-#include <rmw_zenoh_pico/rmw_zenoh_pico_receiveMessage.h>
+#include <rmw_zenoh_pico/rmw_zenoh_pico_rosMessage.h>
 #include <rmw_zenoh_pico/rmw_zenoh_pico_messageType.h>
 
 #include <rmw_zenoh_pico/rmw_zenoh_pico_identifiers.h>

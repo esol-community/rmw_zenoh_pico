@@ -19,6 +19,127 @@
 
 z_owned_mutex_t mutex_ReceiveMessageData;
 
+void set_ros2_header(uint8_t *msg_bytes)
+{
+// This magic code is said to be used to evaluate endianness.
+// How it is actually managed requires separate investigation.
+  const uint8_t _header[] = {0x00, 0x01, 0x00, 0x00};
+
+  memcpy(msg_bytes, _header, 4);
+}
+
+static bool
+rmw_zenoh_pico_deserialize(ReceiveMessageData *msg_data,
+			   const message_type_support_callbacks_t *callbacks,
+			   void * ros_message)
+{
+  ucdrBuffer temp_buffer;
+
+  ucdr_init_buffer(&temp_buffer,
+		   msg_data->payload_start +SUB_MSG_OFFSET,
+		   msg_data->payload_size -SUB_MSG_OFFSET);
+
+  bool ret = callbacks->cdr_deserialize(
+    &temp_buffer,
+    ros_message);
+
+  return ret;
+}
+
+rmw_ret_t zenoh_pico_publish(ZenohPicoPubData *pub_data,
+			     const void * ros_message)
+{
+  z_mutex_lock(z_loan_mut(pub_data->mutex));
+
+  size_t serialized_size = pub_data->callbacks->get_serialized_size(ros_message);
+
+  uint8_t * msg_bytes = (uint8_t *)TOPIC_MALLOC(serialized_size +SUB_MSG_OFFSET);
+  RMW_CHECK_FOR_NULL_WITH_MSG(
+    msg_bytes,
+    "failed to allocate memory for the serialized",
+    return RMW_RET_ERROR);
+  memset(msg_bytes, 0, serialized_size +SUB_MSG_OFFSET);
+
+  ucdrBuffer temp_buffer;
+  ucdr_init_buffer(&temp_buffer,
+		   msg_bytes +SUB_MSG_OFFSET,
+		   serialized_size);
+
+  bool ret = pub_data->callbacks->cdr_serialize(ros_message, &temp_buffer);
+
+  set_ros2_header(msg_bytes);
+
+  if(rmw_zenoh_pico_debug_level_get() == _Z_LOG_LVL_DEBUG){
+    (void)zenoh_pico_debug_dump_msg(msg_bytes, serialized_size +SUB_MSG_OFFSET);
+  }
+
+  // set attachment to option
+  z_publisher_put_options_t options;
+  z_publisher_put_options_default(&options);
+
+  // gen attachment data
+  z_owned_bytes_t attachment;
+  zenoh_pico_inc_sequence_num(&pub_data->attachment);
+  if(_Z_IS_OK(zenoh_pico_attachment_gen(&pub_data->attachment, &attachment))){
+    options.attachment = z_move(attachment);
+  }
+
+  // put publish data
+  z_owned_bytes_t payload;
+  z_bytes_copy_from_buf(&payload, msg_bytes, serialized_size + SUB_MSG_OFFSET);
+  z_publisher_put(z_loan(pub_data->publisher),
+		  z_move(payload),
+		  &options);
+
+  TOPIC_FREE(msg_bytes);
+  z_drop(z_move(attachment));
+
+  z_mutex_unlock(z_loan_mut(pub_data->mutex));
+
+  return RMW_RET_OK;
+}
+
+rmw_ret_t
+zenoh_pico_take(ZenohPicoSubData * sub_data,
+		void * ros_message,
+		rmw_message_info_t * message_info,
+		bool * taken)
+{
+  *taken = false;
+
+  ReceiveMessageData *msg_data = recv_msg_list_pop(&sub_data->message_queue);
+
+  const message_type_support_callbacks_t *callbacks = sub_data->callbacks;
+
+  bool deserialize_rv = rmw_zenoh_pico_deserialize(msg_data, callbacks, ros_message);
+
+  if (message_info != NULL) {
+    message_info->source_timestamp		= msg_data->attachment.timestamp;
+    message_info->received_timestamp		= msg_data->recv_timestamp;
+    message_info->publication_sequence_number	= msg_data->attachment.sequence_num;
+    message_info->reception_sequence_number	= 0;
+
+    message_info->publisher_gid.implementation_identifier = rmw_get_implementation_identifier();
+
+    const uint8_t *gid_ptr = z_slice_data(z_loan(msg_data->attachment.gid));
+    size_t gid_len = z_slice_len(z_loan(msg_data->attachment.gid));
+    memcpy(message_info->publisher_gid.data, gid_ptr, gid_len);
+
+    message_info->from_intra_process = false;
+  }
+
+  if (taken != NULL) {
+    *taken = deserialize_rv;
+  }
+
+  if (!deserialize_rv) {
+    RMW_SET_ERROR_MSG("Typesupport deserialize error.");
+    return RMW_RET_ERROR;
+  }
+
+  return RMW_RET_OK;
+}
+
 ReceiveMessageData * zenoh_pico_generate_recv_msg_data(const z_loaned_sample_t *sample,
 						       time_t recv_ts)
 {
@@ -71,11 +192,11 @@ bool zenoh_pico_delete_recv_msg_data(ReceiveMessageData * recv_data)
 }
 
 #define PAYLOAD_DUMP_MAX 32
-void zenoh_pico_debug_dump_msg(uint8_t *start, size_t size)
+void zenoh_pico_debug_dump_msg(const uint8_t *start, size_t size)
 {
   printf("size = [%d]\n", (int)size);
   for(size_t count = 0; count < size  && count <= PAYLOAD_DUMP_MAX; count += 4){
-    uint8_t *ptr = start + count;
+    const uint8_t *ptr = start + count;
 
     if((size -count)>= 4){
       printf("%02x %02x %02x %02x\t%c %c %c %c",

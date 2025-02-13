@@ -81,7 +81,7 @@ set(SRCS
   src/zenoh_pico/zenoh_pico_entity.c
   src/zenoh_pico/zenoh_pico_liveliness.c
   src/zenoh_pico/zenoh_pico_nodeInfo.c
-  src/zenoh_pico/zenoh_pico_receiveMessage.c
+  src/zenoh_pico/zenoh_pico_rosMessage.c
   src/zenoh_pico/zenoh_pico_messageType.c
   src/zenoh_pico/zenoh_pico_string.c
   src/zenoh_pico/zenoh_pico_attach.c

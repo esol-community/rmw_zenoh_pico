@@ -15,67 +15,6 @@
 
 #include <rmw_zenoh_pico/rmw_zenoh_pico.h>
 
-bool rmw_zenoh_pico_deserialize(ReceiveMessageData *msg_data,
-				const message_type_support_callbacks_t *callbacks,
-				void * ros_message)
-{
-  ucdrBuffer temp_buffer;
-  ucdr_init_buffer_origin_offset(
-    &temp_buffer,
-    msg_data->payload_start,
-    msg_data->payload_size,
-    0,
-    SUB_MSG_OFFSET
-    );
-
-  bool ret = callbacks->cdr_deserialize(
-    &temp_buffer,
-    ros_message);
-
-  return ret;
-}
-
-static rmw_ret_t
-__rmw_take_one(ZenohPicoSubData * sub_data,
-	       void * ros_message,
-	       rmw_message_info_t * message_info,
-	       bool * taken)
-{
-  *taken = false;
-
-  ReceiveMessageData *msg_data = recv_msg_list_pop(&sub_data->message_queue);
-
-  const message_type_support_callbacks_t *callbacks = sub_data->callbacks;
-
-  bool deserialize_rv = rmw_zenoh_pico_deserialize(msg_data, callbacks, ros_message);
-
-  if (message_info != NULL) {
-    message_info->source_timestamp		= msg_data->attachment.timestamp;
-    message_info->received_timestamp		= msg_data->recv_timestamp;
-    message_info->publication_sequence_number	= msg_data->attachment.sequence_num;
-    message_info->reception_sequence_number	= 0;
-
-    message_info->publisher_gid.implementation_identifier = rmw_get_implementation_identifier();
-
-    const uint8_t *gid_ptr = z_slice_data(z_loan(msg_data->attachment.gid));
-    size_t gid_len = z_slice_len(z_loan(msg_data->attachment.gid));
-    memcpy(message_info->publisher_gid.data, gid_ptr, gid_len);
-
-    message_info->from_intra_process = false;
-  }
-
-  if (taken != NULL) {
-    *taken = deserialize_rv;
-  }
-
-  if (!deserialize_rv) {
-    RMW_SET_ERROR_MSG("Typesupport deserialize error.");
-    return RMW_RET_ERROR;
-  }
-
-  return RMW_RET_OK;
-}
-
 rmw_ret_t
 rmw_take(const rmw_subscription_t * subscription,
 	 void * ros_message,
@@ -97,7 +36,7 @@ rmw_take(const rmw_subscription_t * subscription,
   ZenohPicoSubData *sub_data = (ZenohPicoSubData *)subscription->data;
   RMW_CHECK_ARGUMENT_FOR_NULL(sub_data, RMW_RET_INVALID_ARGUMENT);
 
-  return __rmw_take_one(sub_data, ros_message, NULL, taken);
+  return zenoh_pico_take(sub_data, ros_message, NULL, taken);
 }
 
 rmw_ret_t
@@ -123,7 +62,7 @@ rmw_take_with_info(const rmw_subscription_t * subscription,
   ZenohPicoSubData *sub_data = (ZenohPicoSubData *)subscription->data;
   RMW_CHECK_ARGUMENT_FOR_NULL(sub_data, RMW_RET_INVALID_ARGUMENT);
 
-  return __rmw_take_one(sub_data, ros_message, message_info, taken);
+  return zenoh_pico_take(sub_data, ros_message, message_info, taken);
 }
 
 rmw_ret_t
@@ -181,7 +120,7 @@ rmw_take_sequence(const rmw_subscription_t * subscription,
   while (*taken < count) {
     bool one_taken = false;
 
-    ret = __rmw_take_one(
+    ret = zenoh_pico_take(
       sub_data, message_sequence->data[*taken],
       &message_info_sequence->data[*taken], &one_taken);
     if (ret != RMW_RET_OK) {

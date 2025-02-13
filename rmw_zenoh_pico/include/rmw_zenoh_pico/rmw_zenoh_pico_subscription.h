@@ -26,7 +26,7 @@
 #include <rmw_zenoh_pico/zenoh_pico/rmw_zenoh_pico_liveliness.h>
 
 #include <rmw_zenoh_pico/rmw_zenoh_pico_node.h>
-#include <rmw_zenoh_pico/rmw_zenoh_pico_receiveMessage.h>
+#include <rmw_zenoh_pico/rmw_zenoh_pico_rosMessage.h>
 #include <rmw_zenoh_pico/rmw_zenoh_pico_event_callbacks.h>
 #include <rmw_zenoh_pico/rmw_zenoh_pico_wait.h>
 

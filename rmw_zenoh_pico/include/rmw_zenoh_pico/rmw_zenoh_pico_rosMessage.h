@@ -14,13 +14,16 @@
  * limitations under the License.
  */
 
-#ifndef RMW_ZENOH_PICO_RECEIVE_MESSAGE_H
-#define RMW_ZENOH_PICO_RECEIVE_MESSAGE_H
+#ifndef RMW_ZENOH_PICO_ROS_MESSAGE_H
+#define RMW_ZENOH_PICO_ROS_MESSAGE_H
 
 #include <rmw/rmw.h>
 #include <zenoh-pico.h>
 
 #include <rmw_zenoh_pico/zenoh_pico/rmw_zenoh_pico_attach.h>
+
+typedef struct _ZenohPicoPubData ZenohPicoPubData;
+typedef struct _ZenohPicoSubData ZenohPicoSubData;
 
 #if defined(__cplusplus)
 extern "C"
@@ -54,7 +57,7 @@ extern "C"
     const z_loaned_sample_t *sample,
     time_t recv_ts);
   extern bool zenoh_pico_delete_recv_msg_data(ReceiveMessageData * recv_data);
-  extern void zenoh_pico_debug_dump_msg(uint8_t *start, size_t size);
+  extern void zenoh_pico_debug_dump_msg(const uint8_t *start, size_t size);
   extern void zenoh_pico_debug_recv_msg_data(ReceiveMessageData * recv_data);
 
   extern void recv_msg_list_init(ReceiveMessageDataList *msg_list);
@@ -64,6 +67,15 @@ extern "C"
   extern int recv_msg_list_count(ReceiveMessageDataList *msg_list);
   extern bool recv_msg_list_empty(ReceiveMessageDataList *msg_list);
   extern void recv_msg_list_debug(ReceiveMessageDataList *msg_list);
+
+  extern void set_ros2_header(uint8_t *msg_bytes);
+  extern rmw_ret_t zenoh_pico_publish(ZenohPicoPubData *pub_data,
+				      const void * ros_message);
+
+  extern rmw_ret_t zenoh_pico_take(ZenohPicoSubData * sub_data,
+				   void * ros_message,
+				   rmw_message_info_t * message_info,
+				   bool * taken);
 
 #if defined(__cplusplus)
 }
