@@ -265,61 +265,33 @@ static bool undeclaration_subscription_data(ZenohPicoSubData *sub_data)
 
 static void subscription_condition_trigger(ZenohPicoSubData *sub_data)
 {
-  RMW_ZENOH_FUNC_ENTRY(NULL);
+  ZenohPicoWaitCondition cond;
+  cond.condition_mutex		= z_loan_mut(sub_data->condition_mutex);
+  cond.msg_queue		= &sub_data->message_queue;
+  cond.wait_set_data_ptr	= &sub_data->wait_set_data;
 
-  z_mutex_lock(z_loan_mut(sub_data->condition_mutex));
-
-  if(sub_data->wait_set_data != NULL) {
-    ZenohPicoWaitSetData * wait_set_data = sub_data->wait_set_data;
-
-    wait_condition_lock(wait_set_data);
-
-    wait_condition_triggered(wait_set_data, true);
-    wait_condition_signal(wait_set_data);
-
-    wait_condition_unlock(wait_set_data);
-  }
-
-  z_mutex_unlock(z_loan_mut(sub_data->condition_mutex));
+  zenoh_pico_condition_trigger(&cond);
 }
 
 bool subscription_condition_check_and_attach(ZenohPicoSubData *sub_data,
 					     ZenohPicoWaitSetData * wait_set_data)
 {
-  bool ret;
+  ZenohPicoWaitCondition cond;
+  cond.condition_mutex		= z_loan_mut(sub_data->condition_mutex);
+  cond.msg_queue		= &sub_data->message_queue;
+  cond.wait_set_data_ptr	= &sub_data->wait_set_data;
 
-  RMW_ZENOH_FUNC_ENTRY(NULL);
-
-  z_mutex_lock(z_loan_mut(sub_data->condition_mutex));
-
-  if(!recv_msg_list_empty(&sub_data->message_queue)){
-    RMW_ZENOH_LOG_INFO("queue_has_data_and_attach_condition_if_notmessage_queue size is %d",
-		       recv_msg_list_count(&sub_data->message_queue));
-    z_mutex_unlock(z_loan_mut(sub_data->condition_mutex));
-    return true;
-  }
-
-  sub_data->wait_set_data = wait_set_data;
-
-  z_mutex_unlock(z_loan_mut(sub_data->condition_mutex));
-
-  return false;
+  return zenoh_pico_condition_check_and_attach(&cond, wait_set_data);
 }
 
 bool subscription_condition_detach_and_queue_is_empty(ZenohPicoSubData *sub_data)
 {
-  bool ret;
+  ZenohPicoWaitCondition cond;
+  cond.condition_mutex		= z_loan_mut(sub_data->condition_mutex);
+  cond.msg_queue		= &sub_data->message_queue;
+  cond.wait_set_data_ptr	= &sub_data->wait_set_data;
 
-  RMW_ZENOH_FUNC_ENTRY(NULL);
-
-  z_mutex_lock(z_loan_mut(sub_data->condition_mutex));
-
-  sub_data->wait_set_data = NULL;
-  ret = recv_msg_list_empty(&sub_data->message_queue);
-
-  z_mutex_unlock(z_loan_mut(sub_data->condition_mutex));
-
-  return ret;
+  return zenoh_pico_condition_detach_and_queue_is_empty(&cond);
 }
 
 rmw_ret_t
@@ -328,7 +300,7 @@ rmw_init_subscription_allocation(
   const rosidl_runtime_c__Sequence__bound * message_bounds,
   rmw_subscription_allocation_t * allocation)
 {
-  RMW_ZENOH_FUNC_ENTRY(NULL);
+  // RMW_ZENOH_FUNC_ENTRY(NULL);
 
   (void)type_support;
   (void)message_bounds;

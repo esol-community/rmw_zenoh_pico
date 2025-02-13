@@ -46,3 +46,54 @@ z_result_t z_condvar_timewait(z_loaned_condvar_t *cv, z_loaned_mutex_t *mp, stru
 #include "zenoh-pico/system/platform/void.h"
 #error "Unknown platform"
 #endif
+
+void zenoh_pico_condition_trigger(ZenohPicoWaitCondition *cond){
+
+  z_mutex_lock(cond->condition_mutex);
+
+  if(*cond->wait_set_data_ptr != NULL) {
+    ZenohPicoWaitSetData * wait_set_data = *cond->wait_set_data_ptr;
+
+    wait_condition_lock(wait_set_data);
+
+    wait_condition_triggered(wait_set_data, true);
+    wait_condition_signal(wait_set_data);
+
+    wait_condition_unlock(wait_set_data);
+  }
+
+  z_mutex_unlock(cond->condition_mutex);
+}
+
+bool zenoh_pico_condition_check_and_attach(ZenohPicoWaitCondition *cond,
+					   ZenohPicoWaitSetData *wait_set_data)
+{
+  z_mutex_lock(cond->condition_mutex);
+
+  if(!recv_msg_list_empty(cond->msg_queue)){
+    RMW_ZENOH_LOG_INFO("queue_has_data_and_attach_condition_if_notmessage_queue size is %d",
+		       recv_msg_list_count(cond->msg_queue));
+    z_mutex_unlock(cond->condition_mutex);
+    return true;
+  }
+
+  *cond->wait_set_data_ptr = wait_set_data;
+
+  z_mutex_unlock(cond->condition_mutex);
+
+  return false;
+}
+
+bool zenoh_pico_condition_detach_and_queue_is_empty(ZenohPicoWaitCondition *cond)
+{
+  bool ret;
+
+  z_mutex_lock(cond->condition_mutex);
+
+  *cond->wait_set_data_ptr = NULL;
+  ret = recv_msg_list_empty(cond->msg_queue);
+
+  z_mutex_unlock(cond->condition_mutex);
+
+  return ret;
+}
