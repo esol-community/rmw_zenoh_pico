@@ -20,6 +20,7 @@
 #include "rmw_zenoh_pico/rmw_zenoh_pico_logging.h"
 #include "zenoh-pico/api/primitives.h"
 #include "zenoh-pico/api/types.h"
+#include "zenoh-pico/utils/result.h"
 
 #include <rmw_zenoh_pico/rmw_zenoh_pico.h>
 
@@ -141,19 +142,19 @@ static bool add_delimiter(char **buf, int *left)
   return true;
 }
 
-#define APPEND_VALUE(v, b, s)					\
+#define APPEND_VALUE(v)						\
   _Generic((v),							\
 	   size_t : add_int_value,				\
 	   const char * : add_string_value,			\
 	   const z_loaned_string_t *: add_loan_string_value	\
-    )(v, b, s)
+    )(v, &buf_ptr, &left_size)
 
-#define APPEND_DELIMITER(b, s)  add_delimiter(b, s)
+#define APPEND_DELIMITER()  add_delimiter(&buf_ptr, &left_size)
 
 z_result_t generate_liveliness(ZenohPicoEntity *entity, z_owned_string_t *value)
 {
   char buf[RMW_ZENOH_PICO_MAX_LINENESS_LEN];
-  int left_size = sizeof(buf);
+  int left_size = sizeof(buf) -1;
   char *buf_ptr = buf;
 
   memset(buf, 0, sizeof(buf));
@@ -162,57 +163,57 @@ z_result_t generate_liveliness(ZenohPicoEntity *entity, z_owned_string_t *value)
   if(entity->node_info != NULL) {
 
     // append admin header
-    APPEND_VALUE(ADMIN_SPACE, &buf_ptr, &left_size);
+    APPEND_VALUE(ADMIN_SPACE);
 
     // append domain id
-    APPEND_DELIMITER(&buf_ptr, &left_size);
-    APPEND_VALUE(get_node_domain(entity), &buf_ptr, &left_size);
+    APPEND_DELIMITER();
+    APPEND_VALUE(get_node_domain(entity));
 
     // append zid
-    APPEND_DELIMITER(&buf_ptr, &left_size);
-    APPEND_VALUE(get_zid(entity), &buf_ptr, &left_size);
+    APPEND_DELIMITER();
+    APPEND_VALUE(get_zid(entity));
 
     // append nid
-    APPEND_DELIMITER(&buf_ptr, &left_size);
-    APPEND_VALUE(get_nid(entity), &buf_ptr, &left_size);
+    APPEND_DELIMITER();
+    APPEND_VALUE(get_nid(entity));
 
     // append id
-    APPEND_DELIMITER(&buf_ptr, &left_size);
-    APPEND_VALUE(get_id(entity), &buf_ptr, &left_size);
+    APPEND_DELIMITER();
+    APPEND_VALUE(get_id(entity));
 
     // append type
-    APPEND_DELIMITER(&buf_ptr, &left_size);
-    APPEND_VALUE(conv_entity_type(entity->type), &buf_ptr, &left_size);
+    APPEND_DELIMITER();
+    APPEND_VALUE(conv_entity_type(entity->type));
 
     // append node_enclave
-    APPEND_DELIMITER(&buf_ptr, &left_size);
-    APPEND_VALUE(get_node_enclave(entity), &buf_ptr, &left_size);
+    APPEND_DELIMITER();
+    APPEND_VALUE(get_node_enclave(entity));
 
     // append node_namespace
-    APPEND_DELIMITER(&buf_ptr, &left_size);
-    APPEND_VALUE(get_node_namespace(entity), &buf_ptr, &left_size);
+    APPEND_DELIMITER();
+    APPEND_VALUE(get_node_namespace(entity));
 
     // append node_name
-    APPEND_DELIMITER(&buf_ptr, &left_size);
-    APPEND_VALUE(get_node_name(entity), &buf_ptr, &left_size);
+    APPEND_DELIMITER();
+    APPEND_VALUE(get_node_name(entity));
 
     if(entity->topic_info != NULL) {
 
       // append topic_name
-      APPEND_DELIMITER(&buf_ptr, &left_size);
-      APPEND_VALUE(get_topic_name(entity), &buf_ptr, &left_size);
+      APPEND_DELIMITER();
+      APPEND_VALUE(get_topic_name(entity));
 
       // append topic_type
-      APPEND_DELIMITER(&buf_ptr, &left_size);
-      APPEND_VALUE(get_topic_type(entity), &buf_ptr, &left_size);
+      APPEND_DELIMITER();
+      APPEND_VALUE(get_topic_type(entity));
 
       // append topic_hash
-      APPEND_DELIMITER(&buf_ptr, &left_size);
-      APPEND_VALUE(get_topic_hash(entity), &buf_ptr, &left_size);
+      APPEND_DELIMITER();
+      APPEND_VALUE(get_topic_hash(entity));
 
       // append topic_qos(
-      APPEND_DELIMITER(&buf_ptr, &left_size);
-      APPEND_VALUE(get_topic_qos(entity), &buf_ptr, &left_size);
+      APPEND_DELIMITER();
+      APPEND_VALUE(get_topic_qos(entity));
     }
   }
 
@@ -273,17 +274,19 @@ z_result_t convert_hash(const rosidl_type_hash_t * type_hash, z_owned_string_t *
 }
 
 #define TYPE_NAME_LEN 128
-z_result_t convert_message_type(const message_type_support_callbacks_t *callbacks, z_owned_string_t *value)
+static z_result_t _convert_message_type(const char *message_namespace,
+					const char *message_name,
+					z_owned_string_t *value)
 {
   char _type_name[TYPE_NAME_LEN];
 
-  if(callbacks->message_name_ != NULL)
+  if(message_name != NULL)
     snprintf(_type_name, sizeof(_type_name), "%s::dds_::%s_",
-	     callbacks->message_namespace_,
-	     callbacks->message_name_);
+	     message_namespace,
+	     message_name);
   else
     snprintf(_type_name, sizeof(_type_name), "dds_::%s_",
-	     callbacks->message_name_);
+	     message_name);
 
   z_result_t ret = z_string_copy_from_str(value, _type_name);
 
@@ -297,24 +300,107 @@ z_result_t convert_message_type(const message_type_support_callbacks_t *callback
   return ret;
 }
 
+z_result_t convert_message_type(const message_type_support_callbacks_t *callbacks,
+				z_owned_string_t *value)
+{
+  return _convert_message_type(callbacks->message_namespace_,
+			       callbacks->message_name_,
+			       value);
+}
+
+z_result_t convert_client_type(const message_type_support_callbacks_t *callbacks,
+			       z_owned_string_t *value)
+{
+  const char *suffix_position = strstr(callbacks->message_name_, "_Request");
+  if(suffix_position == NULL){
+    RMW_SET_ERROR_MSG_WITH_FORMAT_STRING("Unexpected type %s for client %s. Report this bug",
+					 callbacks->message_name_,
+					 callbacks->message_name_);
+    return _Z_ERR_GENERIC;
+  }
+
+  char service_type[128];
+  memset(service_type, 0, sizeof(service_type));
+  memcpy(service_type, callbacks->message_name_, suffix_position - callbacks->message_name_);
+
+  return _convert_message_type(callbacks->message_namespace_,
+			       service_type,
+			       value);
+}
+
+static inline bool qos_append_value(int value, char **buf, size_t *left)
+{
+  if(*left <= 0)
+    return false;
+
+  if(value != 0){
+    // join value string
+    int ret = snprintf(*buf, *left, "%d", (int)value);
+
+    *buf += ret;
+    *left -= ret;
+  }
+
+  return true;
+}
+
+static inline bool qos_add_delimiter(char delimiter, char **buf, size_t *left)
+{
+  if(*left <= 0)
+    return false;
+
+  **buf = delimiter;
+  *buf += 1;
+  *left -= 1;
+
+  return true;
+}
+
+#define QOS_APPEND_VALUE(v) qos_append_value(v, &buf_ptr, &left_size)
+#define QOS_APPEND_DELIMITER(v) qos_add_delimiter(v, &buf_ptr, &left_size)
+
 z_result_t qos_to_keyexpr(rmw_qos_profile_t *qos, z_owned_string_t *value)
 {
   char qos_data[64];
 
   memset(qos_data, 0, sizeof(qos_data));
-  snprintf(qos_data, sizeof(qos_data),
-	   "%d%c%d%c%d%c%d%c%d%c%d%c%d%c%d%c%d%c%d%c%d",
-	   qos->reliability, QOS_DELIMITER,
-	   qos->durability,  QOS_DELIMITER,
-	   (int)qos->history, QOS_COMPONENT_DELIMITER,
-	   (int)qos->depth, QOS_DELIMITER,
-	   (int)qos->deadline.sec, QOS_COMPONENT_DELIMITER,
-	   (int)qos->deadline.nsec, QOS_DELIMITER,
-	   (int)qos->lifespan.sec, QOS_COMPONENT_DELIMITER,
-	   (int)qos->lifespan.nsec, QOS_DELIMITER,
-	   qos->liveliness, QOS_COMPONENT_DELIMITER,
-	   (int)qos->liveliness_lease_duration.sec, QOS_COMPONENT_DELIMITER,
-	   (int)qos->liveliness_lease_duration.nsec);
+  char *buf_ptr = qos_data;
+  size_t left_size = sizeof(qos_data) -1;
+
+  if(qos != NULL){
+
+    QOS_APPEND_VALUE(qos->reliability);
+    QOS_APPEND_DELIMITER(QOS_DELIMITER);
+
+    QOS_APPEND_VALUE(qos->durability);
+    QOS_APPEND_DELIMITER(QOS_DELIMITER);
+
+    QOS_APPEND_VALUE((int)qos->history);
+    QOS_APPEND_DELIMITER(QOS_COMPONENT_DELIMITER);
+
+    QOS_APPEND_VALUE((int)qos->depth);
+    QOS_APPEND_DELIMITER(QOS_DELIMITER);
+
+    QOS_APPEND_VALUE((int)qos->deadline.sec);
+    QOS_APPEND_DELIMITER(QOS_COMPONENT_DELIMITER);
+
+    QOS_APPEND_VALUE((int)qos->deadline.nsec);
+    QOS_APPEND_DELIMITER(QOS_DELIMITER);
+
+    QOS_APPEND_VALUE((int)qos->lifespan.sec);
+    QOS_APPEND_DELIMITER(QOS_COMPONENT_DELIMITER);
+
+    QOS_APPEND_VALUE((int)qos->lifespan.nsec);
+    QOS_APPEND_DELIMITER(QOS_DELIMITER);
+
+    QOS_APPEND_VALUE(qos->liveliness);
+    QOS_APPEND_DELIMITER(QOS_COMPONENT_DELIMITER);
+
+    QOS_APPEND_VALUE((int)qos->liveliness_lease_duration.sec);
+    QOS_APPEND_DELIMITER(QOS_COMPONENT_DELIMITER);
+
+    QOS_APPEND_VALUE((int)qos->liveliness_lease_duration.nsec);
+  }
 
   return z_string_copy_from_str(value, qos_data);
 }

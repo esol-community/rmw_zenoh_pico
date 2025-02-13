@@ -18,11 +18,13 @@
 
 void test_qos_profile(rmw_qos_profile_t *qos) {
   // Reliability.
-  qos->reliability	= RMW_QOS_POLICY_RELIABILITY_RELIABLE; // 1;
+  qos->reliability	= RMW_QOS_POLICY_RELIABILITY_SYSTEM_DEFAULT; // 0;
+  // qos->reliability	= RMW_QOS_POLICY_RELIABILITY_RELIABLE; // 1;
   // Durability.
   qos->durability	= RMW_QOS_POLICY_DURABILITY_VOLATILE;  // 2;
   // History.
-  qos->history	        = RMW_QOS_POLICY_HISTORY_KEEP_LAST;    // 1;
+  qos->history	        = RMW_QOS_POLICY_HISTORY_SYSTEM_DEFAULT; // 0
+  // qos->history       = RMW_QOS_POLICY_HISTORY_KEEP_LAST;    // 1;
   qos->depth		= 10;
   // Deadline.
   qos->deadline.sec	= 0;
