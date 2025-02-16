@@ -40,7 +40,7 @@ extern "C"
     size_t id;
 
     // Liveliness key for the node.
-    z_owned_string_t token_key;
+    z_owned_string_t liveliness_key;
 
     // Liveliness token for the node.
     z_owned_liveliness_token_t token;

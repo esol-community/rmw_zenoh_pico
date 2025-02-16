@@ -67,8 +67,8 @@ ZenohPicoNodeData * zenoh_pico_generate_node_data(size_t domain_id,
   node_data->id	        = node_id;
 
   // generate key from entity data
-  z_string_empty(&node_data->token_key);
-  if(_Z_IS_ERR(generate_liveliness(entity, &node_data->token_key))){
+  z_string_empty(&node_data->liveliness_key);
+  if(_Z_IS_ERR(generate_liveliness(entity, &node_data->liveliness_key))){
     RMW_SET_ERROR_MSG("failed generate_liveliness()");
     goto error;
   }
@@ -100,7 +100,7 @@ bool zenoh_pico_destroy_node_data(ZenohPicoNodeData *node_data)
 
   z_liveliness_undeclare_token(z_move(node_data->token));
 
-  z_drop(z_move(node_data->token_key));
+  z_drop(z_move(node_data->liveliness_key));
 
   // delete entity
   if(node_data->entity != NULL){
@@ -118,7 +118,7 @@ void zenoh_pico_debug_node_data(ZenohPicoNodeData *node_data)
   printf("--------- node data ----------\n");
   printf("ref = %d\n", node_data->ref);
 
-  Z_STRING_PRINTF(node_data->token_key, token_key);
+  Z_STRING_PRINTF(node_data->liveliness_key, liveliness_key);
 
   // debug entity member
   zenoh_pico_debug_entity(node_data->entity);
@@ -131,7 +131,7 @@ static bool declaration_node_data(ZenohPicoNodeData *node_data)
   ZenohPicoSession *session = node_data->session;
 
   z_view_keyexpr_t ke;
-  const z_loaned_string_t *keyexpr = z_loan(node_data->token_key);
+  const z_loaned_string_t *keyexpr = z_loan(node_data->liveliness_key);
   z_view_keyexpr_from_substr(&ke, z_string_data(keyexpr), z_string_len(keyexpr));
   if(_Z_IS_ERR(z_liveliness_declare_token(z_loan(session->session),
 					  &node_data->token,

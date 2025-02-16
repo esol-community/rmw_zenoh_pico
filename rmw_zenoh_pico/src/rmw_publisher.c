@@ -76,8 +76,8 @@ static ZenohPicoPubData * zenoh_pico_generate_publisher_data(
   pub_data->adapted_qos_profile		= *qos_profile;
 
   // generate key from entity data
-  z_string_empty(&pub_data->token_key);
-  if(_Z_IS_ERR(generate_liveliness(entity, &pub_data->token_key))){
+  z_string_empty(&pub_data->liveliness_key);
+  if(_Z_IS_ERR(generate_liveliness(entity, &pub_data->liveliness_key))){
     RMW_SET_ERROR_MSG("failed generate_liveliness()");
     goto error;
   }
@@ -130,11 +130,11 @@ static bool zenoh_pico_destroy_publisher_data(ZenohPicoPubData *pub_data)
 
   (void)undeclaration_publisher_data(pub_data);
 
-  z_drop(z_move(pub_data->token_key));
+  z_drop(z_move(pub_data->liveliness_key));
   z_drop(z_move(pub_data->topic_key));
 
-  z_drop(z_move(pub_data->token));
-  z_drop(z_move(pub_data->publisher));
+  z_drop(z_move(pub_data->liveliness));
+  z_drop(z_move(pub_data->topic));
 
   attachment_destroy(&pub_data->attachment);
   z_drop(z_move(pub_data->mutex));
@@ -159,7 +159,7 @@ static void zenoh_pico_debug_publisher_data(ZenohPicoPubData *pub_data)
   printf("--------- publisher data ----------\n");
   printf("ref = %d\n", pub_data->ref);
 
-  Z_STRING_PRINTF(pub_data->token_key, token_key);
+  Z_STRING_PRINTF(pub_data->liveliness_key, liveliness_key);
   Z_STRING_PRINTF(pub_data->topic_key, topic_key);
 
   // debug attachment
@@ -176,7 +176,7 @@ static bool declaration_publisher_data(ZenohPicoPubData *pub_data)
   ZenohPicoSession *session = pub_data->node->session;
 
   // liveliness token declare
-  (void)declaration_liveliness(session, z_loan(pub_data->token_key), &pub_data->token);
+  (void)declaration_liveliness(session, z_loan(pub_data->liveliness_key), &pub_data->liveliness);
 
 
   z_publisher_options_t options;
@@ -193,7 +193,7 @@ static bool declaration_publisher_data(ZenohPicoPubData *pub_data)
   const z_loaned_string_t *keyexpr = z_loan(pub_data->topic_key);
   z_view_keyexpr_from_substr(&ke, z_string_data(keyexpr), z_string_len(keyexpr));
   if(_Z_IS_ERR(z_declare_publisher(z_loan(session->session),
-				   &pub_data->publisher,
+				   &pub_data->topic,
 				   z_loan(ke),
 				   &options))){
     RMW_ZENOH_LOG_INFO("Unable to declare publisher.");
@@ -207,9 +207,9 @@ static bool undeclaration_publisher_data(ZenohPicoPubData *pub_data)
 {
   RMW_ZENOH_FUNC_ENTRY(NULL);
 
-  z_undeclare_publisher(z_move(pub_data->publisher));
+  z_undeclare_publisher(z_move(pub_data->topic));
 
-  z_liveliness_undeclare_token(z_move(pub_data->token));
+  z_liveliness_undeclare_token(z_move(pub_data->liveliness));
 
   return true;
 }

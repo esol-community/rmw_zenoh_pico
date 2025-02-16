@@ -43,12 +43,11 @@ extern "C"
     size_t id;
 
     // Liveliness token for the subscriber.
-    z_owned_string_t token_key;
-    z_owned_liveliness_token_t token;
-
-    // the subscriber topic.
+    z_owned_string_t liveliness_key;
     z_owned_string_t topic_key;
-    z_owned_subscriber_t subscriber;
+
+    z_owned_liveliness_token_t liveliness;
+    z_owned_subscriber_t topic;
 
     // this node
     ZenohPicoNodeData *node;

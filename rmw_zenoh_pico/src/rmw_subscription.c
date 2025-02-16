@@ -82,7 +82,7 @@ static ZenohPicoSubData * zenoh_pico_generate_subscription_data(
   sub_data->adapted_qos_profile = *qos_profile;
 
   // generate key from entity data
-  if(_Z_IS_ERR(generate_liveliness(entity, &sub_data->token_key))){
+  if(_Z_IS_ERR(generate_liveliness(entity, &sub_data->liveliness_key))){
     RMW_SET_ERROR_MSG("failed generate_liveliness()");
     goto error;
   }
@@ -128,11 +128,11 @@ static bool zenoh_pico_destroy_subscription_data(ZenohPicoSubData *sub_data)
 
   (void)undeclaration_subscription_data(sub_data);
 
-  z_drop(z_move(sub_data->token_key));
+  z_drop(z_move(sub_data->liveliness_key));
   z_drop(z_move(sub_data->topic_key));
 
-  z_drop(z_move(sub_data->token));
-  z_drop(z_move(sub_data->subscriber));
+  z_drop(z_move(sub_data->liveliness));
+  z_drop(z_move(sub_data->topic));
 
   if(sub_data->node != NULL){
     (void)zenoh_pico_destroy_node_data(sub_data->node);
@@ -171,7 +171,7 @@ static void zenoh_pico_debug_subscription_data(ZenohPicoSubData *sub_data)
   printf("--------- subscription data ----------\n");
   printf("ref = %d\n", sub_data->ref);
 
-  Z_STRING_PRINTF(sub_data->token_key, token_key);
+  Z_STRING_PRINTF(sub_data->liveliness_key, liveliness_key);
   Z_STRING_PRINTF(sub_data->topic_key, topic_key);
 
   printf("message_queue = %d\n", recv_msg_list_count(&sub_data->message_queue));
@@ -228,7 +228,7 @@ static bool declaration_subscription_data(ZenohPicoSubData *sub_data)
   ZenohPicoSession *session = sub_data->node->session;
 
   // liveliness token declare
-  (void)declaration_liveliness(session, z_loan(sub_data->token_key), &sub_data->token);
+  (void)declaration_liveliness(session, z_loan(sub_data->liveliness_key), &sub_data->liveliness);
 
   // declare subscriber
   z_subscriber_options_t options;
@@ -241,7 +241,7 @@ static bool declaration_subscription_data(ZenohPicoSubData *sub_data)
   const z_loaned_string_t *keyexpr = z_loan(sub_data->topic_key);
   z_view_keyexpr_from_substr(&ke, z_string_data(keyexpr), z_string_len(keyexpr));
   if(_Z_IS_ERR(z_declare_subscriber(z_loan(session->session),
-				    &sub_data->subscriber,
+				    &sub_data->topic,
 				    z_loan(ke),
 				    z_move(sub_callback),
 				    &options))){
@@ -256,9 +256,9 @@ static bool undeclaration_subscription_data(ZenohPicoSubData *sub_data)
 {
   RMW_ZENOH_FUNC_ENTRY(NULL);
 
-  z_undeclare_subscriber(z_move(sub_data->subscriber));
+  z_undeclare_subscriber(z_move(sub_data->topic));
 
-  z_liveliness_undeclare_token(z_move(sub_data->token));
+  z_liveliness_undeclare_token(z_move(sub_data->liveliness));
 
   return true;
 }

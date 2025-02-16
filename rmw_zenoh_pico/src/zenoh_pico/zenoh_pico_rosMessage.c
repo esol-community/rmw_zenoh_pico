@@ -100,7 +100,7 @@ rmw_ret_t zenoh_pico_publish(ZenohPicoPubData *pub_data,
   // put publish data
   z_owned_bytes_t payload;
   z_bytes_copy_from_buf(&payload, msg_bytes, alloc_size);
-  z_publisher_put(z_loan(pub_data->publisher),
+  z_publisher_put(z_loan(pub_data->topic),
 		  z_move(payload),
 		  &options);
 

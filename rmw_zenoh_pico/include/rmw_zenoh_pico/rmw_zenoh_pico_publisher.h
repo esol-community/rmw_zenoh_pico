@@ -17,7 +17,6 @@
 #ifndef RMW_ZENOH_PICO_PUBLISHER_H
 #define RMW_ZENOH_PICO_PUBLISHER_H
 
-#include "zenoh-pico/api/types.h"
 #include <rmw/rmw.h>
 #include <stdint.h>
 #include <zenoh-pico.h>
@@ -39,13 +38,12 @@ extern "C"
 
     size_t id;
 
-    // Liveliness token for the publisher.
-    z_owned_string_t token_key;
-    z_owned_liveliness_token_t token;
-
-    // the publisher topic.
+    // Liveliness / topicfor the publisher.
+    z_owned_string_t liveliness_key;
     z_owned_string_t topic_key;
-    z_owned_publisher_t publisher;
+
+    z_owned_liveliness_token_t liveliness;
+    z_owned_publisher_t topic;
 
     // this node
     ZenohPicoNodeData *node;
