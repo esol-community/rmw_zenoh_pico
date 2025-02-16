@@ -19,7 +19,7 @@
 
 z_owned_mutex_t mutex_ReceiveMessageData;
 
-void set_ros2_header(uint8_t *msg_bytes)
+static void set_ros2_header(uint8_t *msg_bytes)
 {
 // This magic code is said to be used to evaluate endianness.
 // How it is actually managed requires separate investigation.
@@ -28,20 +28,48 @@ void set_ros2_header(uint8_t *msg_bytes)
   memcpy(msg_bytes, _header, 4);
 }
 
-static bool
-rmw_zenoh_pico_deserialize(ReceiveMessageData *msg_data,
-			   const message_type_support_callbacks_t *callbacks,
-			   void * ros_message)
+uint8_t * rmw_zenoh_pico_serialize(const message_type_support_callbacks_t *callbacks,
+				   const void * ros_message, size_t *size)
+{
+
+  size_t serialized_size = callbacks->get_serialized_size(ros_message);
+  size_t alloc_size = serialized_size +ROS2_MSG_OFFSET;
+
+  uint8_t * msg_bytes = (uint8_t *)TOPIC_MALLOC(alloc_size);
+  RMW_CHECK_FOR_NULL_WITH_MSG(
+    msg_bytes,
+    "failed to allocate memory for the serialized",
+    return NULL);
+  memset(msg_bytes, 0, alloc_size);
+
+  ucdrBuffer temp_buffer;
+  ucdr_init_buffer(&temp_buffer,
+		   msg_bytes +ROS2_MSG_OFFSET,
+		   serialized_size);
+
+  bool ret = callbacks->cdr_serialize(ros_message, &temp_buffer);
+  set_ros2_header(msg_bytes);
+
+  if(rmw_zenoh_pico_debug_level_get() == _Z_LOG_LVL_DEBUG){
+    (void)zenoh_pico_debug_dump_msg(msg_bytes, alloc_size);
+  }
+
+  *size = alloc_size;
+
+  return msg_bytes;
+}
+
+bool rmw_zenoh_pico_deserialize(ReceiveMessageData *msg_data,
+				const message_type_support_callbacks_t *callbacks,
+				void * ros_message)
 {
   ucdrBuffer temp_buffer;
 
   ucdr_init_buffer(&temp_buffer,
-		   msg_data->payload_start +SUB_MSG_OFFSET,
-		   msg_data->payload_size -SUB_MSG_OFFSET);
+		   msg_data->payload_start +ROS2_MSG_OFFSET,
+		   msg_data->payload_size -ROS2_MSG_OFFSET);
 
-  bool ret = callbacks->cdr_deserialize(
-    &temp_buffer,
-    ros_message);
+  bool ret = callbacks->cdr_deserialize(&temp_buffer, ros_message);
 
   return ret;
 }
@@ -51,27 +79,12 @@ rmw_ret_t zenoh_pico_publish(ZenohPicoPubData *pub_data,
 {
   z_mutex_lock(z_loan_mut(pub_data->mutex));
 
-  size_t serialized_size = pub_data->callbacks->get_serialized_size(ros_message);
-
-  uint8_t * msg_bytes = (uint8_t *)TOPIC_MALLOC(serialized_size +SUB_MSG_OFFSET);
-  RMW_CHECK_FOR_NULL_WITH_MSG(
-    msg_bytes,
-    "failed to allocate memory for the serialized",
-    return RMW_RET_ERROR);
-  memset(msg_bytes, 0, serialized_size +SUB_MSG_OFFSET);
-
-  ucdrBuffer temp_buffer;
-  ucdr_init_buffer(&temp_buffer,
-		   msg_bytes +SUB_MSG_OFFSET,
-		   serialized_size);
-
-  bool ret = pub_data->callbacks->cdr_serialize(ros_message, &temp_buffer);
-
-  set_ros2_header(msg_bytes);
-
-  if(rmw_zenoh_pico_debug_level_get() == _Z_LOG_LVL_DEBUG){
-    (void)zenoh_pico_debug_dump_msg(msg_bytes, serialized_size +SUB_MSG_OFFSET);
-  }
+  size_t alloc_size;
+  uint8_t * msg_bytes = rmw_zenoh_pico_serialize(pub_data->callbacks,
+						 ros_message,
+						 &alloc_size);
+  if(msg_bytes == NULL)
+    return RMW_RET_ERROR;
 
   // set attachment to option
   z_publisher_put_options_t options;
@@ -86,7 +99,7 @@ rmw_ret_t zenoh_pico_publish(ZenohPicoPubData *pub_data,
 
   // put publish data
   z_owned_bytes_t payload;
-  z_bytes_copy_from_buf(&payload, msg_bytes, serialized_size + SUB_MSG_OFFSET);
+  z_bytes_copy_from_buf(&payload, msg_bytes, alloc_size);
   z_publisher_put(z_loan(pub_data->publisher),
 		  z_move(payload),
 		  &options);

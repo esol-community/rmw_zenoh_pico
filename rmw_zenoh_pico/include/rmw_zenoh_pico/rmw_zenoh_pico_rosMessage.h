@@ -20,6 +20,9 @@
 #include <rmw/rmw.h>
 #include <zenoh-pico.h>
 
+#include <rosidl_typesupport_microxrcedds_c/identifier.h>
+#include <rosidl_typesupport_microxrcedds_c/message_type_support.h>
+
 #include <rmw_zenoh_pico/zenoh_pico/rmw_zenoh_pico_attach.h>
 
 typedef struct _ZenohPicoPubData ZenohPicoPubData;
@@ -68,10 +71,14 @@ extern "C"
   extern bool recv_msg_list_empty(ReceiveMessageDataList *msg_list);
   extern void recv_msg_list_debug(ReceiveMessageDataList *msg_list);
 
-  extern void set_ros2_header(uint8_t *msg_bytes);
+  extern uint8_t * rmw_zenoh_pico_serialize(const message_type_support_callbacks_t *callbacks,
+					    const void * ros_message, size_t *size);
+  extern bool rmw_zenoh_pico_deserialize(ReceiveMessageData *msg_data,
+					 const message_type_support_callbacks_t *callbacks,
+					 void * ros_message);
+
   extern rmw_ret_t zenoh_pico_publish(ZenohPicoPubData *pub_data,
 				      const void * ros_message);
-
   extern rmw_ret_t zenoh_pico_take(ZenohPicoSubData * sub_data,
 				   void * ros_message,
 				   rmw_message_info_t * message_info,

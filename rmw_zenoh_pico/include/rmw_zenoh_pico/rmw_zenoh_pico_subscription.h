@@ -30,7 +30,7 @@
 #include <rmw_zenoh_pico/rmw_zenoh_pico_event_callbacks.h>
 #include <rmw_zenoh_pico/rmw_zenoh_pico_wait.h>
 
-#define SUB_MSG_OFFSET 4
+#define ROS2_MSG_OFFSET 4
 
 #if defined(__cplusplus)
 extern "C"
