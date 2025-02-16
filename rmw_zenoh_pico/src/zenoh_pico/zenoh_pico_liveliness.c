@@ -17,11 +17,6 @@
 #include <stdio.h>
 #include <string.h>
 
-#include "rmw_zenoh_pico/rmw_zenoh_pico_logging.h"
-#include "zenoh-pico/api/primitives.h"
-#include "zenoh-pico/api/types.h"
-#include "zenoh-pico/utils/result.h"
-
 #include <rmw_zenoh_pico/rmw_zenoh_pico.h>
 
 static const char ADMIN_SPACE[] = "@ros2_lv";

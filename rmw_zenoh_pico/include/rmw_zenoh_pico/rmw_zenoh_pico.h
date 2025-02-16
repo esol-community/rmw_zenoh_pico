@@ -23,9 +23,10 @@
 #include <unistd.h>
 #include <ctype.h>
 #include <stdbool.h>
-#include <string.h>
+#include <stdint.h>
 #include <limits.h>
 #include <time.h>
+#include <string.h>
 
 #include <rmw/rmw.h>
 #include <rmw/ret_types.h>
@@ -41,7 +42,17 @@
 
 #include <ucdr/microcdr.h>
 
-#include "zenoh-pico/system/platform.h"
+#include <zenoh-pico/system/platform.h>
+
+#include <zenoh-pico.h>
+#include <zenoh-pico/api/macros.h>
+#include <zenoh-pico/api/primitives.h>
+#include <zenoh-pico/api/types.h>
+
+#include <zenoh-pico/collections/string.h>
+#include <zenoh-pico/system/common/platform.h>
+#include <zenoh-pico/system/platform.h>
+#include <zenoh-pico/utils/result.h>
 
 // utility
 #include <rmw_zenoh_pico/rmw_zenoh_pico_macros.h>

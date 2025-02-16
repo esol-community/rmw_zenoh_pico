@@ -15,10 +15,6 @@
  */
 
 #include <rmw_zenoh_pico/rmw_zenoh_pico.h>
-#include <stdint.h>
-
-#include "zenoh-pico/api/types.h"
-#include "zenoh-pico/utils/result.h"
 
 #if defined(ZENOH_LINUX)
 

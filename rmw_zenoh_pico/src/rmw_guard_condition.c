@@ -13,7 +13,6 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-#include "zenoh-pico/system/common/platform.h"
 #include <rmw_zenoh_pico/rmw_zenoh_pico.h>
 
 ZenohPicoGuardConditionData * zenoh_pico_guard_condition_data(void)

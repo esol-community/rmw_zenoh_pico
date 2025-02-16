@@ -13,18 +13,11 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-#include "rmw/ret_types.h"
-#include "rmw/types.h"
-
 #include <rmw_zenoh_pico/config.h>
 
 #include <rmw/allocators.h>
 #include <rmw/rmw.h>
 #include <rmw/validate_full_topic_name.h>
-
-#include "zenoh-pico/api/macros.h"
-#include "zenoh-pico/api/primitives.h"
-#include "zenoh-pico/api/types.h"
 
 #include <rmw_zenoh_pico/rmw_zenoh_pico.h>
 

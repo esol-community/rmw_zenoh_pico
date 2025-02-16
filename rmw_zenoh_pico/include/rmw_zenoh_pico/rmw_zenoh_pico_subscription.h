@@ -17,7 +17,6 @@
 #ifndef RMW_ZENOH_PICO_SUBSCRIPTION_H
 #define RMW_ZENOH_PICO_SUBSCRIPTION_H
 
-#include "zenoh-pico/api/types.h"
 #include <rmw/rmw.h>
 #include <zenoh-pico.h>
 

@@ -14,9 +14,6 @@
  * limitations under the License.
  */
 
-#include "zenoh-pico/api/macros.h"
-#include "zenoh-pico/api/types.h"
-#include "zenoh-pico/collections/string.h"
 #include <rmw_zenoh_pico/rmw_zenoh_pico.h>
 
 const z_loaned_string_t *node_domain(ZenohPicoNodeInfo *node)		{ return z_loan(node->domain); }

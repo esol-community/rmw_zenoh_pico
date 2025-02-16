@@ -15,8 +15,6 @@
 
 #include <rmw/validate_full_topic_name.h>
 
-#include "zenoh-pico/api/macros.h"
-#include "zenoh-pico/api/primitives.h"
 #include <rmw_zenoh_pico/rmw_zenoh_pico.h>
 
 z_owned_mutex_t mutex_ZenohPicoTransportParams;

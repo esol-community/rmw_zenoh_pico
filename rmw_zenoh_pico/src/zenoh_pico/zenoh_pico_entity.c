@@ -14,10 +14,7 @@
  * limitations under the License.
  */
 
-#include <stdint.h>
 #include <rmw_zenoh_pico/rmw_zenoh_pico.h>
-
-#include "zenoh-pico/api/types.h"
 
 const z_loaned_string_t *get_zid(ZenohPicoEntity *entity)		{ return z_loan(entity->zid); }
 size_t get_nid(ZenohPicoEntity *entity)					{ return entity->nid; }

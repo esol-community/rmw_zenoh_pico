@@ -14,9 +14,6 @@
  * limitations under the License.
  */
 
-#include "zenoh-pico/api/macros.h"
-#include "zenoh-pico/api/primitives.h"
-#include "zenoh-pico/api/types.h"
 #include <rmw_zenoh_pico/rmw_zenoh_pico.h>
 
 const z_loaned_string_t *topic_name(ZenohPicoTopicInfo *topic)	{ return z_loan(topic->name); }

@@ -19,7 +19,6 @@
 
 #include "rmw/types.h"
 
-#include "zenoh-pico/api/types.h"
 #include <zenoh-pico.h>
 
 #if defined(__cplusplus)

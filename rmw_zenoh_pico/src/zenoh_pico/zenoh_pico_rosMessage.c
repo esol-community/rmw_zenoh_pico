@@ -14,7 +14,6 @@
  * limitations under the License.
  */
 
-#include "zenoh-pico/api/macros.h"
 #include <rmw_zenoh_pico/rmw_zenoh_pico.h>
 
 z_owned_mutex_t mutex_ReceiveMessageData;

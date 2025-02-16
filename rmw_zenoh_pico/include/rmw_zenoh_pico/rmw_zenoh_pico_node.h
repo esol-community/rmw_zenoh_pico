@@ -26,8 +26,6 @@
 
 #include <rmw_zenoh_pico/rmw_zenoh_pico_session.h>
 
-#include <zenoh-pico/collections/string.h>
-
 #if defined(__cplusplus)
 extern "C"
 {

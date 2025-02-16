@@ -20,13 +20,14 @@
 #include <stddef.h>
 #include <unistd.h>
 
-#include <zenoh-pico.h>
+#include <rmw/rmw.h>
 
 #include <rosidl_typesupport_microxrcedds_c/message_type_support.h>
 
+#include <zenoh-pico.h>
+
 #include "rmw_zenoh_pico/zenoh_pico/rmw_zenoh_pico_nodeInfo.h"
 #include "rmw_zenoh_pico/zenoh_pico/rmw_zenoh_pico_topicInfo.h"
-#include "zenoh-pico/api/types.h"
 
 #if defined(__cplusplus)
 extern "C"

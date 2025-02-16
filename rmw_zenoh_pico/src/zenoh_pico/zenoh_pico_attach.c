@@ -17,9 +17,6 @@
 #include <stdint.h>
 #include <rmw_zenoh_pico/rmw_zenoh_pico.h>
 
-#include "zenoh-pico/api/types.h"
-#include "zenoh-pico/system/common/platform.h"
-
 time_t zenoh_pico_gen_timestamp(void) {
   struct timespec ts;
   clock_gettime(CLOCK_REALTIME, &ts);
