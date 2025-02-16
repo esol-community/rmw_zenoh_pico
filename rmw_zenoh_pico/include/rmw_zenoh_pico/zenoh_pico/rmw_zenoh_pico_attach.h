@@ -32,12 +32,12 @@ extern "C"
   } zenoh_pico_attachemt_data;
 
   extern time_t zenoh_pico_gen_timestamp(void);
-  extern uint64_t zenoh_pico_inc_sequence_num(zenoh_pico_attachemt_data *data);
-  extern z_result_t zenoh_pico_attachment_data_get(const z_loaned_sample_t *sample, zenoh_pico_attachemt_data *data);
-  extern z_result_t zenoh_pico_attachment_gen(zenoh_pico_attachemt_data *data, z_owned_bytes_t *attachment);
-  extern bool zenoh_pico_destroy_attachment(zenoh_pico_attachemt_data *data);
 
-  extern void zenoh_pico_debug_attachment(zenoh_pico_attachemt_data *data);
+  extern uint64_t   attachment_sequence_num_inc(zenoh_pico_attachemt_data *data);
+  extern z_result_t attachment_data_get(const z_loaned_sample_t *sample, zenoh_pico_attachemt_data *data);
+  extern z_result_t attachment_gen(zenoh_pico_attachemt_data *data, z_owned_bytes_t *attachment);
+  extern bool       attachment_destroy(zenoh_pico_attachemt_data *data);
+  extern void       attachment_debug(zenoh_pico_attachemt_data *data);
 
 #if defined(__cplusplus)
 }

@@ -29,7 +29,7 @@ time_t zenoh_pico_gen_timestamp(void) {
   return timestamp;
 }
 
-uint64_t zenoh_pico_inc_sequence_num(zenoh_pico_attachemt_data *data)
+uint64_t attachment_sequence_num_inc(zenoh_pico_attachemt_data *data)
 {
   return data->sequence_num ++;
 }
@@ -58,7 +58,7 @@ uint64_t zenoh_pico_inc_sequence_num(zenoh_pico_attachemt_data *data)
     }									\
   }
 
-z_result_t zenoh_pico_attachment_data_get(const z_loaned_sample_t *sample, zenoh_pico_attachemt_data *data)
+z_result_t attachment_data_get(const z_loaned_sample_t *sample, zenoh_pico_attachemt_data *data)
 {
   const z_loaned_bytes_t *attachment = z_sample_attachment(sample);
   ze_deserializer_t deserializer = ze_deserializer_from_bytes(attachment);
@@ -117,7 +117,7 @@ z_result_t zenoh_pico_attachment_data_get(const z_loaned_sample_t *sample, zenoh
     }									\
   }
 
-z_result_t zenoh_pico_attachment_gen(zenoh_pico_attachemt_data *data, z_owned_bytes_t *attachment)
+z_result_t attachment_gen(zenoh_pico_attachemt_data *data, z_owned_bytes_t *attachment)
 {
   z_bytes_empty(attachment);
 
@@ -141,7 +141,7 @@ z_result_t zenoh_pico_attachment_gen(zenoh_pico_attachemt_data *data, z_owned_by
   return(Z_OK);
 }
 
-bool zenoh_pico_destroy_attachment(zenoh_pico_attachemt_data *attachmet_data)
+bool attachment_destroy(zenoh_pico_attachemt_data *attachmet_data)
 {
   RMW_ZENOH_FUNC_ENTRY(NULL);
 
@@ -152,7 +152,7 @@ bool zenoh_pico_destroy_attachment(zenoh_pico_attachemt_data *attachmet_data)
   return true;
 }
 
-void zenoh_pico_debug_attachment(zenoh_pico_attachemt_data *data)
+void attachment_debug(zenoh_pico_attachemt_data *data)
 {
   printf("--------- attachment data ----------\n");
   printf("sequence_num = [%ld]\n", data->sequence_num);

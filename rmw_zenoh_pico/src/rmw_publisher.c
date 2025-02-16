@@ -136,7 +136,7 @@ static bool zenoh_pico_destroy_publisher_data(ZenohPicoPubData *pub_data)
   z_drop(z_move(pub_data->token));
   z_drop(z_move(pub_data->publisher));
 
-  zenoh_pico_destroy_attachment(&pub_data->attachment);
+  attachment_destroy(&pub_data->attachment);
   z_drop(z_move(pub_data->mutex));
 
   if(pub_data->node != NULL){
@@ -163,7 +163,7 @@ static void zenoh_pico_debug_publisher_data(ZenohPicoPubData *pub_data)
   Z_STRING_PRINTF(pub_data->topic_key, topic_key);
 
   // debug attachment
-  zenoh_pico_debug_attachment(&pub_data->attachment);
+  attachment_debug(&pub_data->attachment);
 
   // debug entity member
   zenoh_pico_debug_entity(pub_data->entity);

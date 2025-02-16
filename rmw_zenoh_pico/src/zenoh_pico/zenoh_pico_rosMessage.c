@@ -79,8 +79,8 @@ rmw_ret_t zenoh_pico_publish(ZenohPicoPubData *pub_data,
 
   // gen attachment data
   z_owned_bytes_t attachment;
-  zenoh_pico_inc_sequence_num(&pub_data->attachment);
-  if(_Z_IS_OK(zenoh_pico_attachment_gen(&pub_data->attachment, &attachment))){
+  attachment_sequence_num_inc(&pub_data->attachment);
+  if(_Z_IS_OK(attachment_gen(&pub_data->attachment, &attachment))){
     options.attachment = z_move(attachment);
   }
 
@@ -164,12 +164,12 @@ ReceiveMessageData * zenoh_pico_generate_recv_msg_data(const z_loaned_sample_t *
   recv_data->recv_timestamp	= recv_ts;
 
   zenoh_pico_attachemt_data data;
-  if(_Z_IS_ERR(zenoh_pico_attachment_data_get(sample, &recv_data->attachment))) {
+  if(_Z_IS_ERR(attachment_data_get(sample, &recv_data->attachment))) {
     RMW_ZENOH_LOG_ERROR("unable to receive attachment data");
   }
 
   if(rmw_zenoh_pico_debug_level_get() == _Z_LOG_LVL_DEBUG){
-    zenoh_pico_debug_attachment(&recv_data->attachment);
+    attachment_debug(&recv_data->attachment);
   }
 
   return recv_data;
@@ -184,7 +184,7 @@ bool zenoh_pico_delete_recv_msg_data(ReceiveMessageData * recv_data)
   if(recv_data->payload_start != NULL)
     TOPIC_FREE(recv_data->payload_start);
 
-  zenoh_pico_destroy_attachment(&recv_data->attachment);
+  attachment_destroy(&recv_data->attachment);
 
   ZenohPicoDestroyData(recv_data, ReceiveMessageData);
 
@@ -242,7 +242,7 @@ void zenoh_pico_debug_recv_msg_data(ReceiveMessageData * recv_data)
   printf("recv_timestamp   = [%d]\n", (int)recv_data->recv_timestamp);
 
   // debug attachment
-  zenoh_pico_debug_attachment(&recv_data->attachment);
+  attachment_debug(&recv_data->attachment);
 
   printf("--------- recv simple data ----------\n");
   zenoh_pico_debug_dump_msg(recv_data->payload_start, recv_data->payload_size);
