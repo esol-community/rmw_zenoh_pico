@@ -82,7 +82,7 @@ static bool _check_and_attach_condition(const rmw_subscriptions_t * const subscr
 
   if (clients) {
     for (size_t i = 0; i < clients->client_count; ++i) {
-      ZenohPicoClientData *client_data = (ZenohPicoClientData *)clients->clients[i];
+      ZenohPicoServiceData *client_data = (ZenohPicoServiceData *)clients->clients[i];
       if (client_data == NULL) {
         continue;
       }
@@ -199,7 +199,7 @@ rmw_wait(rmw_subscriptions_t * subscriptions,
 
   if (clients) {
     for (size_t i = 0; i < clients->client_count; ++i) {
-      ZenohPicoClientData *client_data = (ZenohPicoClientData *)clients->clients[i];
+      ZenohPicoServiceData *client_data = (ZenohPicoServiceData *)clients->clients[i];
       if (client_data == NULL) {
 	continue;
       }

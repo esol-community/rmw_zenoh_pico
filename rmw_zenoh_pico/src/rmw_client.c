@@ -15,192 +15,33 @@
 
 #include <rmw_zenoh_pico/rmw_zenoh_pico.h>
 
-static void zenoh_pico_debug_client_data(ZenohPicoClientData *client_data);
-
-static ZenohPicoClientData * zenoh_pico_generate_client_data(
-  ZenohPicoNodeData *node,
-  const char * topic_name,
-  const rosidl_service_type_support_t *type_support,
-  const rmw_qos_profile_t *qos_profile)
-{
-  RMW_ZENOH_FUNC_ENTRY(node);
-
-  RMW_CHECK_ARGUMENT_FOR_NULL(node, NULL);
-
-  ZenohPicoNodeInfo *node_info		= NULL;
-  ZenohPicoEntity *entity		= NULL;
-  ZenohPicoClientData *client_data	= NULL;
-
-  // clone node_info
-  node_info = zenoh_pico_clone_node_info(node->entity->node_info);
-
-  // generate entity data
-  ZenohPicoSession *session = node->session;
-  z_id_t zid = z_info_zid(z_loan(session->session));
-  entity = zenoh_pico_generate_client_entity(&zid,
-					     node->id,
-					     node_info,
-					     topic_name,
-					     type_support,
-					     qos_profile,
-					     Client);
-  if(entity == NULL)
-    goto error;
-
-  ZenohPicoGenerateData(client_data, ZenohPicoClientData);
-  RMW_CHECK_FOR_NULL_WITH_MSG(
-    client_data,
-    "failed to allocate struct for the ZenohPicoClientData",
-    goto error);
-
-  client_data->id			= entity->id;
-  client_data->node			= node;
-  client_data->entity			= entity;
-  client_data->request_callback		= get_request_callback(type_support);
-  client_data->response_callback	= get_response_callback(type_support);
-
-  memcpy(&client_data->qos_profile, qos_profile, sizeof(rmw_qos_profile_t));
-
-  // generate key from entity data
-  if(_Z_IS_ERR(generate_liveliness(entity, &client_data->liveliness_key))){
-    RMW_SET_ERROR_MSG("failed generate_liveliness()");
-    goto error;
-  }
-
-  // generate topic key
-  z_string_empty(&client_data->topic_key);
-  ZenohPicoTopicInfo *topic_info = entity->topic_info;
-  if(_Z_IS_ERR(ros_topic_name_to_zenoh_key(z_loan(node_info->domain),
-					   z_loan(topic_info->name),
-					   z_loan(topic_info->type),
-					   z_loan(topic_info->hash),
-					   &client_data->topic_key))){
-    RMW_SET_ERROR_MSG("failed ros_topic_name_to_zenoh_key()");
-    goto error;
-  }
-
-  // init reply message list
-  recv_msg_list_init(&client_data->reply_queue);
-
-  // init data callback manager
-  data_callback_init(&client_data->data_callback_mgr);
-
-  // init rmw_wait condition
-  z_mutex_init(&client_data->condition_mutex);
-  client_data->wait_set_data = NULL;
-
-  // generate gid
-  uint8_t _gid[RMW_GID_STORAGE_SIZE];
-  zenoh_pico_gen_gid(z_loan(client_data->topic_key), _gid);
-
-  z_slice_copy_from_buf(&client_data->attachment.gid, _gid, sizeof(_gid));
-  client_data->attachment.sequence_num = 0;
-
-  return client_data;
-
-  error:
-  if(node_info != NULL)
-    zenoh_pico_destroy_node_info(node_info);
-
-  if(entity != NULL)
-    zenoh_pico_destroy_entity(entity);
-
-  return NULL;
-}
-
-static bool zenoh_pico_destroy_client_data(ZenohPicoClientData *client_data)
-{
-  RMW_ZENOH_FUNC_ENTRY(NULL);
-
-  RMW_CHECK_ARGUMENT_FOR_NULL(client_data, false);
-
-  z_drop(z_move(client_data->liveliness_key));
-  z_drop(z_move(client_data->token));
-
-  attachment_destroy(&client_data->attachment);
-  z_drop(z_move(client_data->mutex));
-
-  if(client_data->node != NULL){
-    (void)zenoh_pico_destroy_node_data(client_data->node);
-    client_data->node = NULL;
-  }
-
-  if(client_data->entity != NULL){
-    (void)zenoh_pico_destroy_entity(client_data->entity);
-    client_data->entity = NULL;
-  }
-
-
-  ZenohPicoDestroyData(client_data, ZenohPicoClientData);
-
-  return true;
-}
-
-static void zenoh_pico_debug_client_data(ZenohPicoClientData *client_data)
-{
-  printf("--------- client data ----------\n");
-  printf("ref = %d\n", client_data->ref);
-
-  Z_STRING_PRINTF(client_data->liveliness_key, liveliness_key);
-  Z_STRING_PRINTF(client_data->topic_key, topic_key);
-
-  printf("reply_queue = %d\n", recv_msg_list_count(&client_data->reply_queue));
-
-  // debug attachment
-  attachment_debug(&client_data->attachment);
-
-  // debug entity member
-  zenoh_pico_debug_entity(client_data->entity);
-
-  return;
-}
-
-static bool declaration_client_data(ZenohPicoClientData *client_data)
-{
-  ZenohPicoSession *session = client_data->node->session;
-
-  // liveliness token declare
-  (void)declaration_liveliness(session, z_loan(client_data->liveliness_key), &client_data->token);
-
-  return true;
-}
-
-static bool undeclaration_client_data(ZenohPicoClientData *client_data)
-{
-  RMW_ZENOH_FUNC_ENTRY(NULL);
-
-  z_liveliness_undeclare_token(z_move(client_data->token));
-
-  return true;
-}
-
-static void client_condition_trigger(ZenohPicoClientData *client_data)
+static void client_condition_trigger(ZenohPicoServiceData *data)
 {
   ZenohPicoWaitCondition cond;
-  cond.condition_mutex		= z_loan_mut(client_data->condition_mutex);
-  cond.msg_queue		= &client_data->reply_queue;
-  cond.wait_set_data_ptr	= &client_data->wait_set_data;
+  cond.condition_mutex		= z_loan_mut(data->condition_mutex);
+  cond.msg_queue		= &data->service_queue;
+  cond.wait_set_data_ptr	= &data->wait_set_data;
 
   zenoh_pico_condition_trigger(&cond);
 }
 
-bool client_condition_check_and_attach(ZenohPicoClientData *client_data,
+bool client_condition_check_and_attach(ZenohPicoServiceData *data,
 				       ZenohPicoWaitSetData *wait_set_data)
 {
   ZenohPicoWaitCondition cond;
-  cond.condition_mutex		= z_loan_mut(client_data->condition_mutex);
-  cond.msg_queue		= &client_data->reply_queue;
-  cond.wait_set_data_ptr	= &client_data->wait_set_data;
+  cond.condition_mutex		= z_loan_mut(data->condition_mutex);
+  cond.msg_queue		= &data->service_queue;
+  cond.wait_set_data_ptr	= &data->wait_set_data;
 
   return zenoh_pico_condition_check_and_attach(&cond, wait_set_data);
 }
 
-bool client_condition_detach_and_queue_is_empty(ZenohPicoClientData *client_data)
+bool client_condition_detach_and_queue_is_empty(ZenohPicoServiceData *data)
 {
   ZenohPicoWaitCondition cond;
-  cond.condition_mutex		= z_loan_mut(client_data->condition_mutex);
-  cond.msg_queue		= &client_data->reply_queue;
-  cond.wait_set_data_ptr	= &client_data->wait_set_data;
+  cond.condition_mutex		= z_loan_mut(data->condition_mutex);
+  cond.msg_queue		= &data->service_queue;
+  cond.wait_set_data_ptr	= &data->wait_set_data;
 
   return zenoh_pico_condition_detach_and_queue_is_empty(&cond);
 }
@@ -255,7 +96,7 @@ rmw_create_client(
     return NULL;
   }
 
-  ZenohPicoClientData * client_data = zenoh_pico_generate_client_data(
+  ZenohPicoServiceData * client_data = zenoh_pico_generate_service_data(
     node_data,
     service_name,
     type_support,
@@ -265,7 +106,7 @@ rmw_create_client(
     goto error;
 
   if(rmw_zenoh_pico_debug_level_get() == _Z_LOG_LVL_DEBUG){
-    zenoh_pico_debug_client_data(client_data);
+    zenoh_pico_debug_service_data(client_data);
   }
 
   rmw_client_t *rmw_client = Z_MALLOC(sizeof(rmw_client_t));
@@ -286,14 +127,14 @@ rmw_create_client(
   rmw_client->service_name		= _service_name;
   rmw_client->data			= client_data;
 
-  if(!declaration_client_data(client_data))
+  if(!declaration_service_data(client_data))
     goto error;
 
   return rmw_client;
 
   error:
   if(client_data != NULL)
-    zenoh_pico_destroy_client_data(client_data);
+    zenoh_pico_destroy_service_data(client_data);
 
   return NULL;
 }
@@ -315,7 +156,7 @@ rmw_destroy_client(
     client->implementation_identifier,
     return RMW_RET_INCORRECT_RMW_IMPLEMENTATION);
 
-  ZenohPicoClientData *clinet_data = (ZenohPicoClientData *)client->data;
+  ZenohPicoServiceData *client_data = (ZenohPicoServiceData *)client->data;
 
   if(client_data != NULL){
     undeclaration_service_data(client_data);
@@ -342,7 +183,7 @@ rmw_client_request_publisher_get_actual_qos(
     return RMW_RET_INCORRECT_RMW_IMPLEMENTATION);
 
   RMW_CHECK_ARGUMENT_FOR_NULL(qos, RMW_RET_INVALID_ARGUMENT);
-  ZenohPicoClientData * client_data = (ZenohPicoClientData * )client->data;
+  ZenohPicoServiceData * client_data = (ZenohPicoServiceData * )client->data;
   RMW_CHECK_ARGUMENT_FOR_NULL(client_data, RMW_RET_INVALID_ARGUMENT);
 
   *qos = client_data->qos_profile;
@@ -377,9 +218,9 @@ rmw_get_gid_for_client(
   return RMW_RET_ERROR;
 }
 
-static void add_new_replay_message(ZenohPicoClientData *client_data, ReceiveMessageData *recv_data)
+static void add_new_replay_message(ZenohPicoServiceData *client_data, ReceiveMessageData *recv_data)
 {
-  (void)recv_msg_list_push(&client_data->reply_queue, recv_data);
+  (void)recv_msg_list_push(&client_data->service_queue, recv_data);
 
   (void)data_callback_trigger(&client_data->data_callback_mgr);
 
@@ -393,7 +234,7 @@ static void _reply_handler(z_loaned_reply_t *reply, void *ctx) {
       RMW_ZENOH_LOG_INFO(">> Received");
     }
 
-    ZenohPicoClientData *client_data = (ZenohPicoClientData *)ctx;
+    ZenohPicoServiceData *client_data = (ZenohPicoServiceData *)ctx;
     if (client_data == NULL) {
       z_view_string_t keystr;
       z_keyexpr_as_view_string(z_sample_keyexpr(sample), &keystr);
@@ -438,7 +279,7 @@ rmw_send_request(
     client->implementation_identifier,
     return RMW_RET_INCORRECT_RMW_IMPLEMENTATION);
 
-  ZenohPicoClientData * client_data = (ZenohPicoClientData * )client->data;
+  ZenohPicoServiceData * client_data = (ZenohPicoServiceData * )client->data;
   RMW_CHECK_FOR_NULL_WITH_MSG(
     client_data,
     "Unable to retrieve client_data from client.",
@@ -517,13 +358,13 @@ rmw_take_response(
   RMW_CHECK_FOR_NULL_WITH_MSG(
     client->service_name, "client has no service name", RMW_RET_INVALID_ARGUMENT);
 
-  ZenohPicoClientData * client_data = (ZenohPicoClientData * )client->data;
+  ZenohPicoServiceData * client_data = (ZenohPicoServiceData * )client->data;
   RMW_CHECK_FOR_NULL_WITH_MSG(
     client_data,
     "Unable to retrieve client_data from client.",
     RMW_RET_INVALID_ARGUMENT);
 
-  ReceiveMessageData *msg_data = recv_msg_list_pop(&client_data->reply_queue);
+  ReceiveMessageData *msg_data = recv_msg_list_pop(&client_data->service_queue);
   RMW_CHECK_ARGUMENT_FOR_NULL(msg_data, RMW_RET_ERROR);
 
   bool deserialize_rv = rmw_zenoh_pico_deserialize_msg(msg_data,

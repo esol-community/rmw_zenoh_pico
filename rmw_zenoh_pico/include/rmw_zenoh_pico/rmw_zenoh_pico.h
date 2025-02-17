@@ -82,7 +82,7 @@
 #include <rmw_zenoh_pico/rmw_zenoh_pico_event_callbacks.h>
 #include <rmw_zenoh_pico/rmw_zenoh_pico_subscription.h>
 #include <rmw_zenoh_pico/rmw_zenoh_pico_publisher.h>
-#include <rmw_zenoh_pico/rmw_zenoh_pico_client.h>
+#include <rmw_zenoh_pico/rmw_zenoh_pico_service.h>
 
 // expand zenoh-pico api
 extern void test_qos_profile(rmw_qos_profile_t *qos);

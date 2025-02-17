@@ -14,8 +14,8 @@
  * limitations under the License.
  */
 
-#ifndef RMW_ZENOH_PICO_CLIENT_H
-#define RMW_ZENOH_PICO_CLIENT_H
+#ifndef RMW_ZENOH_PICO_SERVICE_H
+#define RMW_ZENOH_PICO_SERVICE_H
 
 #include <rmw/rmw.h>
 #include <zenoh-pico.h>
@@ -30,7 +30,7 @@ extern "C"
 {
 #endif  // if defined(__cplusplus)
 
-  typedef struct _ZenohPicoClientData {
+  typedef struct _ZenohPicoServiceData {
     int ref;
     z_owned_mutex_t lock;
 
@@ -53,7 +53,7 @@ extern "C"
     const message_type_support_callbacks_t *response_callback;
 
     // Deque to store the replies in the order they arrive.
-    ReceiveMessageDataList reply_queue;
+    ReceiveMessageDataList service_queue;
 
     // data callback on new message
     DataCallbackManager data_callback_mgr;
@@ -71,11 +71,23 @@ extern "C"
     // Internal mutex.
     z_owned_mutex_t mutex;
 
-  } ZenohPicoClientData;
+  } ZenohPicoServiceData;
 
-  extern bool client_condition_check_and_attach(ZenohPicoClientData *sub_data,
+  // common
+  extern ZenohPicoServiceData * zenoh_pico_generate_service_data(
+    ZenohPicoNodeData *node,
+    const char * topic_name,
+    const rosidl_service_type_support_t *type_support,
+    const rmw_qos_profile_t *qos_profile);
+  extern bool zenoh_pico_destroy_service_data(ZenohPicoServiceData *data);
+  extern void zenoh_pico_debug_service_data(ZenohPicoServiceData *data);
+  extern bool declaration_service_data(ZenohPicoServiceData *data);
+  extern bool undeclaration_service_data(ZenohPicoServiceData *data);
+
+  // client extern functions
+  extern bool client_condition_check_and_attach(ZenohPicoServiceData *sub_data,
 						ZenohPicoWaitSetData * wait_set_data);
-  extern bool client_condition_detach_and_queue_is_empty(ZenohPicoClientData *sub_data);
+  extern bool client_condition_detach_and_queue_is_empty(ZenohPicoServiceData *sub_data);
 
 #if defined(__cplusplus)
 }

@@ -35,7 +35,6 @@ static ZenohPicoSubData * zenoh_pico_generate_subscription_data(
   const char * topic_name,
   const rosidl_message_type_support_t * type_support,
   const rmw_qos_profile_t *qos_profile)
-
 {
   RMW_ZENOH_FUNC_ENTRY(node);
 
