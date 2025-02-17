@@ -283,7 +283,7 @@ rmw_zenoh_pico_set_serial_config(ZenohPicoTransportParams *params, z_owned_confi
   return RMW_RET_ERROR;
 }
 
-void rmw_zenoh_pico_mutex_init(void)
+void rmw_zenoh_pico_init(void)
 {
   z_mutex_init(&mutex_ZenohPicoSubData);
   z_mutex_init(&mutex_ZenohPicoTransportParams);
@@ -293,49 +293,8 @@ void rmw_zenoh_pico_mutex_init(void)
   z_mutex_init(&mutex_ZenohPicoPubData);
   z_mutex_init(&mutex_ZenohPicoEntity);
   z_mutex_init(&mutex_ZenohPicoTopicInfo);
-}
 
-static int rmw_zenoh_pico_debug_level = _Z_LOG_LVL_ERROR;
-void rmw_zenoh_pico_debug_level_init(void)
-{
-  char *pathvar;
-
-  if((pathvar = getenv("RMW_ZNEOH_PICO_LOG")) == NULL)
-    return;
-
-  rmw_zenoh_pico_debug_level = _Z_LOG_LVL_ERROR;
-  if(strncmp(pathvar, "Z_LOG_DEBUG", sizeof("Z_LOG_DEBUG")) == 0) {
-    rmw_zenoh_pico_debug_level = _Z_LOG_LVL_DEBUG;
-  } else if (strncmp(pathvar, "Z_LOG_INFO", sizeof("Z_LOG_INFO")) == 0) {
-    rmw_zenoh_pico_debug_level = _Z_LOG_LVL_INFO;
-  } else if (strncmp(pathvar, "Z_LOG_ERROR", sizeof("Z_LOG_ERROR")) == 0) {
-    rmw_zenoh_pico_debug_level = _Z_LOG_LVL_ERROR;
-  }
-
-  return;
-}
-
-int rmw_zenoh_pico_debug_level_get(void)
-{
-  return rmw_zenoh_pico_debug_level;
-}
-
-bool rmw_zenoh_pico_check_validate_name(const char * name)
-{
-  int validation_result = RMW_TOPIC_VALID;
-  rmw_ret_t ret = rmw_validate_full_topic_name(name,
-					       &validation_result,
-					       NULL);
-  if (RMW_RET_OK != ret) {
-    return false;
-  }
-  if (RMW_TOPIC_VALID != validation_result) {
-    const char * reason = rmw_full_topic_name_validation_result_string(validation_result);
-    RMW_SET_ERROR_MSG_WITH_FORMAT_STRING("invalid topic name: %s", reason);
-    return false;
-  }
-
-  return true;
+  rmw_zenoh_pico_log_init();
 }
 
 rmw_ret_t
@@ -365,7 +324,7 @@ rmw_init(const rmw_init_options_t * options, rmw_context_t * context)
   }
 
   // initirize mutexs which is for private data structure.
-  rmw_zenoh_pico_mutex_init();
+  rmw_zenoh_pico_init();
 
   // set data for context data area.
   context->instance_id = options->instance_id;

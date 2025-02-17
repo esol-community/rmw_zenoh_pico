@@ -27,31 +27,21 @@
 
 #include <zenoh-pico.h>
 
-// Timestamp function
-#if defined(ZENOH_LINUX)
-static inline void __z_log_prefix(const char *prefix, const char *func_name) {
-  char time_stamp[64];
-
-  struct timespec abstime;
-  memset(&abstime, 0, sizeof(abstime));
-  clock_gettime(CLOCK_REALTIME, &abstime);
-
-  snprintf(time_stamp, sizeof(time_stamp), "%ld.%09ld", abstime.tv_sec, abstime.tv_nsec);
-
-  printf("[%-5s] [%s] [%s] : ",  prefix, time_stamp, func_name);
-}
-#else
-#include "zenoh-pico/system/platform/void.h"
-#error "Unknown platform"
-#endif
+extern void z_log_prefix(const char *prefix, const char *func_name);
 
 // Logging values
 #define _Z_LOG_LVL_ERROR 1
 #define _Z_LOG_LVL_INFO  2
 #define _Z_LOG_LVL_DEBUG 3
 
-extern void rmw_zenoh_pico_debug_level_inir(void);
-extern int rmw_zenoh_pico_debug_level_get(void);
+extern void rmw_zenoh_pico_debug_level_init(void);
+extern int  rmw_zenoh_pico_debug_level_get(void);
+
+extern bool rmw_zenoh_pico_check_validate_name(const char * name);
+
+extern void rmw_zenoh_pico_log_init(void);
+extern void rmw_zenoh_pico_log_lock(void);
+extern void rmw_zenoh_pico_log_unlock(void);
 
 // Logging macros
 
@@ -90,27 +80,33 @@ extern int rmw_zenoh_pico_debug_level_get(void);
 #define _Z_DEBUG(f, ...)					\
   do {								\
     if (rmw_zenoh_pico_debug_level_get() >= _Z_LOG_LVL_DEBUG) {	\
-      __z_log_prefix("DEBUG", f);				\
+      rmw_zenoh_pico_log_lock();				\
+      z_log_prefix("DEBUG", f);					\
       printf(__VA_ARGS__);					\
       printf("\r\n");						\
+      rmw_zenoh_pico_log_unlock();				\
     }								\
   } while (false)
 
 #define _Z_INFO(f, ...)						\
   do {								\
     if (rmw_zenoh_pico_debug_level_get() >= _Z_LOG_LVL_INFO) {	\
-      __z_log_prefix("INFO", f);				\
+      rmw_zenoh_pico_log_lock();				\
+      z_log_prefix("INFO", f);					\
       printf(__VA_ARGS__);					\
       printf("\r\n");						\
+      rmw_zenoh_pico_log_unlock();				\
     }								\
   } while (false)
 
 #define _Z_ERROR(f, ...)					\
   do {								\
     if (rmw_zenoh_pico_debug_level_get() >= _Z_LOG_LVL_ERROR) {	\
-      __z_log_prefix("ERROR", f);				\
+      rmw_zenoh_pico_log_lock();				\
+      z_log_prefix("ERROR", f);					\
       printf(__VA_ARGS__);					\
       printf("\r\n");						\
+      rmw_zenoh_pico_log_unlock();				\
     }								\
   } while (false)
 
@@ -191,7 +187,6 @@ static inline void __entry_log_loaned_sample(const z_loaned_sample_t * v, const 
 
   _Z_DEBUG(func,"start(%s)", _work);
 }
-
 
 #define ZENOH_DEBUG_FUNC_ENTRY_ENABLE
 #ifdef ZENOH_DEBUG_FUNC_ENTRY_ENABLE
