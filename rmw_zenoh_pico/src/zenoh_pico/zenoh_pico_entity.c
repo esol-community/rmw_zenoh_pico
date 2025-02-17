@@ -107,6 +107,62 @@ ZenohPicoEntity * zenoh_pico_generate_topic_entity(
   return zenoh_pico_generate_entity(zid, nid, type, node_info, topic_info);
 }
 
+const message_type_support_callbacks_t * get_request_callback(
+  const rosidl_service_type_support_t * type_support)
+{
+  const service_type_support_callbacks_t *service_members = type_support->data;
+  const rosidl_message_type_support_t * request_members = service_members->request_members_();
+
+  const message_type_support_callbacks_t * request_callback =
+    (const message_type_support_callbacks_t *)request_members->data;
+
+  return request_callback;
+}
+
+const message_type_support_callbacks_t * get_response_callback(
+  const rosidl_service_type_support_t * type_support)
+{
+  const service_type_support_callbacks_t *service_members = type_support->data;
+  const rosidl_message_type_support_t * response_members = service_members->response_members_();
+
+  const message_type_support_callbacks_t * response_callback =
+    (const message_type_support_callbacks_t *)response_members->data;
+
+  return response_callback;
+}
+
+ZenohPicoEntity * zenoh_pico_generate_client_entity(
+  z_id_t *zid,
+  size_t nid,
+  ZenohPicoNodeInfo *node_info,
+  const char * topic_name,
+  const rosidl_service_type_support_t * type_support,
+  const rmw_qos_profile_t *qos_profile,
+  ZenohPicoEntityType type)
+{
+  z_owned_string_t hash_data;
+  z_owned_string_t type_name;
+
+  // get hash data
+  const rosidl_type_hash_t * type_hash = type_support->get_type_hash_func(type_support);
+  (void)convert_hash(type_hash, &hash_data);
+
+  // generate message type
+  const message_type_support_callbacks_t * request_callback = get_request_callback(type_support);
+  convert_client_type(request_callback, &type_name);
+
+  // generate topic data
+  ZenohPicoTopicInfo *topic_info;
+  topic_info = zenoh_pico_generate_topic_info(topic_name,
+					      qos_profile,
+					      z_loan(type_name),
+					      z_loan(hash_data));
+  z_drop(z_move(hash_data));
+  z_drop(z_move(type_name));
+
+  return zenoh_pico_generate_entity(zid, nid, type, node_info, topic_info);
+}
+
 bool zenoh_pico_destroy_entity(ZenohPicoEntity *entity)
 {
   RMW_ZENOH_FUNC_ENTRY(NULL);

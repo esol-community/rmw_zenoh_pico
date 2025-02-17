@@ -38,6 +38,7 @@ extern "C"
   extern z_result_t conv_domain(size_t domain, z_owned_string_t *value);
   extern z_result_t convert_hash(const rosidl_type_hash_t * type_hash, z_owned_string_t *value);
   extern z_result_t convert_message_type(const message_type_support_callbacks_t *callbacks, z_owned_string_t *value);
+  extern z_result_t convert_client_type(const message_type_support_callbacks_t *callbacks, z_owned_string_t *value);
   extern z_result_t qos_to_keyexpr(rmw_qos_profile_t *qos, z_owned_string_t *value);
 
 #if defined(__cplusplus)

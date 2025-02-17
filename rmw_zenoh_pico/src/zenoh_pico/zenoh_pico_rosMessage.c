@@ -369,6 +369,8 @@ rmw_zenoh_pico_deserialize_msg(
   void * ros_message,
   rmw_message_info_t * message_info)
 {
+  RMW_ZENOH_FUNC_ENTRY(NULL);
+
   bool ret = rmw_zenoh_pico_deserialize(msg_data, callbacks, ros_message);
 
   if (message_info != NULL) {
@@ -398,11 +400,11 @@ rmw_zenoh_pico_take_one(ZenohPicoSubData * sub_data,
   RMW_ZENOH_FUNC_ENTRY(NULL);
 
   ReceiveMessageData *msg_data = recv_msg_list_pop(&sub_data->message_queue);
+  RMW_CHECK_ARGUMENT_FOR_NULL(msg_data, RMW_RET_ERROR);
 
-  const message_type_support_callbacks_t *callbacks = sub_data->callbacks;
-
-  bool deserialize_rv = rmw_zenoh_pico_deserialize_msg(msg_data, callbacks, ros_message, message_info);
-
+  bool deserialize_rv = rmw_zenoh_pico_deserialize_msg(msg_data,
+						       sub_data->callbacks,
+						       ros_message, message_info);
   if (taken != NULL) {
     *taken = deserialize_rv;
   }

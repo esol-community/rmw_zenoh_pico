@@ -34,6 +34,7 @@
 #include <rmw/init_options.h>
 #include <rmw/error_handling.h>
 #include <rmw/validate_full_topic_name.h>
+#include <rmw/names_and_types.h>
 
 #include <rosidl_runtime_c/message_type_support_struct.h>
 
@@ -76,11 +77,12 @@
 #include <rmw_zenoh_pico/rmw_zenoh_pico_session.h>
 
 #include <rmw_zenoh_pico/rmw_zenoh_pico_node.h>
-#include <rmw_zenoh_pico/rmw_zenoh_pico_subscription.h>
 #include <rmw_zenoh_pico/rmw_zenoh_pico_wait.h>
 #include <rmw_zenoh_pico/rmw_zenoh_pico_guard_condition.h>
 #include <rmw_zenoh_pico/rmw_zenoh_pico_event_callbacks.h>
+#include <rmw_zenoh_pico/rmw_zenoh_pico_subscription.h>
 #include <rmw_zenoh_pico/rmw_zenoh_pico_publisher.h>
+#include <rmw_zenoh_pico/rmw_zenoh_pico_client.h>
 
 // expand zenoh-pico api
 extern void test_qos_profile(rmw_qos_profile_t *qos);

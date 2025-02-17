@@ -24,6 +24,7 @@
 
 #include <rosidl_runtime_c/message_type_support_struct.h>
 #include <rosidl_typesupport_microxrcedds_c/message_type_support.h>
+#include <rosidl_typesupport_microxrcedds_c/service_type_support.h>
 
 #if defined(__cplusplus)
 extern "C"
@@ -32,6 +33,9 @@ extern "C"
 
   extern const rosidl_message_type_support_t * find_message_type_support(
     const rosidl_message_type_support_t * type_supports);
+
+  extern const rosidl_service_type_support_t * find_service_type_support(
+    const rosidl_service_type_support_t * type_supports);
 
 #if defined(__cplusplus)
 }

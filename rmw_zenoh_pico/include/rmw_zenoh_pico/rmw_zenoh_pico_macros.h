@@ -30,6 +30,7 @@ extern "C"
   extern z_owned_mutex_t mutex_ZenohPicoWaitSetData;
   extern z_owned_mutex_t mutex_ZenohPicoNodeData;
   extern z_owned_mutex_t mutex_ZenohPicoPubData;
+  extern z_owned_mutex_t mutex_ZenohPicoClientData;
   extern z_owned_mutex_t mutex_ZenohPicoEntity;
   extern z_owned_mutex_t mutex_ZenohPicoTopicInfo;
 

@@ -291,6 +291,7 @@ void rmw_zenoh_pico_init(void)
   z_mutex_init(&mutex_ZenohPicoWaitSetData);
   z_mutex_init(&mutex_ZenohPicoNodeData);
   z_mutex_init(&mutex_ZenohPicoPubData);
+  z_mutex_init(&mutex_ZenohPicoClientData);
   z_mutex_init(&mutex_ZenohPicoEntity);
   z_mutex_init(&mutex_ZenohPicoTopicInfo);
 
