@@ -15,8 +15,6 @@
 
 #include <rmw_zenoh_pico/rmw_zenoh_pico.h>
 
-z_owned_mutex_t mutex_ZenohPicoClientData;
-
 static void zenoh_pico_debug_client_data(ZenohPicoClientData *client_data);
 
 static ZenohPicoClientData * zenoh_pico_generate_client_data(

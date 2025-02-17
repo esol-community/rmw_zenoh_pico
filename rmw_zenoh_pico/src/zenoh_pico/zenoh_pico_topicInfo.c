@@ -21,8 +21,6 @@ const z_loaned_string_t *topic_type(ZenohPicoTopicInfo *topic)	{ return z_loan(t
 const z_loaned_string_t *topic_hash(ZenohPicoTopicInfo *topic)	{ return z_loan(topic->hash); }
 const z_loaned_string_t *topic_qos(ZenohPicoTopicInfo *topic)	{ return z_loan(topic->qos); }
 
-z_owned_mutex_t mutex_ZenohPicoTopicInfo;
-
 ZenohPicoTopicInfo *zenoh_pico_generate_topic_info(const char *name,
 						   const rmw_qos_profile_t *qos,
 						   const z_loaned_string_t *type,

@@ -29,6 +29,7 @@ extern "C"
   typedef struct _ZenohPicoSession
   {
     int ref;
+    z_owned_mutex_t lock;
 
     // Enclave, name used to find security artifacts in a sros2 keystore
     z_owned_string_t enclave;

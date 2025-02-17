@@ -21,8 +21,6 @@
 
 #include <rmw_zenoh_pico/rmw_zenoh_pico.h>
 
-z_owned_mutex_t mutex_ZenohPicoPubData;
-
 static bool declaration_publisher_data(ZenohPicoPubData *pub_data);
 static bool undeclaration_publisher_data(ZenohPicoPubData *pub_data);
 

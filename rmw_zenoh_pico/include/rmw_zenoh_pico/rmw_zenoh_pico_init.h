@@ -33,6 +33,8 @@ extern "C"
   typedef struct _ZenohPicoTransportParams
   {
     int ref;
+    z_owned_mutex_t lock;
+
     const char *mode;
 
 #if defined(RMW_ZENOH_PICO_TRANSPORT_UNICAST)

@@ -24,16 +24,6 @@ extern "C"
 {
 #endif  // if defined(__cplusplus)
 
-  extern z_owned_mutex_t mutex_ZenohPicoSubData;
-  extern z_owned_mutex_t mutex_ZenohPicoTransportParams;
-  extern z_owned_mutex_t mutex_ZenohPicoSession;
-  extern z_owned_mutex_t mutex_ZenohPicoWaitSetData;
-  extern z_owned_mutex_t mutex_ZenohPicoNodeData;
-  extern z_owned_mutex_t mutex_ZenohPicoPubData;
-  extern z_owned_mutex_t mutex_ZenohPicoClientData;
-  extern z_owned_mutex_t mutex_ZenohPicoEntity;
-  extern z_owned_mutex_t mutex_ZenohPicoTopicInfo;
-
   extern void rmw_zenoh_pico_mutex_init(void);
 
 //
@@ -54,41 +44,42 @@ extern "C"
   {						\
     if ((D) == NULL) {				\
       (D) = (T *)z_malloc(sizeof(T));		\
+      z_mutex_init(&(D)->lock);			\
     }						\
     if ((D) != NULL) {				\
       memset((D), 0, sizeof(T));		\
-      z_mutex_lock(z_loan_mut(mutex_##T));	\
+      z_mutex_lock(z_loan_mut((D)->lock));	\
       (D)->ref = 1;				\
-      z_mutex_unlock(z_loan_mut(mutex_##T));	\
+      z_mutex_unlock(z_loan_mut((D)->lock));	\
     }						\
   }
 
 #define ZenohPicoDestroyData(D, T)		\
   {						\
     if((D) != NULL) {				\
-      z_mutex_lock(z_loan_mut(mutex_##T));	\
+      z_mutex_lock(z_loan_mut((D)->lock));	\
       (D)->ref -= 1;				\
     }						\
     if((D)->ref == 0) {				\
-      z_mutex_unlock(z_loan_mut(mutex_##T));	\
+      z_mutex_unlock(z_loan_mut((D)->lock));	\
       Z_FREE((D));				\
     }else{					\
-      z_mutex_unlock(z_loan_mut(mutex_##T));	\
+      z_mutex_unlock(z_loan_mut((D)->lock));	\
     }						\
   }
 
 #define ZenohPicoLoanData(D, T)			\
   {						\
-    z_mutex_lock(z_loan_mut(mutex_##T));	\
+    z_mutex_lock(z_loan_mut((D)->lock));	\
     (D)->ref += 1;				\
-    z_mutex_unlock(z_loan_mut(mutex_##T));	\
+    z_mutex_unlock(z_loan_mut((D)->lock));	\
   }
 
 #define ZenohPicoReturnData(D, T)		\
   {						\
-    z_mutex_lock(z_loan_mut(mutex_##T));	\
+    z_mutex_lock(z_loan_mut((D)->lock));	\
     (D)->ref -= 1;				\
-    z_mutex_unlock(z_loan_mut(mutex_##T));	\
+    z_mutex_unlock(z_loan_mut((D)->lock));	\
   }
 
 //

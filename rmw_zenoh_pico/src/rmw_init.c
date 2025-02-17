@@ -17,8 +17,6 @@
 
 #include <rmw_zenoh_pico/rmw_zenoh_pico.h>
 
-z_owned_mutex_t mutex_ZenohPicoTransportParams;
-
 static ZenohPicoTransportParams *zenoh_pico_generate_param(ZenohPicoTransportParams *param)
 {
   ZenohPicoGenerateData(param, ZenohPicoTransportParams);
@@ -285,16 +283,6 @@ rmw_zenoh_pico_set_serial_config(ZenohPicoTransportParams *params, z_owned_confi
 
 void rmw_zenoh_pico_init(void)
 {
-  z_mutex_init(&mutex_ZenohPicoSubData);
-  z_mutex_init(&mutex_ZenohPicoTransportParams);
-  z_mutex_init(&mutex_ZenohPicoSession);
-  z_mutex_init(&mutex_ZenohPicoWaitSetData);
-  z_mutex_init(&mutex_ZenohPicoNodeData);
-  z_mutex_init(&mutex_ZenohPicoPubData);
-  z_mutex_init(&mutex_ZenohPicoClientData);
-  z_mutex_init(&mutex_ZenohPicoEntity);
-  z_mutex_init(&mutex_ZenohPicoTopicInfo);
-
   rmw_zenoh_pico_log_init();
 }
 

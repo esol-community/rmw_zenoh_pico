@@ -34,6 +34,7 @@ extern "C"
   typedef struct _ZenohPicoNodeData
   {
     int ref;
+    z_owned_mutex_t lock;
 
     size_t id;
 

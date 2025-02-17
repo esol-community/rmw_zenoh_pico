@@ -37,6 +37,7 @@ extern "C"
     struct _ReceiveMessageData *next;
 
     int ref;
+    z_owned_mutex_t lock;
 
     void *payload_start;
     size_t payload_size;

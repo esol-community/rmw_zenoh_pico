@@ -15,8 +15,6 @@
 
 #include <rmw_zenoh_pico/rmw_zenoh_pico.h>
 
-z_owned_mutex_t mutex_ZenohPicoWaitSetData;
-
 ZenohPicoWaitSetData * zenoh_pico_generate_wait_set_data(rmw_context_t * context)
 {
   RMW_ZENOH_FUNC_ENTRY(context);

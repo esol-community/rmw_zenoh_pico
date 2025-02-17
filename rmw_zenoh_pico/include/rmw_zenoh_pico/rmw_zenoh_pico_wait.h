@@ -27,6 +27,7 @@ extern "C"
 
   typedef struct _ZenohPicoWaitSetData {
     int ref;
+    z_owned_mutex_t lock;
 
     z_owned_condvar_t condition_variable;
     z_owned_mutex_t condition_mutex;

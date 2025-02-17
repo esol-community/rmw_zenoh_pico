@@ -15,9 +15,6 @@
 
 #include <rmw_zenoh_pico/rmw_zenoh_pico.h>
 
-z_owned_mutex_t mutex_ZenohPicoNodeData;
-
-
 static size_t zenoh_pico_get_next_node_id(void)
 {
   static size_t node_id = 0;

@@ -21,8 +21,6 @@ const z_loaned_string_t *node_namespace(ZenohPicoNodeInfo *node)	{ return z_loan
 const z_loaned_string_t *node_name(ZenohPicoNodeInfo *node)		{ return z_loan(node->name); }
 const z_loaned_string_t *node_enclave(ZenohPicoNodeInfo *node)		{ return z_loan(node->enclave); }
 
-z_owned_mutex_t mutex_ZenohPicoNodeInfo;
-
 ZenohPicoNodeInfo * zenoh_pico_generate_node_info(size_t domain_id,
 						  const char *ns,
 						  const char *name,

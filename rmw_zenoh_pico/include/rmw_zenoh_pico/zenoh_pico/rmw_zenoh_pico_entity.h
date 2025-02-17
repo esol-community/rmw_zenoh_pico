@@ -46,6 +46,7 @@ extern "C"
   typedef struct _ZenohPicoEntity
   {
     int ref;
+    z_owned_mutex_t lock;
 
     z_owned_string_t zid;
     size_t id;

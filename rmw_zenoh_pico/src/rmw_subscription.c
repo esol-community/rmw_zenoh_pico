@@ -24,8 +24,6 @@
 
 #include <rmw_zenoh_pico/rmw_zenoh_pico.h>
 
-z_owned_mutex_t mutex_ZenohPicoSubData;
-
 static bool declaration_subscription_data(ZenohPicoSubData *sub_data);
 static bool undeclaration_subscription_data(ZenohPicoSubData *sub_data);
 

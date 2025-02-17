@@ -17,8 +17,6 @@
 #include <rmw_zenoh_pico/rmw_zenoh_pico.h>
 #include <string.h>
 
-z_owned_mutex_t mutex_ZenohPicoSession;
-
 static ZenohPicoSession _zenohSession;
 
 ZenohPicoSession *zenoh_pico_generate_session(const z_loaned_config_t *config,

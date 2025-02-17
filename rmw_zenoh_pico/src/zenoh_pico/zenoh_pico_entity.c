@@ -31,8 +31,6 @@ const z_loaned_string_t *get_topic_type(ZenohPicoEntity *entity)	{ return topic_
 const z_loaned_string_t *get_topic_hash(ZenohPicoEntity *entity)	{ return topic_hash(entity->topic_info); }
 const z_loaned_string_t *get_topic_qos(ZenohPicoEntity *entity)		{ return topic_qos(entity->topic_info); }
 
-z_owned_mutex_t mutex_ZenohPicoEntity;
-
 ZenohPicoEntity * zenoh_pico_generate_entity(
   z_id_t *zid,
   size_t nid,
