@@ -56,9 +56,10 @@ extern "C"
     int count;
   } ReceiveMessageDataList;
 
-  extern ReceiveMessageData * zenoh_pico_generate_recv_msg_data(
+  extern ReceiveMessageData * rmw_zenoh_pico_generate_recv_msg_data(
     const z_loaned_sample_t *sample,
     time_t recv_ts);
+
   extern bool zenoh_pico_delete_recv_msg_data(ReceiveMessageData * recv_data);
   extern void zenoh_pico_debug_dump_msg(const uint8_t *start, size_t size);
   extern void zenoh_pico_debug_recv_msg_data(ReceiveMessageData * recv_data);
@@ -77,13 +78,18 @@ extern "C"
 					 const message_type_support_callbacks_t *callbacks,
 					 void * ros_message);
 
-  extern rmw_ret_t zenoh_pico_publish(ZenohPicoPubData *pub_data,
-				      const void * ros_message);
-  extern rmw_ret_t zenoh_pico_take(ZenohPicoSubData * sub_data,
+  extern rmw_ret_t rmw_zenoh_pico_publish(ZenohPicoPubData *pub_data,
+					  const void * ros_message);
+
+  extern bool rmw_zenoh_pico_deserialize_msg(ReceiveMessageData *msg_data,
+					     const message_type_support_callbacks_t *callbacks,
+					     void * ros_message,
+					     rmw_message_info_t * message_info);
+
+  extern rmw_ret_t rmw_zenoh_pico_take_one(ZenohPicoSubData * sub_data,
 				   void * ros_message,
 				   rmw_message_info_t * message_info,
 				   bool * taken);
-
 #if defined(__cplusplus)
 }
 #endif  // if defined(__cplusplus)

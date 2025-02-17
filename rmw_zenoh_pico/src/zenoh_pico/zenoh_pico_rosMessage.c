@@ -30,6 +30,7 @@ static void set_ros2_header(uint8_t *msg_bytes)
 uint8_t * rmw_zenoh_pico_serialize(const message_type_support_callbacks_t *callbacks,
 				   const void * ros_message, size_t *size)
 {
+  RMW_ZENOH_FUNC_ENTRY(NULL);
 
   size_t serialized_size = callbacks->get_serialized_size(ros_message);
   size_t alloc_size = serialized_size +ROS2_MSG_OFFSET;
@@ -62,6 +63,7 @@ bool rmw_zenoh_pico_deserialize(ReceiveMessageData *msg_data,
 				const message_type_support_callbacks_t *callbacks,
 				void * ros_message)
 {
+  RMW_ZENOH_FUNC_ENTRY(NULL);
   ucdrBuffer temp_buffer;
 
   ucdr_init_buffer(&temp_buffer,
@@ -73,88 +75,12 @@ bool rmw_zenoh_pico_deserialize(ReceiveMessageData *msg_data,
   return ret;
 }
 
-rmw_ret_t zenoh_pico_publish(ZenohPicoPubData *pub_data,
-			     const void * ros_message)
+ReceiveMessageData *
+rmw_zenoh_pico_generate_recv_msg_data(const z_loaned_sample_t *sample,
+				  time_t recv_ts)
 {
-  z_mutex_lock(z_loan_mut(pub_data->mutex));
+  RMW_ZENOH_FUNC_ENTRY(NULL);
 
-  size_t alloc_size;
-  uint8_t * msg_bytes = rmw_zenoh_pico_serialize(pub_data->callbacks,
-						 ros_message,
-						 &alloc_size);
-  if(msg_bytes == NULL)
-    return RMW_RET_ERROR;
-
-  // set attachment to option
-  z_publisher_put_options_t options;
-  z_publisher_put_options_default(&options);
-
-  // gen attachment data
-  z_owned_bytes_t attachment;
-  attachment_sequence_num_inc(&pub_data->attachment);
-  if(_Z_IS_OK(attachment_gen(&pub_data->attachment, &attachment))){
-    options.attachment = z_move(attachment);
-  }
-
-  // put publish data
-  z_owned_bytes_t payload;
-  z_bytes_copy_from_buf(&payload, msg_bytes, alloc_size);
-  z_publisher_put(z_loan(pub_data->topic),
-		  z_move(payload),
-		  &options);
-
-  TOPIC_FREE(msg_bytes);
-  z_drop(z_move(attachment));
-
-  z_mutex_unlock(z_loan_mut(pub_data->mutex));
-
-  return RMW_RET_OK;
-}
-
-rmw_ret_t
-zenoh_pico_take(ZenohPicoSubData * sub_data,
-		void * ros_message,
-		rmw_message_info_t * message_info,
-		bool * taken)
-{
-  *taken = false;
-
-  ReceiveMessageData *msg_data = recv_msg_list_pop(&sub_data->message_queue);
-
-  const message_type_support_callbacks_t *callbacks = sub_data->callbacks;
-
-  bool deserialize_rv = rmw_zenoh_pico_deserialize(msg_data, callbacks, ros_message);
-
-  if (message_info != NULL) {
-    message_info->source_timestamp		= msg_data->attachment.timestamp;
-    message_info->received_timestamp		= msg_data->recv_timestamp;
-    message_info->publication_sequence_number	= msg_data->attachment.sequence_num;
-    message_info->reception_sequence_number	= 0;
-
-    message_info->publisher_gid.implementation_identifier = rmw_get_implementation_identifier();
-
-    const uint8_t *gid_ptr = z_slice_data(z_loan(msg_data->attachment.gid));
-    size_t gid_len = z_slice_len(z_loan(msg_data->attachment.gid));
-    memcpy(message_info->publisher_gid.data, gid_ptr, gid_len);
-
-    message_info->from_intra_process = false;
-  }
-
-  if (taken != NULL) {
-    *taken = deserialize_rv;
-  }
-
-  if (!deserialize_rv) {
-    RMW_SET_ERROR_MSG("Typesupport deserialize error.");
-    return RMW_RET_ERROR;
-  }
-
-  return RMW_RET_OK;
-}
-
-ReceiveMessageData * zenoh_pico_generate_recv_msg_data(const z_loaned_sample_t *sample,
-						       time_t recv_ts)
-{
   ReceiveMessageData * recv_data = NULL;
   ZenohPicoGenerateData(recv_data, ReceiveMessageData);
   RMW_CHECK_FOR_NULL_WITH_MSG(
@@ -247,7 +173,7 @@ void zenoh_pico_debug_dump_msg(const uint8_t *start, size_t size)
 
   return;
 }
-void zenoh_pico_debug_recv_msg_data(ReceiveMessageData * recv_data)
+void rmw_zenoh_pico_debug_recv_msg_data(ReceiveMessageData * recv_data)
 {
   printf("--------- recv msg data ----------\n");
   printf("ref              = %d\n", recv_data->ref);
@@ -382,10 +308,109 @@ void recv_msg_list_debug(ReceiveMessageDataList *msg_list)
 
   for(size_t count = 0; msg_data != NULL; count++){
     printf("[%d]\n", (int)count);
-    zenoh_pico_debug_recv_msg_data(msg_data);
+    rmw_zenoh_pico_debug_recv_msg_data(msg_data);
     msg_data = msg_data->next;
   }
   z_mutex_unlock(msg_mutex);
 
   printf("data dump end  ... \n");
+}
+
+// ----------------------------
+
+rmw_ret_t
+rmw_zenoh_pico_publish(ZenohPicoPubData *pub_data,
+		   const void * ros_message)
+{
+  RMW_ZENOH_FUNC_ENTRY(NULL);
+
+  size_t data_length;
+  uint8_t * msg_bytes = rmw_zenoh_pico_serialize(pub_data->callbacks,
+						 ros_message,
+						 &data_length);
+  if(msg_bytes == NULL)
+    return RMW_RET_ERROR;
+
+  z_mutex_lock(z_loan_mut(pub_data->mutex));
+
+  // set attachment to option
+  z_publisher_put_options_t options;
+  z_publisher_put_options_default(&options);
+
+  // gen attachment data
+  z_owned_bytes_t attachment;
+  attachment_sequence_num_inc(&pub_data->attachment);
+  if(_Z_IS_ERR(attachment_gen(&pub_data->attachment, &attachment))){
+    z_mutex_unlock(z_loan_mut(pub_data->mutex));
+    return RMW_RET_ERROR;
+  }
+  options.attachment = z_move(attachment);
+
+  // put publish data
+  z_owned_bytes_t payload;
+  z_bytes_copy_from_buf(&payload, msg_bytes, data_length);
+  // z_bytes_from_static_buf(&payload, msg_bytes, data_length);
+
+  z_result_t ret = z_publisher_put(z_loan(pub_data->topic),
+			       z_move(payload),
+			       &options);
+  TOPIC_FREE(msg_bytes);
+  z_drop(z_move(attachment));
+
+  z_mutex_unlock(z_loan_mut(pub_data->mutex));
+
+  return ret == _Z_RES_OK ?  RMW_RET_OK : RMW_RET_ERROR;
+}
+
+bool
+rmw_zenoh_pico_deserialize_msg(
+  ReceiveMessageData *msg_data,
+  const message_type_support_callbacks_t *callbacks,
+  void * ros_message,
+  rmw_message_info_t * message_info)
+{
+  bool ret = rmw_zenoh_pico_deserialize(msg_data, callbacks, ros_message);
+
+  if (message_info != NULL) {
+    message_info->source_timestamp		= msg_data->attachment.timestamp;
+    message_info->received_timestamp		= msg_data->recv_timestamp;
+    message_info->publication_sequence_number	= msg_data->attachment.sequence_num;
+    message_info->reception_sequence_number	= 0;
+
+    message_info->publisher_gid.implementation_identifier = rmw_get_implementation_identifier();
+
+    const uint8_t *gid_ptr = z_slice_data(z_loan(msg_data->attachment.gid));
+    size_t gid_len = z_slice_len(z_loan(msg_data->attachment.gid));
+    memcpy(message_info->publisher_gid.data, gid_ptr, gid_len);
+
+    message_info->from_intra_process = false;
+  }
+
+  return ret;
+}
+
+rmw_ret_t
+rmw_zenoh_pico_take_one(ZenohPicoSubData * sub_data,
+		void * ros_message,
+		rmw_message_info_t * message_info,
+		bool * taken)
+{
+  RMW_ZENOH_FUNC_ENTRY(NULL);
+
+  ReceiveMessageData *msg_data = recv_msg_list_pop(&sub_data->message_queue);
+
+  const message_type_support_callbacks_t *callbacks = sub_data->callbacks;
+
+  bool deserialize_rv = rmw_zenoh_pico_deserialize_msg(msg_data, callbacks, ros_message, message_info);
+
+  if (taken != NULL) {
+    *taken = deserialize_rv;
+  }
+
+  if (!deserialize_rv) {
+    RMW_SET_ERROR_MSG("Typesupport deserialize error.");
+    return RMW_RET_ERROR;
+  }
+
+  return RMW_RET_OK;
 }

@@ -37,7 +37,7 @@ rmw_publish(const rmw_publisher_t * publisher,
 
   ZenohPicoPubData *pub_data = (ZenohPicoPubData *)publisher->data;
 
-  return zenoh_pico_publish(pub_data, ros_message);
+  return rmw_zenoh_pico_publish(pub_data, ros_message);
 }
 
 rmw_ret_t

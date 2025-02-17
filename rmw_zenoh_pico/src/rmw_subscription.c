@@ -176,9 +176,9 @@ static void zenoh_pico_debug_subscription_data(ZenohPicoSubData *sub_data)
   zenoh_pico_debug_entity(sub_data->entity);
 }
 
-void add_new_message(ZenohPicoSubData *sub_data, ReceiveMessageData *recv_data)
+static void add_new_subscription_message(ZenohPicoSubData *sub_data, ReceiveMessageData *recv_data)
 {
-  // zenoh_pico_debug_recv_msg_data(recv_data);
+  // rmw_zenoh_pico_debug_recv_msg_data(recv_data);
 
   (void)recv_msg_list_push(&sub_data->message_queue, recv_data);
 
@@ -189,7 +189,7 @@ void add_new_message(ZenohPicoSubData *sub_data, ReceiveMessageData *recv_data)
   return;
 }
 
-static void _sub_data_handler(z_loaned_sample_t *sample, void *ctx) {
+static void _subscription_data_handler(z_loaned_sample_t *sample, void *ctx) {
   RMW_ZENOH_FUNC_ENTRY(sample);
 
   ZenohPicoSubData *sub_data = (ZenohPicoSubData *)ctx;
@@ -205,12 +205,12 @@ static void _sub_data_handler(z_loaned_sample_t *sample, void *ctx) {
   }
 
   ReceiveMessageData * recv_data;
-  if((recv_data = zenoh_pico_generate_recv_msg_data(sample, zenoh_pico_gen_timestamp())) == NULL) {
+  if((recv_data = rmw_zenoh_pico_generate_recv_msg_data(sample, zenoh_pico_gen_timestamp())) == NULL) {
     RMW_ZENOH_LOG_ERROR("unable to generate_recv_msg_data");
     return;
   }
 
-  (void)add_new_message(sub_data, recv_data);
+  (void)add_new_subscription_message(sub_data, recv_data);
 }
 
 // callback: the typical ``callback`` function. ``context`` will be passed as its last argument.
@@ -231,7 +231,7 @@ static bool declaration_subscription_data(ZenohPicoSubData *sub_data)
   z_subscriber_options_default(&options);
 
   z_owned_closure_sample_t sub_callback;
-  z_closure(&sub_callback, _sub_data_handler, 0, (void *)sub_data);
+  z_closure(&sub_callback, _subscription_data_handler, 0, (void *)sub_data);
 
   z_view_keyexpr_t ke;
   const z_loaned_string_t *keyexpr = z_loan(sub_data->topic_key);

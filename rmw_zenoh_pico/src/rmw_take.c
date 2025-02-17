@@ -36,7 +36,7 @@ rmw_take(const rmw_subscription_t * subscription,
   ZenohPicoSubData *sub_data = (ZenohPicoSubData *)subscription->data;
   RMW_CHECK_ARGUMENT_FOR_NULL(sub_data, RMW_RET_INVALID_ARGUMENT);
 
-  return zenoh_pico_take(sub_data, ros_message, NULL, taken);
+  return rmw_zenoh_pico_take_one(sub_data, ros_message, NULL, taken);
 }
 
 rmw_ret_t
@@ -62,7 +62,7 @@ rmw_take_with_info(const rmw_subscription_t * subscription,
   ZenohPicoSubData *sub_data = (ZenohPicoSubData *)subscription->data;
   RMW_CHECK_ARGUMENT_FOR_NULL(sub_data, RMW_RET_INVALID_ARGUMENT);
 
-  return zenoh_pico_take(sub_data, ros_message, message_info, taken);
+  return rmw_zenoh_pico_take_one(sub_data, ros_message, message_info, taken);
 }
 
 rmw_ret_t
@@ -120,9 +120,11 @@ rmw_take_sequence(const rmw_subscription_t * subscription,
   while (*taken < count) {
     bool one_taken = false;
 
-    ret = zenoh_pico_take(
-      sub_data, message_sequence->data[*taken],
-      &message_info_sequence->data[*taken], &one_taken);
+    ret = rmw_zenoh_pico_take_one(
+      sub_data,
+      message_sequence->data[*taken],
+      &message_info_sequence->data[*taken],
+      &one_taken);
     if (ret != RMW_RET_OK) {
       // If we are taking a sequence and the 2nd take in the sequence failed, we'll report
       // RMW_RET_ERROR to the caller, but we will *also* tell the caller that there are valid
