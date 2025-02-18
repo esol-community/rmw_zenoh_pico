@@ -56,7 +56,7 @@ static ZenohPicoSubData * zenoh_pico_generate_subscription_data(
 					    topic_name,
 					    type_support,
 					    qos_profile,
-					    Publisher);
+					    Subscription);
 
   if(entity == NULL)
     goto error;
