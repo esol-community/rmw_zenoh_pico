@@ -38,12 +38,11 @@ static ZenohPicoPubData * zenoh_pico_generate_publisher_data(
   ZenohPicoEntity *entity	= NULL;
   ZenohPicoPubData *pub_data	= NULL;
 
-  // clone node_info
-  node_info = zenoh_pico_clone_node_info(node->entity->node_info);
-
   // generate entity data
   ZenohPicoSession *session = node->session;
   z_id_t zid = z_info_zid(z_loan(session->session));
+
+  node_info = ZenohPicoDataRefClone(node->entity->node_info);
   entity = zenoh_pico_generate_publisher_entity(&zid,
 						node->id,
 						node_info,

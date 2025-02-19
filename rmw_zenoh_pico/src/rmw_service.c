@@ -30,17 +30,25 @@ ZenohPicoServiceData * zenoh_pico_generate_service_data(
   ZenohPicoEntity *entity	= NULL;
   ZenohPicoServiceData *data	= NULL;
 
-  // clone node_info
-  node_info = zenoh_pico_clone_node_info(node->entity->node_info);
-
   // generate entity data
   ZenohPicoSession *session = node->session;
   z_id_t zid = z_info_zid(z_loan(session->session));
 
+  node_info = ZenohPicoDataRefClone(node->entity->node_info);
   if(service_type == Service){
-    entity = zenoh_pico_generate_service_entity(&zid, node->id, node_info, topic_name, type_support, qos_profile);
+    entity = zenoh_pico_generate_service_entity(&zid,
+						node->id,
+						node_info,
+						topic_name,
+						type_support,
+						qos_profile);
   }else{
-    entity = zenoh_pico_generate_client_entity(&zid, node->id, node_info, topic_name, type_support, qos_profile);
+    entity = zenoh_pico_generate_client_entity(&zid,
+					       node->id,
+					       node_info,
+					       topic_name,
+					       type_support,
+					       qos_profile);
   }
   if(entity == NULL)
     goto error;

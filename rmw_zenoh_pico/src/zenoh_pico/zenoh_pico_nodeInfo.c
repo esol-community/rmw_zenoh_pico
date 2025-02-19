@@ -46,23 +46,6 @@ ZenohPicoNodeInfo * zenoh_pico_generate_node_info(size_t domain_id,
   return node;
 }
 
-ZenohPicoNodeInfo *zenoh_pico_clone_node_info(ZenohPicoNodeInfo *src)
-{
-  ZenohPicoNodeInfo *node = NULL;
-  node = ZenohPicoDataGenerate(node);
-  RMW_CHECK_FOR_NULL_WITH_MSG(
-    node,
-    "failed to allocate struct for the ZenohPicoNodeInfo",
-    return NULL);
-
-  z_string_clone(&node->domain, z_loan(src->domain));
-  z_string_clone(&node->ns, z_loan(src->ns));
-  z_string_clone(&node->name, z_loan(src->name));
-  z_string_clone(&node->enclave, z_loan(src->enclave));
-
-  return node;
-}
-
 bool zenoh_pico_destroy_node_info(ZenohPicoNodeInfo *node)
 {
   RMW_ZENOH_FUNC_ENTRY(node);
