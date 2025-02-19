@@ -29,7 +29,7 @@ ZenohPicoTopicInfo *zenoh_pico_generate_topic_info(const char *name,
   RMW_ZENOH_FUNC_ENTRY(name);
 
   ZenohPicoTopicInfo *topic = NULL;
-  ZenohPicoGenerateData(topic, ZenohPicoTopicInfo);
+  topic = ZenohPicoDataGenerate(topic);
   RMW_CHECK_FOR_NULL_WITH_MSG(
     topic,
     "failed to allocate struct for the ZenohPicoTopicInfo",
@@ -69,12 +69,18 @@ bool zenoh_pico_destroy_topic_info(ZenohPicoTopicInfo *topic)
 
   RMW_CHECK_ARGUMENT_FOR_NULL(topic, false);
 
-  z_drop(z_move(topic->name));
-  z_drop(z_move(topic->type));
-  z_drop(z_move(topic->hash));
-  z_drop(z_move(topic->qos));
+  ZenohPicoDataMutexLock(topic);
 
-  ZenohPicoDestroyData(topic, ZenohPicoTopicInfo);
+  if(ZenohPicoDataRelease(topic)){
+    z_drop(z_move(topic->name));
+    z_drop(z_move(topic->type));
+    z_drop(z_move(topic->hash));
+    z_drop(z_move(topic->qos));
+
+    ZenohPicoDataDestroy(topic);
+  }
+
+  ZenohPicoDataMutexUnLock(topic);
 
   return true;
 }

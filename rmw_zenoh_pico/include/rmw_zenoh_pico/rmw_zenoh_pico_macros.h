@@ -24,8 +24,6 @@ extern "C"
 {
 #endif  // if defined(__cplusplus)
 
-  extern void rmw_zenoh_pico_mutex_init(void);
-
 //
 // for identifier data utilities
 //
@@ -38,54 +36,8 @@ extern "C"
   }
 
 //
-// rmw_zenoh_pico private data Generater utilities
-//
-#define ZenohPicoGenerateData(D, T)		\
-  {						\
-    if ((D) == NULL) {				\
-      (D) = (T *)z_malloc(sizeof(T));		\
-      z_mutex_init(&(D)->lock);			\
-    }						\
-    if ((D) != NULL) {				\
-      memset((D), 0, sizeof(T));		\
-      z_mutex_lock(z_loan_mut((D)->lock));	\
-      (D)->ref = 1;				\
-      z_mutex_unlock(z_loan_mut((D)->lock));	\
-    }						\
-  }
-
-#define ZenohPicoDestroyData(D, T)		\
-  {						\
-    if((D) != NULL) {				\
-      z_mutex_lock(z_loan_mut((D)->lock));	\
-      (D)->ref -= 1;				\
-    }						\
-    if((D)->ref == 0) {				\
-      z_mutex_unlock(z_loan_mut((D)->lock));	\
-      Z_FREE((D));				\
-    }else{					\
-      z_mutex_unlock(z_loan_mut((D)->lock));	\
-    }						\
-  }
-
-#define ZenohPicoLoanData(D, T)			\
-  {						\
-    z_mutex_lock(z_loan_mut((D)->lock));	\
-    (D)->ref += 1;				\
-    z_mutex_unlock(z_loan_mut((D)->lock));	\
-  }
-
-#define ZenohPicoReturnData(D, T)		\
-  {						\
-    z_mutex_lock(z_loan_mut((D)->lock));	\
-    (D)->ref -= 1;				\
-    z_mutex_unlock(z_loan_mut((D)->lock));	\
-  }
-
-//
 // zenoh-pico macro
 //
-
 #define Z_MALLOC(size)       z_malloc(size)
 #define Z_FREE(ptr)          z_free((void *)ptr)
 

@@ -60,7 +60,7 @@ static ZenohPicoSubData * zenoh_pico_generate_subscription_data(
     goto error;
 
   ZenohPicoSubData *sub_data = NULL;
-  ZenohPicoGenerateData(sub_data, ZenohPicoSubData);
+  sub_data = ZenohPicoDataGenerate(sub_data);
   RMW_CHECK_FOR_NULL_WITH_MSG(
     sub_data,
     "failed to allocate struct for the ZenohPicoSubData",
@@ -108,6 +108,10 @@ static ZenohPicoSubData * zenoh_pico_generate_subscription_data(
   if(entity != NULL)
     zenoh_pico_destroy_entity(entity);
 
+  if(sub_data != NULL){
+    ZenohPicoDataDestroy(sub_data);
+  }
+
   return NULL;
 }
 
@@ -117,42 +121,48 @@ static bool zenoh_pico_destroy_subscription_data(ZenohPicoSubData *sub_data)
 
   RMW_CHECK_ARGUMENT_FOR_NULL(sub_data, false);
 
-  (void)undeclaration_subscription_data(sub_data);
+  ZenohPicoDataMutexLock(sub_data);
 
-  z_drop(z_move(sub_data->liveliness_key));
-  z_drop(z_move(sub_data->topic_key));
+  if(ZenohPicoDataRelease(sub_data)){
+    (void)undeclaration_subscription_data(sub_data);
 
-  z_drop(z_move(sub_data->liveliness));
-  z_drop(z_move(sub_data->topic));
+    z_drop(z_move(sub_data->liveliness_key));
+    z_drop(z_move(sub_data->topic_key));
 
-  if(sub_data->node != NULL){
-    (void)zenoh_pico_destroy_node_data(sub_data->node);
-    sub_data->node = NULL;
-  }
+    z_drop(z_move(sub_data->liveliness));
+    z_drop(z_move(sub_data->topic));
 
-  if(sub_data->entity != NULL){
-    (void)zenoh_pico_destroy_entity(sub_data->entity);
-    sub_data->entity = NULL;
-  }
-
-  // free receive message list
-  // recv_msg_list_debug(&sub_data->message_queue);
-
-  if(recv_msg_list_count(&sub_data->message_queue) > 0){
-    while(true){
-      ReceiveMessageData * recv_data = recv_msg_list_pop(&sub_data->message_queue);
-
-      if(recv_data == NULL)
-	break;
-
-      (void)zenoh_pico_delete_recv_msg_data(recv_data);
+    if(sub_data->node != NULL){
+      (void)zenoh_pico_destroy_node_data(sub_data->node);
+      sub_data->node = NULL;
     }
+
+    if(sub_data->entity != NULL){
+      (void)zenoh_pico_destroy_entity(sub_data->entity);
+      sub_data->entity = NULL;
+    }
+
+    // free receive message list
+    // recv_msg_list_debug(&sub_data->message_queue);
+
+    if(recv_msg_list_count(&sub_data->message_queue) > 0){
+      while(true){
+	ReceiveMessageData * recv_data = recv_msg_list_pop(&sub_data->message_queue);
+
+	if(recv_data == NULL)
+	  break;
+
+	(void)zenoh_pico_delete_recv_msg_data(recv_data);
+      }
+    }
+
+    z_mutex_drop(z_move(sub_data->condition_mutex));
+    sub_data->wait_set_data = NULL;
+
+    ZenohPicoDataDestroy(sub_data);
   }
 
-  z_mutex_drop(z_move(sub_data->condition_mutex));
-  sub_data->wait_set_data = NULL;
-
-  ZenohPicoDestroyData(sub_data, ZenohPicoSubData);
+  ZenohPicoDataMutexUnLock(sub_data);
 
   return true;
 }
@@ -360,7 +370,7 @@ rmw_create_subscription(
   }
 
   ZenohPicoSubData * sub_data = zenoh_pico_generate_subscription_data(
-    zenoh_pico_loan_node_data(node_data),
+    ZenohPicoDataRefClone(node_data),
     topic_name,
     type_support,
     qos_profile);

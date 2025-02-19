@@ -19,7 +19,7 @@
 
 static ZenohPicoTransportParams *zenoh_pico_generate_param(ZenohPicoTransportParams *param)
 {
-  ZenohPicoGenerateData(param, ZenohPicoTransportParams);
+  param = ZenohPicoDataGenerate(param);
   RMW_CHECK_FOR_NULL_WITH_MSG(
     param,
     "failed to allocate struct for the ZenohPicoTransportParams",
@@ -30,8 +30,11 @@ static ZenohPicoTransportParams *zenoh_pico_generate_param(ZenohPicoTransportPar
 
 static bool zenoh_pico_destroy_param(ZenohPicoTransportParams *param)
 {
-  ZenohPicoDestroyData(param, ZenohPicoTransportParams);
-
+  ZenohPicoDataMutexLock(param);
+  if(ZenohPicoDataRelease(param)){
+    ZenohPicoDataDestroy(param);
+  }
+  ZenohPicoDataMutexUnLock(param);
   return true;
 }
 

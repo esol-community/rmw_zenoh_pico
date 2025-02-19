@@ -26,11 +26,11 @@ ZenohPicoSession *zenoh_pico_generate_session(const z_loaned_config_t *config,
 
   ZenohPicoSession *session = &_zenohSession;
   if(_zenohSession.ref > 0){
-    ZenohPicoLoanData(session, ZenohPicoSession);
+    ZenohPicoDataRefClone(session);
     return &_zenohSession;
   }
 
-  ZenohPicoGenerateData(session, ZenohPicoSession);
+  session = ZenohPicoDataGenerate(session);
   RMW_CHECK_FOR_NULL_WITH_MSG(
     session,
     "failed to allocate struct for the ZenohPicoSession",
@@ -47,7 +47,8 @@ ZenohPicoSession *zenoh_pico_generate_session(const z_loaned_config_t *config,
   session->graph_guard_condition.data = zenoh_pico_guard_condition_data;
 
   session->enable_session = false;
-  ZenohPicoLoanData(session, ZenohPicoSession);
+
+  ZenohPicoDataRefClone(session);
 
   return session;
 }
@@ -58,21 +59,26 @@ bool zenoh_pico_destroy_session(ZenohPicoSession *session)
 
   RMW_CHECK_ARGUMENT_FOR_NULL(session, false);
 
-  ZenohPicoReturnData(session, ZenohPicoSession);
+  ZenohPicoDataMutexLock(session);
 
-  z_drop(z_move(session->config));
-  z_drop(z_move(session->session));
-  z_drop(z_move(session->enclave));
+  if(ZenohPicoDataRelease(session)){
 
-  // stop background zenoh task
-  if(session->enable_session){
-    zp_stop_read_task(z_loan_mut(session->session));
-    zp_stop_lease_task(z_loan_mut(session->session));
+    z_drop(z_move(session->config));
+    z_drop(z_move(session->session));
+    z_drop(z_move(session->enclave));
+
+    // stop background zenoh task
+    if(session->enable_session){
+      zp_stop_read_task(z_loan_mut(session->session));
+      zp_stop_lease_task(z_loan_mut(session->session));
+    }
+
+    zenoh_pico_destroy_guard_condition_data((ZenohPicoGuardConditionData *)session->graph_guard_condition.data);
+
+    z_drop(z_move(session->session));
   }
 
-  zenoh_pico_destroy_guard_condition_data((ZenohPicoGuardConditionData *)session->graph_guard_condition.data);
-
-  z_drop(z_move(session->session));
+  ZenohPicoDataMutexUnLock(session);
 
   return true;
 }

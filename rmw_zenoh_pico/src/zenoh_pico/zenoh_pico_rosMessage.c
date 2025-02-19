@@ -82,7 +82,7 @@ rmw_zenoh_pico_generate_recv_msg_data(const z_loaned_sample_t *sample,
   RMW_ZENOH_FUNC_ENTRY(NULL);
 
   ReceiveMessageData * recv_data = NULL;
-  ZenohPicoGenerateData(recv_data, ReceiveMessageData);
+  recv_data = ZenohPicoDataGenerate(recv_data);
   RMW_CHECK_FOR_NULL_WITH_MSG(
     recv_data,
     "failed to allocate struct for the ReceiveMessageData",
@@ -119,12 +119,18 @@ bool zenoh_pico_delete_recv_msg_data(ReceiveMessageData * recv_data)
 
   RMW_CHECK_ARGUMENT_FOR_NULL(recv_data, false);
 
-  if(recv_data->payload_start != NULL)
-    TOPIC_FREE(recv_data->payload_start);
+  ZenohPicoDataMutexLock(recv_data);
 
-  attachment_destroy(&recv_data->attachment);
+  if(ZenohPicoDataRelease(recv_data)){
 
-  ZenohPicoDestroyData(recv_data, ReceiveMessageData);
+    if(recv_data->payload_start != NULL)
+      TOPIC_FREE(recv_data->payload_start);
+
+    attachment_destroy(&recv_data->attachment);
+
+    ZenohPicoDataDestroy(recv_data);
+  }
+  ZenohPicoDataMutexUnLock(recv_data);
 
   return true;
 }

@@ -45,7 +45,7 @@ ZenohPicoServiceData * zenoh_pico_generate_service_data(
   if(entity == NULL)
     goto error;
 
-  ZenohPicoGenerateData(data, ZenohPicoServiceData);
+  data = ZenohPicoDataGenerate(data);
   RMW_CHECK_FOR_NULL_WITH_MSG(
     data,
     "failed to allocate struct for the ZenohPicoServiceData",
@@ -103,6 +103,10 @@ ZenohPicoServiceData * zenoh_pico_generate_service_data(
   if(entity != NULL)
     zenoh_pico_destroy_entity(entity);
 
+  if(data != NULL){
+    ZenohPicoDataDestroy(data);
+  }
+
   return NULL;
 }
 
@@ -112,23 +116,29 @@ bool zenoh_pico_destroy_service_data(ZenohPicoServiceData *data)
 
   RMW_CHECK_ARGUMENT_FOR_NULL(data, false);
 
-  z_drop(z_move(data->liveliness_key));
-  z_drop(z_move(data->liveliness));
+  ZenohPicoDataMutexLock(data);
 
-  attachment_destroy(&data->attachment);
-  z_drop(z_move(data->mutex));
+  if(ZenohPicoDataRelease(data)){
+    z_drop(z_move(data->liveliness_key));
+    z_drop(z_move(data->liveliness));
 
-  if(data->node != NULL){
-    (void)zenoh_pico_destroy_node_data(data->node);
-    data->node = NULL;
+    attachment_destroy(&data->attachment);
+    z_drop(z_move(data->mutex));
+
+    if(data->node != NULL){
+      (void)zenoh_pico_destroy_node_data(data->node);
+      data->node = NULL;
+    }
+
+    if(data->entity != NULL){
+      (void)zenoh_pico_destroy_entity(data->entity);
+      data->entity = NULL;
+    }
+
+    ZenohPicoDataDestroy(data);
   }
 
-  if(data->entity != NULL){
-    (void)zenoh_pico_destroy_entity(data->entity);
-    data->entity = NULL;
-  }
-
-  ZenohPicoDestroyData(data, ZenohPicoServiceData);
+  ZenohPicoDataMutexUnLock(data);
 
   return true;
 }

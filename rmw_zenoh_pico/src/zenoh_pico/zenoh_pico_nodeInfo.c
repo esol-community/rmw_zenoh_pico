@@ -27,7 +27,7 @@ ZenohPicoNodeInfo * zenoh_pico_generate_node_info(size_t domain_id,
 						  const z_loaned_string_t *enclave)
 {
   ZenohPicoNodeInfo *node = NULL;
-  ZenohPicoGenerateData(node, ZenohPicoNodeInfo);
+  node = ZenohPicoDataGenerate(node);
   RMW_CHECK_FOR_NULL_WITH_MSG(
     node,
     "failed to allocate struct for the ZenohPicoNodeInfo",
@@ -49,7 +49,7 @@ ZenohPicoNodeInfo * zenoh_pico_generate_node_info(size_t domain_id,
 ZenohPicoNodeInfo *zenoh_pico_clone_node_info(ZenohPicoNodeInfo *src)
 {
   ZenohPicoNodeInfo *node = NULL;
-  ZenohPicoGenerateData(node, ZenohPicoNodeInfo);
+  node = ZenohPicoDataGenerate(node);
   RMW_CHECK_FOR_NULL_WITH_MSG(
     node,
     "failed to allocate struct for the ZenohPicoNodeInfo",
@@ -69,12 +69,18 @@ bool zenoh_pico_destroy_node_info(ZenohPicoNodeInfo *node)
 
   RMW_CHECK_ARGUMENT_FOR_NULL(node, false);
 
-  z_drop(z_move(node->domain));
-  z_drop(z_move(node->ns));
-  z_drop(z_move(node->name));
-  z_drop(z_move(node->enclave));
+  ZenohPicoDataMutexLock(node);
 
-  ZenohPicoDestroyData(node, ZenohPicoNodeInfo);
+  if(ZenohPicoDataRelease(node)){
+    z_drop(z_move(node->domain));
+    z_drop(z_move(node->ns));
+    z_drop(z_move(node->name));
+    z_drop(z_move(node->enclave));
+
+    ZenohPicoDataDestroy(node);
+  }
+
+  ZenohPicoDataMutexUnLock(node);
 
   return true;
 }

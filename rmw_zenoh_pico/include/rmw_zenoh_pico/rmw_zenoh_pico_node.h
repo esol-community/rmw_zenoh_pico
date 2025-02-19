@@ -56,7 +56,6 @@ extern "C"
 							   const char *name,
 							   const char *namespace,
 							   ZenohPicoSession *session);
-  extern ZenohPicoNodeData *zenoh_pico_loan_node_data(ZenohPicoNodeData *node_data);
   extern bool zenoh_pico_destroy_node_data(ZenohPicoNodeData *node_data);
 
   extern void zenoh_pico_debug_node_data(ZenohPicoNodeData *node_data);

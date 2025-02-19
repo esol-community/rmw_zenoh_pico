@@ -20,7 +20,7 @@ ZenohPicoWaitSetData * zenoh_pico_generate_wait_set_data(rmw_context_t * context
   RMW_ZENOH_FUNC_ENTRY(context);
 
   ZenohPicoWaitSetData *wait_data = NULL;
-  ZenohPicoGenerateData(wait_data, ZenohPicoWaitSetData);
+  wait_data = ZenohPicoDataGenerate(wait_data);
   RMW_CHECK_FOR_NULL_WITH_MSG(
     wait_data,
     "failed to allocate struct for the ZenohPicoWaitSetData",
@@ -40,10 +40,16 @@ bool zenoh_pico_destroy_wait_set_data(ZenohPicoWaitSetData *wait_data)
 {
   RMW_ZENOH_FUNC_ENTRY(NULL);
 
-  z_mutex_drop(z_move(wait_data->condition_mutex));
-  z_condvar_drop(z_move(wait_data->condition_variable));
+  ZenohPicoDataMutexLock(wait_data);
 
-  ZenohPicoDestroyData(wait_data, ZenohPicoWaitSetData);
+  if(ZenohPicoDataRelease(wait_data)){
+    z_mutex_drop(z_move(wait_data->condition_mutex));
+    z_condvar_drop(z_move(wait_data->condition_variable));
+
+    ZenohPicoDataDestroy(wait_data);
+  }
+
+  ZenohPicoDataMutexUnLock(wait_data);
 
   return true;
 }

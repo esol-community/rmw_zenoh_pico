@@ -53,7 +53,7 @@ static ZenohPicoPubData * zenoh_pico_generate_publisher_data(
   if(entity == NULL)
     goto error;
 
-  ZenohPicoGenerateData(pub_data, ZenohPicoPubData);
+  pub_data = ZenohPicoDataGenerate(pub_data);
   RMW_CHECK_FOR_NULL_WITH_MSG(
     pub_data,
     "failed to allocate struct for the ZenohPicoPubData",
@@ -106,8 +106,9 @@ static ZenohPicoPubData * zenoh_pico_generate_publisher_data(
   if(entity != NULL)
     zenoh_pico_destroy_entity(entity);
 
-  if(pub_data != NULL)
-    ZenohPicoDestroyData(pub_data, ZenohPicoPubData);
+  if(pub_data != NULL){
+    ZenohPicoDataDestroy(pub_data);
+  }
 
   return NULL;
 }
@@ -118,28 +119,35 @@ static bool zenoh_pico_destroy_publisher_data(ZenohPicoPubData *pub_data)
 
   RMW_CHECK_ARGUMENT_FOR_NULL(pub_data, false);
 
-  (void)undeclaration_publisher_data(pub_data);
+  ZenohPicoDataMutexLock(pub_data);
 
-  z_drop(z_move(pub_data->liveliness_key));
-  z_drop(z_move(pub_data->topic_key));
+  if(ZenohPicoDataRelease(pub_data)){
 
-  z_drop(z_move(pub_data->liveliness));
-  z_drop(z_move(pub_data->topic));
+    (void)undeclaration_publisher_data(pub_data);
 
-  attachment_destroy(&pub_data->attachment);
-  z_drop(z_move(pub_data->mutex));
+    z_drop(z_move(pub_data->liveliness_key));
+    z_drop(z_move(pub_data->topic_key));
 
-  if(pub_data->node != NULL){
-    (void)zenoh_pico_destroy_node_data(pub_data->node);
-    pub_data->node = NULL;
+    z_drop(z_move(pub_data->liveliness));
+    z_drop(z_move(pub_data->topic));
+
+    attachment_destroy(&pub_data->attachment);
+    z_drop(z_move(pub_data->mutex));
+
+    if(pub_data->node != NULL){
+      (void)zenoh_pico_destroy_node_data(pub_data->node);
+      pub_data->node = NULL;
+    }
+
+    if(pub_data->entity != NULL){
+      (void)zenoh_pico_destroy_entity(pub_data->entity);
+      pub_data->entity = NULL;
+    }
+
+    ZenohPicoDataDestroy(pub_data);
   }
 
-  if(pub_data->entity != NULL){
-    (void)zenoh_pico_destroy_entity(pub_data->entity);
-    pub_data->entity = NULL;
-  }
-
-  ZenohPicoDestroyData(pub_data, ZenohPicoPubData);
+  ZenohPicoDataMutexUnLock(pub_data);
 
   return true;
 }
@@ -289,7 +297,7 @@ rmw_create_publisher(
   }
 
   ZenohPicoPubData * pub_data = zenoh_pico_generate_publisher_data(
-    zenoh_pico_loan_node_data(node_data),
+    ZenohPicoDataRefClone(node_data),
     topic_name,
     type_support,
     qos_profile);

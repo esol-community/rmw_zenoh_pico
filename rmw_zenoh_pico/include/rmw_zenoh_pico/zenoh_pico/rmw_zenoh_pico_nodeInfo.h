@@ -49,7 +49,6 @@ extern "C"
 							  const char *ns,
 							  const char *name,
 							  const z_loaned_string_t *enclave);
-  extern ZenohPicoNodeInfo *zenoh_pico_clone_node_info(ZenohPicoNodeInfo *node_info);
   extern bool zenoh_pico_destroy_node_info(ZenohPicoNodeInfo *node);
 
   extern void zenoh_pico_debug_node_info(ZenohPicoNodeInfo *node);

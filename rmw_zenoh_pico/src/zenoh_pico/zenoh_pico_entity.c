@@ -41,7 +41,7 @@ static ZenohPicoEntity * zenoh_pico_generate_entity(
   RMW_ZENOH_FUNC_ENTRY(NULL);
 
   ZenohPicoEntity *entity = NULL;
-  ZenohPicoGenerateData(entity, ZenohPicoEntity);
+  entity = ZenohPicoDataGenerate(entity);
   RMW_CHECK_FOR_NULL_WITH_MSG(
     entity,
     "failed to allocate struct for the ZenohPicoEntity",
@@ -221,19 +221,26 @@ bool zenoh_pico_destroy_entity(ZenohPicoEntity *entity)
 
   RMW_CHECK_ARGUMENT_FOR_NULL(entity, false);
 
-  z_drop(z_move(entity->zid));
+  ZenohPicoDataMutexLock(entity);
 
-  if(entity->node_info != NULL){
-    zenoh_pico_destroy_node_info(entity->node_info);
-    entity->node_info = NULL;
+  if(ZenohPicoDataRelease(entity)){
+
+    z_drop(z_move(entity->zid));
+
+    if(entity->node_info != NULL){
+      zenoh_pico_destroy_node_info(entity->node_info);
+      entity->node_info = NULL;
+    }
+
+    if(entity->topic_info != NULL){
+      zenoh_pico_destroy_topic_info(entity->topic_info);
+      entity->topic_info = NULL;
+    }
+
+    ZenohPicoDataDestroy(entity);
   }
 
-  if(entity->topic_info != NULL){
-    zenoh_pico_destroy_topic_info(entity->topic_info);
-    entity->topic_info = NULL;
-  }
-
-  ZenohPicoDestroyData(entity, ZenohPicoEntity);
+  ZenohPicoDataMutexUnLock(entity);
 
   return true;
 }

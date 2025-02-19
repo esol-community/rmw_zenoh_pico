@@ -53,7 +53,7 @@ ZenohPicoNodeData * zenoh_pico_generate_node_data(size_t domain_id,
     goto error;
 
   ZenohPicoNodeData *node_data = NULL;
-  ZenohPicoGenerateData(node_data, ZenohPicoNodeData);
+  node_data = ZenohPicoDataGenerate(node_data);
   RMW_CHECK_FOR_NULL_WITH_MSG(
     node_data,
     "failed to allocate struct for the ZenohPicoNodeData",
@@ -79,14 +79,11 @@ ZenohPicoNodeData * zenoh_pico_generate_node_data(size_t domain_id,
   if(entity != NULL)
     zenoh_pico_destroy_entity(entity);
 
+  if(node_data != NULL){
+    ZenohPicoDataDestroy(node_data);
+  }
+
   return NULL;
-}
-
-ZenohPicoNodeData *zenoh_pico_loan_node_data(ZenohPicoNodeData *node_data)
-{
-  ZenohPicoLoanData(node_data, ZenohPicoNodeData);
-
-  return node_data;
 }
 
 bool zenoh_pico_destroy_node_data(ZenohPicoNodeData *node_data)
@@ -95,17 +92,24 @@ bool zenoh_pico_destroy_node_data(ZenohPicoNodeData *node_data)
 
   RMW_CHECK_ARGUMENT_FOR_NULL(node_data, false);
 
-  z_liveliness_undeclare_token(z_move(node_data->token));
+  ZenohPicoDataMutexLock(node_data);
 
-  z_drop(z_move(node_data->liveliness_key));
+  if(ZenohPicoDataRelease(node_data)){
 
-  // delete entity
-  if(node_data->entity != NULL){
-    zenoh_pico_destroy_entity(node_data->entity);
-    node_data->entity = NULL;
+    z_liveliness_undeclare_token(z_move(node_data->token));
+
+    z_drop(z_move(node_data->liveliness_key));
+
+    // delete entity
+    if(node_data->entity != NULL){
+      zenoh_pico_destroy_entity(node_data->entity);
+      node_data->entity = NULL;
+    }
+
+    ZenohPicoDataDestroy(node_data);
   }
 
-  ZenohPicoDestroyData(node_data, ZenohPicoNodeData);
+  ZenohPicoDataMutexUnLock(node_data);
 
   return true;
 }
@@ -241,14 +245,14 @@ rmw_create_node(rmw_context_t * context, const char * name, const char * namespa
     return NULL);
 
   // generate rmw_node_handle data
-  rmw_node_t * node = rmw_node_generate(context, node_data);
-  if(node == NULL)
+  rmw_node_t * rmw_node = rmw_node_generate(context, node_data);
+  if(rmw_node == NULL)
     goto error;
 
   if(!declaration_node_data(node_data))
     goto error;
 
-  return node;
+  return rmw_node;
 
   error:
   if(node_data != NULL)
