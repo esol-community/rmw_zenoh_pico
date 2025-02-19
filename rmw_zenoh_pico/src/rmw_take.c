@@ -15,6 +15,35 @@
 
 #include <rmw_zenoh_pico/rmw_zenoh_pico.h>
 
+static rmw_ret_t
+rmw_zenoh_pico_take_one(ZenohPicoSubData * sub_data,
+		void * ros_message,
+		rmw_message_info_t * message_info,
+		bool * taken)
+{
+  RMW_ZENOH_FUNC_ENTRY(NULL);
+
+  ReceiveMessageData *msg_data = recv_msg_list_pop(&sub_data->message_queue);
+  RMW_CHECK_ARGUMENT_FOR_NULL(msg_data, RMW_RET_ERROR);
+
+  bool deserialize_rv = rmw_zenoh_pico_deserialize_topic_msg(msg_data,
+						       sub_data->callbacks,
+						       ros_message,
+						       message_info);
+  if (taken != NULL) {
+    *taken = deserialize_rv;
+  }
+
+  if (!deserialize_rv) {
+    RMW_SET_ERROR_MSG("Typesupport deserialize error.");
+    return RMW_RET_ERROR;
+  }
+
+  ZenohPicoDataDestroy(msg_data);
+
+  return RMW_RET_OK;
+}
+
 rmw_ret_t
 rmw_take(const rmw_subscription_t * subscription,
 	 void * ros_message,

@@ -82,15 +82,15 @@ extern "C"
   extern rmw_ret_t rmw_zenoh_pico_publish(ZenohPicoPubData *pub_data,
 					  const void * ros_message);
 
-  extern bool rmw_zenoh_pico_deserialize_msg(ReceiveMessageData *msg_data,
-					     const message_type_support_callbacks_t *callbacks,
-					     void * ros_message,
-					     rmw_message_info_t * message_info);
+  extern bool rmw_zenoh_pico_deserialize_topic_msg(ReceiveMessageData *msg_data,
+						   const message_type_support_callbacks_t *callbacks,
+						   void * ros_message,
+						   rmw_message_info_t * message_info);
 
-  extern rmw_ret_t rmw_zenoh_pico_take_one(ZenohPicoSubData * sub_data,
-				   void * ros_message,
-				   rmw_message_info_t * message_info,
-				   bool * taken);
+  extern bool rmw_zenoh_pico_deserialize_service_msg(ReceiveMessageData *msg_data,
+						     const message_type_support_callbacks_t *callbacks,
+						     void * ros_message,
+						     rmw_service_info_t * message_info);
 #if defined(__cplusplus)
 }
 #endif  // if defined(__cplusplus)

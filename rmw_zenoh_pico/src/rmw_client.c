@@ -374,10 +374,10 @@ rmw_take_response(
   ReceiveMessageData *msg_data = recv_msg_list_pop(&client_data->service_queue);
   RMW_CHECK_ARGUMENT_FOR_NULL(msg_data, RMW_RET_ERROR);
 
-  bool deserialize_rv = rmw_zenoh_pico_deserialize_msg(msg_data,
+  bool deserialize_rv = rmw_zenoh_pico_deserialize_service_msg(msg_data,
 						       client_data->response_callback,
 						       ros_response,
-						       NULL);
+						       request_header);
   if (taken != NULL) {
     *taken = deserialize_rv;
   }
@@ -386,6 +386,8 @@ rmw_take_response(
     RMW_SET_ERROR_MSG("Typesupport deserialize error.");
     return RMW_RET_ERROR;
   }
+
+  ZenohPicoDataDestroy(msg_data);
 
   return RMW_RET_OK;
 }

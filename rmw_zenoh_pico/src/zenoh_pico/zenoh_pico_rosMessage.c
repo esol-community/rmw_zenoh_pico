@@ -369,7 +369,7 @@ rmw_zenoh_pico_publish(ZenohPicoPubData *pub_data,
 }
 
 bool
-rmw_zenoh_pico_deserialize_msg(
+rmw_zenoh_pico_deserialize_topic_msg(
   ReceiveMessageData *msg_data,
   const message_type_support_callbacks_t *callbacks,
   void * ros_message,
@@ -377,7 +377,8 @@ rmw_zenoh_pico_deserialize_msg(
 {
   RMW_ZENOH_FUNC_ENTRY(NULL);
 
-  bool ret = rmw_zenoh_pico_deserialize(msg_data, callbacks, ros_message);
+  if(!rmw_zenoh_pico_deserialize(msg_data, callbacks, ros_message))
+    return false;
 
   if (message_info != NULL) {
     message_info->source_timestamp		= msg_data->attachment.timestamp;
@@ -389,36 +390,41 @@ rmw_zenoh_pico_deserialize_msg(
 
     const uint8_t *gid_ptr = z_slice_data(z_loan(msg_data->attachment.gid));
     size_t gid_len = z_slice_len(z_loan(msg_data->attachment.gid));
-    memcpy(message_info->publisher_gid.data, gid_ptr, gid_len);
+    if(gid_len > sizeof(message_info->publisher_gid.data))
+      memcpy(message_info->publisher_gid.data, gid_ptr, sizeof(message_info->publisher_gid.data));
+    else
+      memcpy(message_info->publisher_gid.data, gid_ptr, gid_len);
 
     message_info->from_intra_process = false;
   }
 
-  return ret;
+  return true;
 }
 
-rmw_ret_t
-rmw_zenoh_pico_take_one(ZenohPicoSubData * sub_data,
-		void * ros_message,
-		rmw_message_info_t * message_info,
-		bool * taken)
+bool
+rmw_zenoh_pico_deserialize_service_msg(
+  ReceiveMessageData *msg_data,
+  const message_type_support_callbacks_t *callbacks,
+  void * ros_message,
+  rmw_service_info_t *service_info)
 {
   RMW_ZENOH_FUNC_ENTRY(NULL);
 
-  ReceiveMessageData *msg_data = recv_msg_list_pop(&sub_data->message_queue);
-  RMW_CHECK_ARGUMENT_FOR_NULL(msg_data, RMW_RET_ERROR);
+  if(!rmw_zenoh_pico_deserialize(msg_data, callbacks, ros_message))
+    return false;
 
-  bool deserialize_rv = rmw_zenoh_pico_deserialize_msg(msg_data,
-						       sub_data->callbacks,
-						       ros_message, message_info);
-  if (taken != NULL) {
-    *taken = deserialize_rv;
+  if(service_info != NULL){
+    service_info->source_timestamp		= msg_data->attachment.timestamp;
+    service_info->received_timestamp		= msg_data->recv_timestamp;
+    service_info->request_id.sequence_number	= msg_data->attachment.sequence_num;
+
+    const uint8_t *gid_ptr = z_slice_data(z_loan(msg_data->attachment.gid));
+    size_t gid_len = z_slice_len(z_loan(msg_data->attachment.gid));
+    if(gid_len > sizeof(service_info->request_id.writer_guid))
+      memcpy(service_info->request_id.writer_guid, gid_ptr, sizeof(service_info->request_id.writer_guid));
+    else
+      memcpy(service_info->request_id.writer_guid, gid_ptr, gid_len);
   }
 
-  if (!deserialize_rv) {
-    RMW_SET_ERROR_MSG("Typesupport deserialize error.");
-    return RMW_RET_ERROR;
-  }
-
-  return RMW_RET_OK;
+  return true;
 }
