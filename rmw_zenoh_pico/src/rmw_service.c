@@ -113,7 +113,7 @@ bool zenoh_pico_destroy_service_data(ZenohPicoServiceData *data)
   RMW_CHECK_ARGUMENT_FOR_NULL(data, false);
 
   z_drop(z_move(data->liveliness_key));
-  z_drop(z_move(data->token));
+  z_drop(z_move(data->liveliness));
 
   attachment_destroy(&data->attachment);
   z_drop(z_move(data->mutex));
@@ -157,7 +157,7 @@ bool declaration_service_data(ZenohPicoServiceData *data)
   ZenohPicoSession *session = data->node->session;
 
   // liveliness token declare
-  (void)declaration_liveliness(session, z_loan(data->liveliness_key), &data->token);
+  (void)declaration_liveliness(session, z_loan(data->liveliness_key), &data->liveliness);
 
   return true;
 }
@@ -166,7 +166,7 @@ bool undeclaration_service_data(ZenohPicoServiceData *data)
 {
   RMW_ZENOH_FUNC_ENTRY(NULL);
 
-  z_liveliness_undeclare_token(z_move(data->token));
+  z_liveliness_undeclare_token(z_move(data->liveliness));
 
   return true;
 }

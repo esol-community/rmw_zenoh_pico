@@ -40,7 +40,7 @@ extern "C"
     z_owned_string_t liveliness_key;
     z_owned_string_t topic_key;
 
-    z_owned_liveliness_token_t token;
+    z_owned_liveliness_token_t liveliness;
 
     // this node
     ZenohPicoNodeData *node;
