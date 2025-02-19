@@ -165,10 +165,6 @@ static bool declaration_publisher_data(ZenohPicoPubData *pub_data)
 
   ZenohPicoSession *session = pub_data->node->session;
 
-  // liveliness token declare
-  (void)declaration_liveliness(session, z_loan(pub_data->liveliness_key), &pub_data->liveliness);
-
-
   z_publisher_options_t options;
   z_publisher_options_default(&options);
   options.congestion_control = Z_CONGESTION_CONTROL_DROP;
@@ -190,7 +186,7 @@ static bool declaration_publisher_data(ZenohPicoPubData *pub_data)
     return false;
   }
 
-  return true;
+  return declaration_liveliness(session, z_loan(pub_data->liveliness_key), &pub_data->liveliness);
 }
 
 static bool undeclaration_publisher_data(ZenohPicoPubData *pub_data)

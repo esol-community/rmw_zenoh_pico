@@ -218,9 +218,6 @@ static bool declaration_subscription_data(ZenohPicoSubData *sub_data)
 
   ZenohPicoSession *session = sub_data->node->session;
 
-  // liveliness token declare
-  (void)declaration_liveliness(session, z_loan(sub_data->liveliness_key), &sub_data->liveliness);
-
   // declare subscriber
   z_subscriber_options_t options;
   z_subscriber_options_default(&options);
@@ -240,7 +237,7 @@ static bool declaration_subscription_data(ZenohPicoSubData *sub_data)
     return false;
   }
 
-  return true;
+  return declaration_liveliness(session, z_loan(sub_data->liveliness_key), &sub_data->liveliness);
 }
 
 static bool undeclaration_subscription_data(ZenohPicoSubData *sub_data)
