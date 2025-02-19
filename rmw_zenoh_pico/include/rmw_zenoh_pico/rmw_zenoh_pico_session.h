@@ -55,6 +55,8 @@ extern "C"
 				     const z_loaned_string_t *keyexpr,
 				     z_owned_liveliness_token_t *token);
 
+  extern bool isEnableSession(ZenohPicoSession *session);
+
 #if defined(__cplusplus)
 }
 #endif  // if defined(__cplusplus)

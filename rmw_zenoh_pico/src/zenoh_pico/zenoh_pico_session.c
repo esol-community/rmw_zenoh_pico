@@ -110,6 +110,10 @@ rmw_ret_t session_connect(ZenohPicoSession *session)
   return RMW_RET_OK;
 }
 
+bool isEnableSession(ZenohPicoSession *session) {
+  return session->enable_session;
+}
+
 bool declaration_liveliness(ZenohPicoSession *session,
 			    const z_loaned_string_t *keyexpr,
 			    z_owned_liveliness_token_t *token)
