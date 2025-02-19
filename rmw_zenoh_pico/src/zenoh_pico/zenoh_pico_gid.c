@@ -51,7 +51,5 @@ z_result_t zenoh_pico_gen_gid(const z_loaned_string_t *key, uint8_t *gid)
   memcpy(gid, &low64, sizeof(low64));
   memcpy(gid + sizeof(low64), &high64, sizeof(high64));
 
-  printf("key = [%.*s][%lx%lx]\n", (int)string_len, string_data, low64, high64);
-
   return Z_OK;
 }
