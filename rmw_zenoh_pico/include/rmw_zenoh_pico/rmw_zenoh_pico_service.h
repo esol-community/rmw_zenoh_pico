@@ -78,7 +78,8 @@ extern "C"
     ZenohPicoNodeData *node,
     const char * topic_name,
     const rosidl_service_type_support_t *type_support,
-    const rmw_qos_profile_t *qos_profile);
+    const rmw_qos_profile_t *qos_profile,
+    ZenohPicoEntityType service_type);
   extern bool zenoh_pico_destroy_service_data(ZenohPicoServiceData *data);
   extern void zenoh_pico_debug_service_data(ZenohPicoServiceData *data);
   extern bool declaration_service_data(ZenohPicoServiceData *data);

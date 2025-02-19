@@ -76,10 +76,6 @@ rmw_create_client(
     "expected initialized context",
     return NULL);
 
-  ZenohPicoNodeData *node_data = (ZenohPicoNodeData *)node->data;
-  RMW_CHECK_FOR_NULL_WITH_MSG(
-    node_data, "unable to create subscription as node_data is invalid.",
-    return NULL);
   RMW_CHECK_FOR_NULL_WITH_MSG(
     node->context,
     "expected initialized context",
@@ -88,6 +84,16 @@ rmw_create_client(
     node->context->impl,
     "expected initialized context impl",
     return NULL);
+
+  ZenohPicoNodeData *node_data = (ZenohPicoNodeData *)node->data;
+  RMW_CHECK_FOR_NULL_WITH_MSG(
+    node_data, "NodeData not found.",
+    return NULL);
+
+  if(!isEnableSession(node_data->session)){
+    RMW_SET_ERROR_MSG("zenoh session is invalid");
+    return NULL;
+  }
 
   // Get the service type support.
   const rosidl_service_type_support_t * type_support = find_service_type_support(type_supports);
@@ -100,7 +106,8 @@ rmw_create_client(
     node_data,
     service_name,
     type_support,
-    qos_profile);
+    qos_profile,
+    Client);
 
   if(client_data == NULL)
     goto error;

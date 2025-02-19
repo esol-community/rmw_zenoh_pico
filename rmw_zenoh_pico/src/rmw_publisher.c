@@ -44,13 +44,12 @@ static ZenohPicoPubData * zenoh_pico_generate_publisher_data(
   // generate entity data
   ZenohPicoSession *session = node->session;
   z_id_t zid = z_info_zid(z_loan(session->session));
-  entity = zenoh_pico_generate_topic_entity(&zid,
-					    node->id,
-					    node_info,
-					    topic_name,
-					    type_support,
-					    qos_profile,
-					    Publisher);
+  entity = zenoh_pico_generate_publisher_entity(&zid,
+						node->id,
+						node_info,
+						topic_name,
+						type_support,
+						qos_profile);
   if(entity == NULL)
     goto error;
 

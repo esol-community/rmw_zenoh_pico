@@ -50,14 +50,12 @@ static ZenohPicoSubData * zenoh_pico_generate_subscription_data(
   ZenohPicoSession *session = node->session;
   z_id_t zid = z_info_zid(z_loan(session->session));
 
-  entity = zenoh_pico_generate_topic_entity(&zid,
-					    node->id,
-					    node_info,
-					    topic_name,
-					    type_support,
-					    qos_profile,
-					    Subscription);
-
+  entity = zenoh_pico_generate_subscription_entity(&zid,
+						   node->id,
+						   node_info,
+						   topic_name,
+						   type_support,
+						   qos_profile);
   if(entity == NULL)
     goto error;
 

@@ -75,19 +75,25 @@ extern "C"
   extern const z_loaned_string_t *get_topic_qos(ZenohPicoEntity *entity);
 
   // functions
-  extern ZenohPicoEntity * zenoh_pico_generate_entity(z_id_t *zid,
-						      size_t nid,
-						      ZenohPicoEntityType type,
-						      ZenohPicoNodeInfo *node_info,
-						      ZenohPicoTopicInfo *topic_info);
+  extern ZenohPicoEntity * zenoh_pico_generate_node_entity(z_id_t *zid,
+							   size_t nid,
+							   ZenohPicoEntityType type,
+							   ZenohPicoNodeInfo *node_info,
+							   ZenohPicoTopicInfo *topic_info);
 
-  extern ZenohPicoEntity * zenoh_pico_generate_topic_entity(z_id_t *zid,
-							    size_t nid,
-							    ZenohPicoNodeInfo *node_info,
-							    const char * topic_name,
-							    const rosidl_message_type_support_t * type_support,
-							    const rmw_qos_profile_t *qos_profile,
-							    ZenohPicoEntityType type);
+  extern ZenohPicoEntity * zenoh_pico_generate_subscription_entity(z_id_t *zid,
+								   size_t nid,
+								   ZenohPicoNodeInfo *node_info,
+								   const char * topic_name,
+								   const rosidl_message_type_support_t * type_support,
+								   const rmw_qos_profile_t *qos_profile);
+
+  extern ZenohPicoEntity * zenoh_pico_generate_publisher_entity(z_id_t *zid,
+								size_t nid,
+								ZenohPicoNodeInfo *node_info,
+								const char * topic_name,
+								const rosidl_message_type_support_t * type_support,
+								const rmw_qos_profile_t *qos_profile);
 
   extern const message_type_support_callbacks_t * get_request_callback(
     const rosidl_service_type_support_t * type_support);
@@ -95,13 +101,19 @@ extern "C"
   extern const message_type_support_callbacks_t * get_response_callback(
     const rosidl_service_type_support_t * type_support);
 
+  extern ZenohPicoEntity * zenoh_pico_generate_service_entity(z_id_t *zid,
+							      size_t nid,
+							      ZenohPicoNodeInfo *node_info,
+							      const char * topic_name,
+							      const rosidl_service_type_support_t * type_support,
+							      const rmw_qos_profile_t *qos_profile);
+
   extern ZenohPicoEntity * zenoh_pico_generate_client_entity(z_id_t *zid,
 							     size_t nid,
 							     ZenohPicoNodeInfo *node_info,
 							     const char * topic_name,
 							     const rosidl_service_type_support_t * type_support,
-							     const rmw_qos_profile_t *qos_profile,
-							     ZenohPicoEntityType type);
+							     const rmw_qos_profile_t *qos_profile);
 
   extern bool zenoh_pico_destroy_entity(ZenohPicoEntity *entity);
   extern void zenoh_pico_debug_entity(ZenohPicoEntity *entity);

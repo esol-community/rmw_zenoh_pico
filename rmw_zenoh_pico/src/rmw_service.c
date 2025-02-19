@@ -19,7 +19,8 @@ ZenohPicoServiceData * zenoh_pico_generate_service_data(
   ZenohPicoNodeData *node,
   const char * topic_name,
   const rosidl_service_type_support_t *type_support,
-  const rmw_qos_profile_t *qos_profile)
+  const rmw_qos_profile_t *qos_profile,
+  ZenohPicoEntityType service_type)
 {
   RMW_ZENOH_FUNC_ENTRY(node);
 
@@ -35,13 +36,12 @@ ZenohPicoServiceData * zenoh_pico_generate_service_data(
   // generate entity data
   ZenohPicoSession *session = node->session;
   z_id_t zid = z_info_zid(z_loan(session->session));
-  entity = zenoh_pico_generate_client_entity(&zid,
-					     node->id,
-					     node_info,
-					     topic_name,
-					     type_support,
-					     qos_profile,
-					     Client);
+
+  if(service_type == Service){
+    entity = zenoh_pico_generate_service_entity(&zid, node->id, node_info, topic_name, type_support, qos_profile);
+  }else{
+    entity = zenoh_pico_generate_client_entity(&zid, node->id, node_info, topic_name, type_support, qos_profile);
+  }
   if(entity == NULL)
     goto error;
 
@@ -54,7 +54,7 @@ ZenohPicoServiceData * zenoh_pico_generate_service_data(
   data->id			= entity->id;
   data->node			= node;
   data->entity			= entity;
-  data->request_callback		= get_request_callback(type_support);
+  data->request_callback	= get_request_callback(type_support);
   data->response_callback	= get_response_callback(type_support);
 
   memcpy(&data->qos_profile, qos_profile, sizeof(rmw_qos_profile_t));
@@ -127,7 +127,6 @@ bool zenoh_pico_destroy_service_data(ZenohPicoServiceData *data)
     (void)zenoh_pico_destroy_entity(data->entity);
     data->entity = NULL;
   }
-
 
   ZenohPicoDestroyData(data, ZenohPicoServiceData);
 

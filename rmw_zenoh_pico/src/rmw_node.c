@@ -44,11 +44,11 @@ ZenohPicoNodeData * zenoh_pico_generate_node_data(size_t domain_id,
   // generate entity data
   z_id_t _zid = z_info_zid(z_loan(session->session));
   size_t node_id = zenoh_pico_get_next_node_id();
-  entity = zenoh_pico_generate_entity(&_zid,
-				      node_id,
-				      Node,
-				      node_info,
-				      NULL);
+  entity = zenoh_pico_generate_node_entity(&_zid,
+					   node_id,
+					   Node,
+					   node_info,
+					   NULL);
   if(entity == NULL)
     goto error;
 

@@ -31,7 +31,7 @@ const z_loaned_string_t *get_topic_type(ZenohPicoEntity *entity)	{ return topic_
 const z_loaned_string_t *get_topic_hash(ZenohPicoEntity *entity)	{ return topic_hash(entity->topic_info); }
 const z_loaned_string_t *get_topic_qos(ZenohPicoEntity *entity)		{ return topic_qos(entity->topic_info); }
 
-ZenohPicoEntity * zenoh_pico_generate_entity(
+static ZenohPicoEntity * zenoh_pico_generate_entity(
   z_id_t *zid,
   size_t nid,
   ZenohPicoEntityType type,
@@ -66,7 +66,17 @@ ZenohPicoEntity * zenoh_pico_generate_entity(
   return entity;
 }
 
-ZenohPicoEntity * zenoh_pico_generate_topic_entity(
+ZenohPicoEntity * zenoh_pico_generate_node_entity(
+  z_id_t *zid,
+  size_t nid,
+  ZenohPicoEntityType type,
+  ZenohPicoNodeInfo *node_info,
+  ZenohPicoTopicInfo *topic_info)
+{
+  return zenoh_pico_generate_entity(zid, nid, type, node_info, topic_info);
+}
+
+static ZenohPicoEntity * zenoh_pico_generate_topic_entity(
   z_id_t *zid,
   size_t nid,
   ZenohPicoNodeInfo *node_info,
@@ -105,6 +115,28 @@ ZenohPicoEntity * zenoh_pico_generate_topic_entity(
   return zenoh_pico_generate_entity(zid, nid, type, node_info, topic_info);
 }
 
+ZenohPicoEntity * zenoh_pico_generate_subscription_entity(
+  z_id_t *zid,
+  size_t nid,
+  ZenohPicoNodeInfo *node_info,
+  const char * topic_name,
+  const rosidl_message_type_support_t * type_support,
+  const rmw_qos_profile_t *qos_profile)
+{
+  return zenoh_pico_generate_topic_entity(zid, nid, node_info, topic_name, type_support, qos_profile, Subscription);
+}
+
+ZenohPicoEntity * zenoh_pico_generate_publisher_entity(
+  z_id_t *zid,
+  size_t nid,
+  ZenohPicoNodeInfo *node_info,
+  const char * topic_name,
+  const rosidl_message_type_support_t * type_support,
+  const rmw_qos_profile_t *qos_profile)
+{
+  return zenoh_pico_generate_topic_entity(zid, nid, node_info, topic_name, type_support, qos_profile, Subscription);
+}
+
 const message_type_support_callbacks_t * get_request_callback(
   const rosidl_service_type_support_t * type_support)
 {
@@ -129,7 +161,7 @@ const message_type_support_callbacks_t * get_response_callback(
   return response_callback;
 }
 
-ZenohPicoEntity * zenoh_pico_generate_client_entity(
+static ZenohPicoEntity * _zenoh_pico_generate_service_entity(
   z_id_t *zid,
   size_t nid,
   ZenohPicoNodeInfo *node_info,
@@ -159,6 +191,28 @@ ZenohPicoEntity * zenoh_pico_generate_client_entity(
   z_drop(z_move(type_name));
 
   return zenoh_pico_generate_entity(zid, nid, type, node_info, topic_info);
+}
+
+ZenohPicoEntity * zenoh_pico_generate_service_entity(
+  z_id_t *zid,
+  size_t nid,
+  ZenohPicoNodeInfo *node_info,
+  const char * topic_name,
+  const rosidl_service_type_support_t * type_support,
+  const rmw_qos_profile_t *qos_profile)
+{
+  return _zenoh_pico_generate_service_entity(zid, nid, node_info, topic_name, type_support, qos_profile, Service);
+}
+
+ZenohPicoEntity * zenoh_pico_generate_client_entity(
+  z_id_t *zid,
+  size_t nid,
+  ZenohPicoNodeInfo *node_info,
+  const char * topic_name,
+  const rosidl_service_type_support_t * type_support,
+  const rmw_qos_profile_t *qos_profile)
+{
+  return _zenoh_pico_generate_service_entity(zid, nid, node_info, topic_name, type_support, qos_profile, Client);
 }
 
 bool zenoh_pico_destroy_entity(ZenohPicoEntity *entity)
