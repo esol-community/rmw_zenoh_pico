@@ -130,6 +130,11 @@ static bool zenoh_pico_destroy_subscription_data(ZenohPicoSubData *sub_data)
     z_drop(z_move(sub_data->liveliness));
     z_drop(z_move(sub_data->topic));
 
+    while(!recv_msg_list_empty(&sub_data->message_queue)) {
+      ReceiveMessageData *msg_data = recv_msg_list_pop(&sub_data->message_queue);
+      ZenohPicoDataDestroy(msg_data);
+    }
+
     if(sub_data->node != NULL){
       (void)zenoh_pico_destroy_node_data(sub_data->node);
       sub_data->node = NULL;
@@ -201,14 +206,14 @@ static void _subscription_data_handler(z_loaned_sample_t *sample, void *ctx) {
     z_keyexpr_as_view_string(z_sample_keyexpr(sample), &keystr);
 
     RMW_ZENOH_LOG_INFO("keystr is %s ", z_string_data(z_loan(keystr)));
-    RMW_ZENOH_LOG_ERROR("Unable to obtain rmw_subscription_data_t from data for "
+    RMW_ZENOH_LOG_ERROR("Unable to obtain ZenohPicoSubData from data for "
 			"subscription for %s",
 			z_string_data(z_loan(keystr)));
     return;
   }
 
   ReceiveMessageData * recv_data;
-  if((recv_data = rmw_zenoh_pico_generate_recv_msg_data(sample, zenoh_pico_gen_timestamp())) == NULL) {
+  if((recv_data = rmw_zenoh_pico_generate_recv_sample_msg_data(sample, zenoh_pico_gen_timestamp())) == NULL) {
     RMW_ZENOH_LOG_ERROR("unable to generate_recv_msg_data");
     return;
   }

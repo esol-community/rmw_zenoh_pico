@@ -15,22 +15,22 @@
 
 #include <rmw_zenoh_pico/rmw_zenoh_pico.h>
 
-static void client_condition_trigger(ZenohPicoServiceData *data)
+void client_condition_trigger(ZenohPicoServiceData *data)
 {
   ZenohPicoWaitCondition cond;
   cond.condition_mutex		= z_loan_mut(data->condition_mutex);
-  cond.msg_queue		= &data->service_queue;
+  cond.msg_queue		= &data->response_queue;
   cond.wait_set_data_ptr	= &data->wait_set_data;
 
   zenoh_pico_condition_trigger(&cond);
 }
 
 bool client_condition_check_and_attach(ZenohPicoServiceData *data,
-				       ZenohPicoWaitSetData *wait_set_data)
+					ZenohPicoWaitSetData *wait_set_data)
 {
   ZenohPicoWaitCondition cond;
   cond.condition_mutex		= z_loan_mut(data->condition_mutex);
-  cond.msg_queue		= &data->service_queue;
+  cond.msg_queue		= &data->response_queue;
   cond.wait_set_data_ptr	= &data->wait_set_data;
 
   return zenoh_pico_condition_check_and_attach(&cond, wait_set_data);
@@ -40,7 +40,7 @@ bool client_condition_detach_and_queue_is_empty(ZenohPicoServiceData *data)
 {
   ZenohPicoWaitCondition cond;
   cond.condition_mutex		= z_loan_mut(data->condition_mutex);
-  cond.msg_queue		= &data->service_queue;
+  cond.msg_queue		= &data->response_queue;
   cond.wait_set_data_ptr	= &data->wait_set_data;
 
   return zenoh_pico_condition_detach_and_queue_is_empty(&cond);
@@ -227,7 +227,7 @@ rmw_get_gid_for_client(
 
 static void add_new_replay_message(ZenohPicoServiceData *client_data, ReceiveMessageData *recv_data)
 {
-  (void)recv_msg_list_push(&client_data->service_queue, recv_data);
+  (void)recv_msg_list_push(&client_data->response_queue, recv_data);
 
   (void)data_callback_trigger(&client_data->data_callback_mgr);
 
@@ -247,14 +247,14 @@ static void _reply_handler(z_loaned_reply_t *reply, void *ctx) {
       z_keyexpr_as_view_string(z_sample_keyexpr(sample), &keystr);
 
       RMW_ZENOH_LOG_INFO("keystr is %s ", z_string_data(z_loan(keystr)));
-      RMW_ZENOH_LOG_ERROR("Unable to obtain rmw_subscription_data_t from data for "
-			  "subscription for %s",
+      RMW_ZENOH_LOG_ERROR("Unable to obtain ZenohPicoServiceData from data for "
+			  "client for %s",
 			  z_string_data(z_loan(keystr)));
       return;
     }
 
     ReceiveMessageData * recv_data;
-    if((recv_data = rmw_zenoh_pico_generate_recv_msg_data(sample, zenoh_pico_gen_timestamp())) == NULL) {
+    if((recv_data = rmw_zenoh_pico_generate_recv_sample_msg_data(sample, zenoh_pico_gen_timestamp())) == NULL) {
       RMW_ZENOH_LOG_ERROR("unable to generate_recv_msg_data");
       return;
     }
@@ -338,9 +338,9 @@ rmw_send_request(
 			 z_move(callback),
 			 &options);
 
-  z_mutex_unlock(z_loan_mut(client_data->mutex));
-
   TOPIC_FREE(msg_bytes);
+
+  z_mutex_unlock(z_loan_mut(client_data->mutex));
 
   return ret == _Z_RES_OK ?  RMW_RET_OK : RMW_RET_ERROR;
 }
@@ -371,23 +371,24 @@ rmw_take_response(
     "Unable to retrieve client_data from client.",
     RMW_RET_INVALID_ARGUMENT);
 
-  ReceiveMessageData *msg_data = recv_msg_list_pop(&client_data->service_queue);
+  ReceiveMessageData *msg_data = recv_msg_list_pop(&client_data->response_queue);
   RMW_CHECK_ARGUMENT_FOR_NULL(msg_data, RMW_RET_ERROR);
 
-  bool deserialize_rv = rmw_zenoh_pico_deserialize_service_msg(msg_data,
-						       client_data->response_callback,
-						       ros_response,
-						       request_header);
-  if (taken != NULL) {
+  *taken = false;
+  if(msg_data != NULL){
+    bool deserialize_rv = rmw_zenoh_pico_deserialize_response_msg(msg_data,
+								  client_data->response_callback,
+								  ros_response,
+								  request_header);
     *taken = deserialize_rv;
-  }
 
-  if (!deserialize_rv) {
-    RMW_SET_ERROR_MSG("Typesupport deserialize error.");
-    return RMW_RET_ERROR;
-  }
+    if (!deserialize_rv) {
+      RMW_SET_ERROR_MSG("Typesupport deserialize error.");
+      return RMW_RET_ERROR;
+    }
 
-  ZenohPicoDataDestroy(msg_data);
+    ZenohPicoDataDestroy(msg_data);
+  }
 
   return RMW_RET_OK;
 }

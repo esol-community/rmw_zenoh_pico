@@ -55,9 +55,8 @@ uint64_t attachment_sequence_num_inc(zenoh_pico_attachemt_data *data)
     }									\
   }
 
-z_result_t attachment_data_get(const z_loaned_sample_t *sample, zenoh_pico_attachemt_data *data)
+z_result_t attachment_data_get(const z_loaned_bytes_t *attachment, zenoh_pico_attachemt_data *data)
 {
-  const z_loaned_bytes_t *attachment = z_sample_attachment(sample);
   ze_deserializer_t deserializer = ze_deserializer_from_bytes(attachment);
 
   size_t item_num = 3;

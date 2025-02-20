@@ -71,8 +71,9 @@ bool zenoh_pico_condition_check_and_attach(ZenohPicoWaitCondition *cond,
   z_mutex_lock(cond->condition_mutex);
 
   if(!recv_msg_list_empty(cond->msg_queue)){
-    RMW_ZENOH_LOG_INFO("queue_has_data_and_attach_condition_if_notmessage_queue size is %d",
-		       recv_msg_list_count(cond->msg_queue));
+    if(rmw_zenoh_pico_debug_level_get() == _Z_LOG_LVL_DEBUG){
+      RMW_ZENOH_LOG_INFO("queue size is %d", recv_msg_list_count(cond->msg_queue));
+    }
     z_mutex_unlock(cond->condition_mutex);
     return true;
   }

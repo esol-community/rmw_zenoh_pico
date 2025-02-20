@@ -28,7 +28,8 @@ static void set_ros2_header(uint8_t *msg_bytes)
 }
 
 uint8_t * rmw_zenoh_pico_serialize(const message_type_support_callbacks_t *callbacks,
-				   const void * ros_message, size_t *size)
+				   const void * ros_message,
+				   size_t *size)
 {
   RMW_ZENOH_FUNC_ENTRY(NULL);
 
@@ -59,25 +60,27 @@ uint8_t * rmw_zenoh_pico_serialize(const message_type_support_callbacks_t *callb
   return msg_bytes;
 }
 
-bool rmw_zenoh_pico_deserialize(ReceiveMessageData *msg_data,
+bool rmw_zenoh_pico_deserialize(void * payload_start,
+				size_t payload_size,
 				const message_type_support_callbacks_t *callbacks,
 				void * ros_message)
 {
   RMW_ZENOH_FUNC_ENTRY(NULL);
   ucdrBuffer temp_buffer;
 
-  ucdr_init_buffer(&temp_buffer,
-		   msg_data->payload_start +ROS2_MSG_OFFSET,
-		   msg_data->payload_size -ROS2_MSG_OFFSET);
+  if(payload_start != NULL){
+    ucdr_init_buffer(&temp_buffer,
+		     payload_start + ROS2_MSG_OFFSET,
+		     payload_size  - ROS2_MSG_OFFSET);
 
-  bool ret = callbacks->cdr_deserialize(&temp_buffer, ros_message);
+    return callbacks->cdr_deserialize(&temp_buffer, ros_message);
+  }
 
-  return ret;
+  return false;
 }
 
 ReceiveMessageData *
-rmw_zenoh_pico_generate_recv_msg_data(const z_loaned_sample_t *sample,
-				  time_t recv_ts)
+rmw_zenoh_pico_generate_recv_sample_msg_data(const z_loaned_sample_t *sample, time_t recv_ts)
 {
   RMW_ZENOH_FUNC_ENTRY(NULL);
 
@@ -96,13 +99,44 @@ rmw_zenoh_pico_generate_recv_msg_data(const z_loaned_sample_t *sample,
     return NULL);
 
   recv_data->payload_size  = z_bytes_len(payload);
-
   _z_bytes_to_buf(payload, recv_data->payload_start, z_bytes_len(payload));
 
-  recv_data->recv_timestamp	= recv_ts;
+  recv_data->recv_timestamp = recv_ts;
 
   zenoh_pico_attachemt_data data;
-  if(_Z_IS_ERR(attachment_data_get(sample, &recv_data->attachment))) {
+  const z_loaned_bytes_t *attachment = z_sample_attachment(sample);
+  if(_Z_IS_ERR(attachment_data_get(attachment, &recv_data->attachment))) {
+    RMW_ZENOH_LOG_ERROR("unable to receive attachment data");
+  }
+
+  if(rmw_zenoh_pico_debug_level_get() == _Z_LOG_LVL_DEBUG){
+    attachment_debug(&recv_data->attachment);
+  }
+
+  return recv_data;
+}
+
+ReceiveMessageData *
+rmw_zenoh_pico_generate_recv_query_msg_data(const z_loaned_query_t *query, time_t recv_ts)
+{
+  RMW_ZENOH_FUNC_ENTRY(NULL);
+
+  ReceiveMessageData * recv_data = NULL;
+  recv_data = ZenohPicoDataGenerate(recv_data);
+  RMW_CHECK_FOR_NULL_WITH_MSG(
+    recv_data,
+    "failed to allocate struct for the ReceiveMessageData",
+    return NULL);
+
+  // copy query
+  z_query_clone(&recv_data->query, query);
+
+  recv_data->recv_timestamp = recv_ts;
+
+  // copy attachmet. (which is used by rmw_take_request()
+  zenoh_pico_attachemt_data data;
+  const z_loaned_bytes_t *attachment = z_query_attachment(query);
+  if(_Z_IS_ERR(attachment_data_get(attachment, &recv_data->attachment))) {
     RMW_ZENOH_LOG_ERROR("unable to receive attachment data");
   }
 
@@ -127,6 +161,8 @@ bool zenoh_pico_delete_recv_msg_data(ReceiveMessageData * recv_data)
       TOPIC_FREE(recv_data->payload_start);
 
     attachment_destroy(&recv_data->attachment);
+
+    z_drop(z_move(recv_data->query));
 
     ZenohPicoDataDestroy(recv_data);
   }
@@ -280,6 +316,51 @@ ReceiveMessageData *recv_msg_list_pop(ReceiveMessageDataList *msg_list)
   return bottom_msg;
 }
 
+ReceiveMessageData *recv_msg_list_pickup(
+  ReceiveMessageDataList *msg_list,
+  bool (*func)(ReceiveMessageData *, const void *),
+  const void *data)
+{
+  if(msg_list == NULL)
+    return NULL;
+
+  z_loaned_mutex_t *msg_mutex = z_loan_mut(msg_list->mutex);
+
+  z_mutex_lock(msg_mutex);
+
+  // ReceiveMessageData *
+  ReceiveMessageData *pickup_msg = NULL;
+  ReceiveMessageData *current_msg = msg_list->que_top;
+  if(current_msg == NULL){
+    z_mutex_unlock(msg_mutex);
+    return NULL;
+  }
+
+  if(func(current_msg, data)){
+    pickup_msg = current_msg;
+    msg_list->que_top = current_msg->next;
+    pickup_msg->next = NULL;
+
+  }else{
+    ReceiveMessageData *before_msg = current_msg;
+    while(current_msg->next != NULL){
+      current_msg = current_msg->next;
+
+      if(func(current_msg, data)){
+	pickup_msg = current_msg;
+	before_msg->next = current_msg->next;
+	pickup_msg->next = NULL;
+	break;
+      }
+      before_msg = current_msg;
+    }
+  }
+
+  z_mutex_unlock(msg_mutex);
+
+  return pickup_msg;
+}
+
 int recv_msg_list_count(ReceiveMessageDataList *msg_list)
 {
   int ret;
@@ -305,9 +386,9 @@ void recv_msg_list_debug(ReceiveMessageDataList *msg_list)
     return;
   }
 
-  printf("data dump start... \n");
-
   z_loaned_mutex_t *msg_mutex = z_loan_mut(msg_list->mutex);
+
+  printf("data dump start [%d]... \n", msg_list->count);
 
   z_mutex_lock(msg_mutex);
   ReceiveMessageData * msg_data = msg_list->que_top;
@@ -326,7 +407,7 @@ void recv_msg_list_debug(ReceiveMessageDataList *msg_list)
 
 rmw_ret_t
 rmw_zenoh_pico_publish(ZenohPicoPubData *pub_data,
-		   const void * ros_message)
+		       const void * ros_message)
 {
   RMW_ZENOH_FUNC_ENTRY(NULL);
 
@@ -358,8 +439,8 @@ rmw_zenoh_pico_publish(ZenohPicoPubData *pub_data,
   // z_bytes_from_static_buf(&payload, msg_bytes, data_length);
 
   z_result_t ret = z_publisher_put(z_loan(pub_data->topic),
-			       z_move(payload),
-			       &options);
+				   z_move(payload),
+				   &options);
   TOPIC_FREE(msg_bytes);
   z_drop(z_move(attachment));
 
@@ -377,14 +458,17 @@ rmw_zenoh_pico_deserialize_topic_msg(
 {
   RMW_ZENOH_FUNC_ENTRY(NULL);
 
-  if(!rmw_zenoh_pico_deserialize(msg_data, callbacks, ros_message))
+  if(!rmw_zenoh_pico_deserialize(msg_data->payload_start,
+				 msg_data->payload_size,
+				 callbacks,
+				 ros_message))
     return false;
 
   if (message_info != NULL) {
     message_info->source_timestamp		= msg_data->attachment.timestamp;
     message_info->received_timestamp		= msg_data->recv_timestamp;
     message_info->publication_sequence_number	= msg_data->attachment.sequence_num;
-    message_info->reception_sequence_number	= 0;
+    message_info->reception_sequence_number	= msg_data->sequence_num;
 
     message_info->publisher_gid.implementation_identifier = rmw_get_implementation_identifier();
 
@@ -401,30 +485,75 @@ rmw_zenoh_pico_deserialize_topic_msg(
   return true;
 }
 
+static void rmw_zneoh_fill_request_header(rmw_service_info_t *request_header,
+					  ReceiveMessageData *msg_data)
+{
+  request_header->source_timestamp		= msg_data->attachment.timestamp;
+  request_header->received_timestamp		= msg_data->recv_timestamp;
+  request_header->request_id.sequence_number	= msg_data->attachment.sequence_num;
+
+  const uint8_t *gid_ptr = z_slice_data(z_loan(msg_data->attachment.gid));
+  size_t gid_len = z_slice_len(z_loan(msg_data->attachment.gid));
+  if(gid_len > sizeof(request_header->request_id.writer_guid))
+    memcpy(request_header->request_id.writer_guid, gid_ptr, sizeof(request_header->request_id.writer_guid));
+  else
+    memcpy(request_header->request_id.writer_guid, gid_ptr, gid_len);
+}
+
 bool
-rmw_zenoh_pico_deserialize_service_msg(
-  ReceiveMessageData *msg_data,
-  const message_type_support_callbacks_t *callbacks,
-  void * ros_message,
-  rmw_service_info_t *service_info)
+rmw_zenoh_pico_deserialize_response_msg(ReceiveMessageData *msg_data,
+					const message_type_support_callbacks_t *callbacks,
+					void * ros_response,
+					rmw_service_info_t *request_header)
 {
   RMW_ZENOH_FUNC_ENTRY(NULL);
 
-  if(!rmw_zenoh_pico_deserialize(msg_data, callbacks, ros_message))
+  if(!rmw_zenoh_pico_deserialize(msg_data->payload_start,
+				 msg_data->payload_size,
+				 callbacks,
+				 ros_response))
     return false;
 
-  if(service_info != NULL){
-    service_info->source_timestamp		= msg_data->attachment.timestamp;
-    service_info->received_timestamp		= msg_data->recv_timestamp;
-    service_info->request_id.sequence_number	= msg_data->attachment.sequence_num;
+  if(request_header != NULL)
+    rmw_zneoh_fill_request_header(request_header, msg_data);
 
-    const uint8_t *gid_ptr = z_slice_data(z_loan(msg_data->attachment.gid));
-    size_t gid_len = z_slice_len(z_loan(msg_data->attachment.gid));
-    if(gid_len > sizeof(service_info->request_id.writer_guid))
-      memcpy(service_info->request_id.writer_guid, gid_ptr, sizeof(service_info->request_id.writer_guid));
-    else
-      memcpy(service_info->request_id.writer_guid, gid_ptr, gid_len);
+  return true;
+}
+
+bool
+rmw_zenoh_pico_deserialize_request_msg(ReceiveMessageData *msg_data,
+				       const message_type_support_callbacks_t *callbacks,
+				       void * ros_request,
+				       rmw_service_info_t * request_header)
+{
+  RMW_ZENOH_FUNC_ENTRY(NULL);
+
+  const z_loaned_bytes_t *payload = z_query_payload(z_loan(msg_data->query));
+  size_t payload_size = z_bytes_len(payload);
+
+  void *payload_start;
+  if(_z_bytes_num_slices(payload) == 1){
+    _z_arc_slice_t *_slice = _z_bytes_get_slice(payload, 0);
+
+    if(!rmw_zenoh_pico_deserialize((void *)_z_arc_slice_data(_slice),
+				   payload_size,
+				   callbacks,
+				   ros_request))
+      return false;
+
+  }else{
+    msg_data->payload_start = (void *)TOPIC_MALLOC(z_bytes_len(payload));
+    msg_data->payload_size = payload_size;
+
+    if(!rmw_zenoh_pico_deserialize(msg_data->payload_start,
+				   msg_data->payload_size,
+				   callbacks,
+				   ros_request))
+      return false;
   }
+
+  if(request_header != NULL)
+    rmw_zneoh_fill_request_header(request_header, msg_data);
 
   return true;
 }

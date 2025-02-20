@@ -17,6 +17,7 @@
 #ifndef RMW_ZENOH_PICO_ROS_MESSAGE_H
 #define RMW_ZENOH_PICO_ROS_MESSAGE_H
 
+#include "zenoh-pico/api/types.h"
 #include <rmw/rmw.h>
 #include <zenoh-pico.h>
 
@@ -43,9 +44,13 @@ extern "C"
     size_t payload_size;
 
     int64_t recv_timestamp;
+    size_t sequence_num;
 
     // attachment data [sequence_num, last timestamp, topic gid]
     zenoh_pico_attachemt_data attachment;
+
+    // used by rmw_take_request() and rmw_take_request()
+    z_owned_query_t query;
 
   } ReceiveMessageData;
 
@@ -57,25 +62,36 @@ extern "C"
     int count;
   } ReceiveMessageDataList;
 
-  extern ReceiveMessageData * rmw_zenoh_pico_generate_recv_msg_data(
+  extern ReceiveMessageData * rmw_zenoh_pico_generate_recv_sample_msg_data(
     const z_loaned_sample_t *sample,
+    time_t recv_ts);
+  extern ReceiveMessageData * rmw_zenoh_pico_generate_recv_query_msg_data(
+    const z_loaned_query_t *query,
     time_t recv_ts);
 
   extern bool zenoh_pico_delete_recv_msg_data(ReceiveMessageData * recv_data);
+
   extern void zenoh_pico_debug_dump_msg(const uint8_t *start, size_t size);
   extern void zenoh_pico_debug_recv_msg_data(ReceiveMessageData * recv_data);
+
+  extern void rmw_zenoh_pico_debug_recv_msg_data(ReceiveMessageData * recv_data);
 
   extern void recv_msg_list_init(ReceiveMessageDataList *msg_list);
   extern ReceiveMessageData *recv_msg_list_push(ReceiveMessageDataList *msg_list,
 						ReceiveMessageData *recv_data);
   extern ReceiveMessageData *recv_msg_list_pop(ReceiveMessageDataList *msg_list);
+  extern ReceiveMessageData *recv_msg_list_pickup(ReceiveMessageDataList *msg_list,
+						  bool (*func)(ReceiveMessageData *, const void *),
+						  const void *data);
   extern int recv_msg_list_count(ReceiveMessageDataList *msg_list);
   extern bool recv_msg_list_empty(ReceiveMessageDataList *msg_list);
   extern void recv_msg_list_debug(ReceiveMessageDataList *msg_list);
 
   extern uint8_t * rmw_zenoh_pico_serialize(const message_type_support_callbacks_t *callbacks,
 					    const void * ros_message, size_t *size);
-  extern bool rmw_zenoh_pico_deserialize(ReceiveMessageData *msg_data,
+
+  extern bool rmw_zenoh_pico_deserialize(void * payload_start,
+					 size_t payload_size,
 					 const message_type_support_callbacks_t *callbacks,
 					 void * ros_message);
 
@@ -87,10 +103,16 @@ extern "C"
 						   void * ros_message,
 						   rmw_message_info_t * message_info);
 
-  extern bool rmw_zenoh_pico_deserialize_service_msg(ReceiveMessageData *msg_data,
+  extern bool rmw_zenoh_pico_deserialize_response_msg(ReceiveMessageData *msg_data,
+						      const message_type_support_callbacks_t *callbacks,
+						      void * ros_message,
+						      rmw_service_info_t * message_info);
+
+  extern bool rmw_zenoh_pico_deserialize_request_msg(ReceiveMessageData *msg_data,
 						     const message_type_support_callbacks_t *callbacks,
-						     void * ros_message,
-						     rmw_service_info_t * message_info);
+						     void * ros_request,
+						     rmw_service_info_t * request_header);
+
 #if defined(__cplusplus)
 }
 #endif  // if defined(__cplusplus)

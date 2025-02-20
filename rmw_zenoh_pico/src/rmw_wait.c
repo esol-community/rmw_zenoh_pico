@@ -58,6 +58,7 @@ static bool _check_and_attach_condition(const rmw_subscriptions_t * const subscr
 
   if(events) {
     for (size_t i = 0; i < events->event_count; ++i) {
+      // T.B.D
     }
   }
 
@@ -77,6 +78,15 @@ static bool _check_and_attach_condition(const rmw_subscriptions_t * const subscr
 
   if (services) {
     for (size_t i = 0; i < services->service_count; ++i) {
+      ZenohPicoServiceData *service_data = (ZenohPicoServiceData *) services->services[i];
+      if (service_data == NULL) {
+        continue;
+      }
+
+      if(service_condition_check_and_attach(service_data, wait_set_data)) {
+	// RMW_ZENOH_LOG_INFO("found attach services");
+	return true;
+      }
     }
   }
 
@@ -193,7 +203,17 @@ rmw_wait(rmw_subscriptions_t * subscriptions,
 
   if (services) {
     for (size_t i = 0; i < services->service_count; ++i) {
-      // T.B.D
+      ZenohPicoServiceData *service_data = (ZenohPicoServiceData *)services->services[i];
+      if (service_data == NULL) {
+	continue;
+      }
+
+      if(service_condition_detach_and_queue_is_empty(service_data)){
+	// Setting to NULL lets rcl know that this client is not ready
+        services->services[i] = NULL;
+      }else{
+        wait_result = true;
+      }
     }
   }
 

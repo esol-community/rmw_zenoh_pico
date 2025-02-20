@@ -34,7 +34,7 @@ extern "C"
   extern time_t zenoh_pico_gen_timestamp(void);
 
   extern uint64_t   attachment_sequence_num_inc(zenoh_pico_attachemt_data *data);
-  extern z_result_t attachment_data_get(const z_loaned_sample_t *sample, zenoh_pico_attachemt_data *data);
+  extern z_result_t attachment_data_get(const z_loaned_bytes_t *attachment, zenoh_pico_attachemt_data *data);
   extern z_result_t attachment_gen(zenoh_pico_attachemt_data *data, z_owned_bytes_t *attachment);
   extern bool       attachment_destroy(zenoh_pico_attachemt_data *data);
   extern void       attachment_debug(zenoh_pico_attachemt_data *data);

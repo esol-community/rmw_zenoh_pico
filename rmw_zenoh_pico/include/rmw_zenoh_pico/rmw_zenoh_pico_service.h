@@ -53,7 +53,10 @@ extern "C"
     const message_type_support_callbacks_t *response_callback;
 
     // Deque to store the replies in the order they arrive.
-    ReceiveMessageDataList service_queue;
+    ReceiveMessageDataList request_queue;
+    ReceiveMessageDataList response_queue;
+
+    z_owned_queryable_t qable;
 
     // data callback on new message
     DataCallbackManager data_callback_mgr;
@@ -85,7 +88,14 @@ extern "C"
   extern bool declaration_service_data(ZenohPicoServiceData *data);
   extern bool undeclaration_service_data(ZenohPicoServiceData *data);
 
+  // service extern functions
+  extern void service_condition_trigger(ZenohPicoServiceData *data);
+  extern bool service_condition_check_and_attach(ZenohPicoServiceData *sub_data,
+						ZenohPicoWaitSetData * wait_set_data);
+  extern bool service_condition_detach_and_queue_is_empty(ZenohPicoServiceData *sub_data);
+
   // client extern functions
+  extern void client_condition_trigger(ZenohPicoServiceData *data);
   extern bool client_condition_check_and_attach(ZenohPicoServiceData *sub_data,
 						ZenohPicoWaitSetData * wait_set_data);
   extern bool client_condition_detach_and_queue_is_empty(ZenohPicoServiceData *sub_data);
