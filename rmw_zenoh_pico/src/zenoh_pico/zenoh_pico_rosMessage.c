@@ -254,8 +254,8 @@ void recv_msg_list_destroy(ReceiveMessageDataList *msg_list)
   z_mutex_drop(z_move(msg_list->mutex));
 }
 
-ReceiveMessageData *recv_msg_list_push(ReceiveMessageDataList *msg_list,
-				       ReceiveMessageData *recv_data)
+ReceiveMessageData *recv_msg_list_append(ReceiveMessageDataList *msg_list,
+					 ReceiveMessageData *recv_data)
 {
   if((msg_list == NULL) || (recv_data == NULL))
     return NULL;
@@ -264,19 +264,17 @@ ReceiveMessageData *recv_msg_list_push(ReceiveMessageDataList *msg_list,
 
   z_mutex_lock(msg_mutex);
 
-  ReceiveMessageData *bottom_msg = msg_list->que_bottom;
-
   recv_data->next = NULL;
 
+  ReceiveMessageData *bottom_msg = msg_list->que_bottom;
   if(bottom_msg != NULL){
     bottom_msg->next = recv_data;
   }
+  msg_list->que_bottom = recv_data;
+  msg_list->count += 1;
 
   if(msg_list->que_top == NULL)
     msg_list->que_top = recv_data;
-
-  msg_list->que_bottom = recv_data;
-  msg_list->count += 1;
 
   z_mutex_unlock(msg_mutex);
 
@@ -295,22 +293,22 @@ ReceiveMessageData *recv_msg_list_pop(ReceiveMessageDataList *msg_list)
 
   z_mutex_lock(msg_mutex);
 
-  ReceiveMessageData *bottom_msg = msg_list->que_top;
-  if(bottom_msg == NULL){
+  ReceiveMessageData *top_msg = msg_list->que_top;
+  if(top_msg == NULL){
     z_mutex_unlock(msg_mutex);
     return NULL;
   }
-
-  msg_list->que_top = bottom_msg->next;
-  bottom_msg->next  = NULL;
-
+  msg_list->que_top = top_msg->next;
   msg_list->count -= 1;
-  if(msg_list->count <= 0)
-    msg_list->count = 0;
+
+  if(msg_list->que_bottom == top_msg)
+    msg_list->que_bottom = NULL;
+
+  top_msg->next  = NULL;
 
   z_mutex_unlock(msg_mutex);
 
-  return bottom_msg;
+  return top_msg;
 }
 
 ReceiveMessageData *recv_msg_list_pickup(
@@ -333,12 +331,19 @@ ReceiveMessageData *recv_msg_list_pickup(
     return NULL;
   }
 
+  // 1st message data
   if(func(current_msg, data)){
     pickup_msg = current_msg;
     msg_list->que_top = current_msg->next;
+    msg_list->count -= 1;
+
+    if(msg_list->que_bottom == pickup_msg)
+      msg_list->que_bottom = NULL;
+
     pickup_msg->next = NULL;
 
   }else{
+    // until 2nd message data
     ReceiveMessageData *before_msg = current_msg;
     while(current_msg->next != NULL){
       current_msg = current_msg->next;
@@ -346,7 +351,13 @@ ReceiveMessageData *recv_msg_list_pickup(
       if(func(current_msg, data)){
 	pickup_msg = current_msg;
 	before_msg->next = current_msg->next;
+	msg_list->count -= 1;
+
+	if(msg_list->que_bottom == pickup_msg)
+	  msg_list->que_bottom = before_msg;
+
 	pickup_msg->next = NULL;
+
 	break;
       }
       before_msg = current_msg;
@@ -386,6 +397,9 @@ void recv_msg_list_debug(ReceiveMessageDataList *msg_list)
   z_loaned_mutex_t *msg_mutex = z_loan_mut(msg_list->mutex);
 
   printf("data dump start [%d]... \n", msg_list->count);
+
+  printf("que top    = [%p]\n", msg_list->que_top);
+  printf("que bottom = [%p]\n", msg_list->que_bottom);
 
   z_mutex_lock(msg_mutex);
   ReceiveMessageData * msg_data = msg_list->que_top;

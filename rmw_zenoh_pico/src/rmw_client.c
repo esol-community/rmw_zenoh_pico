@@ -227,7 +227,7 @@ rmw_get_gid_for_client(
 
 static void add_new_replay_message(ZenohPicoServiceData *client_data, ReceiveMessageData *recv_data)
 {
-  (void)recv_msg_list_push(&client_data->response_queue, recv_data);
+  (void)recv_msg_list_append(&client_data->response_queue, recv_data);
 
   (void)data_callback_trigger(&client_data->data_callback_mgr);
 

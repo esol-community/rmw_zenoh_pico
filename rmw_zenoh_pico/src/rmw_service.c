@@ -221,7 +221,7 @@ void zenoh_pico_debug_service_data(ZenohPicoServiceData *data)
 
 static void add_new_request_message(ZenohPicoServiceData *service_data, ReceiveMessageData *recv_data)
 {
-  (void)recv_msg_list_push(&service_data->request_queue, recv_data);
+  (void)recv_msg_list_append(&service_data->request_queue, recv_data);
 
   (void)data_callback_trigger(&service_data->data_callback_mgr);
 
@@ -509,7 +509,7 @@ rmw_take_request(
     *taken = deserialize_rv;
   }
 
-  (void)recv_msg_list_push(&service_data->response_queue, msg_data);
+  (void)recv_msg_list_append(&service_data->response_queue, msg_data);
 
   return RMW_RET_OK;
 }

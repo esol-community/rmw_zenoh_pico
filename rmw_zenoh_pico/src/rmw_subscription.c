@@ -185,7 +185,7 @@ static void add_new_subscription_message(ZenohPicoSubData *sub_data, ReceiveMess
 {
   // rmw_zenoh_pico_debug_recv_msg_data(recv_data);
 
-  (void)recv_msg_list_push(&sub_data->message_queue, recv_data);
+  (void)recv_msg_list_append(&sub_data->message_queue, recv_data);
 
   (void)data_callback_trigger(&sub_data->data_callback_mgr);
 
