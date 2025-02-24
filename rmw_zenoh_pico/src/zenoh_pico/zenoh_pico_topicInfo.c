@@ -69,8 +69,6 @@ bool zenoh_pico_destroy_topic_info(ZenohPicoTopicInfo *topic)
 
   RMW_CHECK_ARGUMENT_FOR_NULL(topic, false);
 
-  ZenohPicoDataMutexLock(topic);
-
   if(ZenohPicoDataRelease(topic)){
     z_drop(z_move(topic->name));
     z_drop(z_move(topic->type));
@@ -79,8 +77,6 @@ bool zenoh_pico_destroy_topic_info(ZenohPicoTopicInfo *topic)
 
     ZenohPicoDataDestroy(topic);
   }
-
-  ZenohPicoDataMutexUnLock(topic);
 
   return true;
 }

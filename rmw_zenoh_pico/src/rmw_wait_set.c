@@ -40,16 +40,12 @@ bool zenoh_pico_destroy_wait_set_data(ZenohPicoWaitSetData *wait_data)
 {
   RMW_ZENOH_FUNC_ENTRY(NULL);
 
-  ZenohPicoDataMutexLock(wait_data);
-
   if(ZenohPicoDataRelease(wait_data)){
     z_mutex_drop(z_move(wait_data->condition_mutex));
     z_condvar_drop(z_move(wait_data->condition_variable));
 
     ZenohPicoDataDestroy(wait_data);
   }
-
-  ZenohPicoDataMutexUnLock(wait_data);
 
   return true;
 }

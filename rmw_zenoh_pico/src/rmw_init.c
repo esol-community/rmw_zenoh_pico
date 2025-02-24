@@ -30,11 +30,9 @@ static ZenohPicoTransportParams *zenoh_pico_generate_param(ZenohPicoTransportPar
 
 static bool zenoh_pico_destroy_param(ZenohPicoTransportParams *param)
 {
-  ZenohPicoDataMutexLock(param);
   if(ZenohPicoDataRelease(param)){
     ZenohPicoDataDestroy(param);
   }
-  ZenohPicoDataMutexUnLock(param);
   return true;
 }
 

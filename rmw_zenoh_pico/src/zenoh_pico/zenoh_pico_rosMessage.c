@@ -153,8 +153,6 @@ bool zenoh_pico_delete_recv_msg_data(ReceiveMessageData * recv_data)
 
   RMW_CHECK_ARGUMENT_FOR_NULL(recv_data, false);
 
-  ZenohPicoDataMutexLock(recv_data);
-
   if(ZenohPicoDataRelease(recv_data)){
 
     if(recv_data->payload_start != NULL)
@@ -166,7 +164,6 @@ bool zenoh_pico_delete_recv_msg_data(ReceiveMessageData * recv_data)
 
     ZenohPicoDataDestroy(recv_data);
   }
-  ZenohPicoDataMutexUnLock(recv_data);
 
   return true;
 }

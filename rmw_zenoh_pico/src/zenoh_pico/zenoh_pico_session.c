@@ -59,8 +59,6 @@ bool zenoh_pico_destroy_session(ZenohPicoSession *session)
 
   RMW_CHECK_ARGUMENT_FOR_NULL(session, false);
 
-  ZenohPicoDataMutexLock(session);
-
   if(ZenohPicoDataRelease(session)){
 
     z_drop(z_move(session->config));
@@ -77,8 +75,6 @@ bool zenoh_pico_destroy_session(ZenohPicoSession *session)
 
     z_drop(z_move(session->session));
   }
-
-  ZenohPicoDataMutexUnLock(session);
 
   return true;
 }

@@ -23,14 +23,15 @@
       z_mutex_init(&data->lock);			\
     }							\
     if(data != NULL){					\
-      data->ref += 1;					\
       memset(data, 0, sizeof(T));			\
+      data->ref += 1;					\
     }							\
     return data;					\
   }							\
   void T ## Destroy(T *data)				\
   {							\
     if(data->ref == 0) {				\
+      z_mutex_drop(z_move(data->lock));			\
       Z_FREE(data);					\
     }							\
     return;						\
@@ -42,6 +43,13 @@
     int ret = data->ref;				\
     z_mutex_unlock(z_loan_mut(data->lock));		\
     return data;					\
+  }							\
+  int T ## RefDec(T *data)				\
+  {							\
+    z_mutex_lock(z_loan_mut(data->lock));		\
+    data->ref -= 1;					\
+    z_mutex_unlock(z_loan_mut(data->lock));		\
+    return data->ref;					\
   }							\
 
 ZenohPicoDataFunctions(ZenohPicoEntity);

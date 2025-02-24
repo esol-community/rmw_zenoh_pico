@@ -30,7 +30,8 @@
 #define ZenohPicoDataFunctionsEntry(T)		\
   extern T * T ## Generate(T *data);		\
   extern void T ## Destroy(T *data);		\
-  extern T * T ## RefClone(T *data);
+  extern T * T ## RefClone(T *data);		\
+  extern int T ## RefDec(T *data);		\
 
 ZenohPicoDataFunctionsEntry(ZenohPicoEntity);
 ZenohPicoDataFunctionsEntry(ZenohPicoTopicInfo);
@@ -53,8 +54,6 @@ ZenohPicoDataFunctionsEntry(ZenohPicoWaitSetData);
 
 #define ZenohPicoDataMutexLock(D)   z_mutex_lock(z_loan_mut((D)->lock))
 #define ZenohPicoDataMutexUnLock(D) z_mutex_unlock(z_loan_mut((D)->lock))
-
-#define ZenohPicoDataRelease(D)     (--(D)->ref == 0)
 
 #define ZenohPicoDataGenerate(D)					\
   _Generic((D),								\
@@ -100,5 +99,21 @@ ZenohPicoDataFunctionsEntry(ZenohPicoWaitSetData);
 	   ZenohPicoTransportParams *	: ZenohPicoTransportParamsRefClone, \
 	   ZenohPicoWaitSetData *	: ZenohPicoWaitSetDataRefClone	\
     )(D)
+
+// #define ZenohPicoDataRelease(D)     (--(D)->ref == 0)
+#define ZenohPicoDataRelease(D)						\
+  (_Generic((D),							\
+	    ZenohPicoEntity *		: ZenohPicoEntityRefDec,	\
+	    ZenohPicoTopicInfo *	: ZenohPicoTopicInfoRefDec, \
+	    ZenohPicoNodeInfo *		: ZenohPicoNodeInfoRefDec,	\
+	    ZenohPicoSession *		: ZenohPicoSessionRefDec,	\
+	    ZenohPicoNodeData *		: ZenohPicoNodeDataRefDec,	\
+	    ZenohPicoSubData *		: ZenohPicoSubDataRefDec,	\
+	    ZenohPicoPubData *		: ZenohPicoPubDataRefDec,	\
+	    ZenohPicoServiceData *	: ZenohPicoServiceDataRefDec,	\
+	    ReceiveMessageData *        : ReceiveMessageDataRefDec,	\
+	    ZenohPicoTransportParams *	: ZenohPicoTransportParamsRefDec, \
+	    ZenohPicoWaitSetData *	: ZenohPicoWaitSetDataRefDec	\
+    )(D) == 0)
 
 #endif

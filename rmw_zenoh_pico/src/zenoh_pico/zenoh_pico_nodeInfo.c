@@ -52,8 +52,6 @@ bool zenoh_pico_destroy_node_info(ZenohPicoNodeInfo *node)
 
   RMW_CHECK_ARGUMENT_FOR_NULL(node, false);
 
-  ZenohPicoDataMutexLock(node);
-
   if(ZenohPicoDataRelease(node)){
     z_drop(z_move(node->domain));
     z_drop(z_move(node->ns));
@@ -62,8 +60,6 @@ bool zenoh_pico_destroy_node_info(ZenohPicoNodeInfo *node)
 
     ZenohPicoDataDestroy(node);
   }
-
-  ZenohPicoDataMutexUnLock(node);
 
   return true;
 }

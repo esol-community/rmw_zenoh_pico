@@ -119,9 +119,8 @@ static bool zenoh_pico_destroy_subscription_data(ZenohPicoSubData *sub_data)
 
   RMW_CHECK_ARGUMENT_FOR_NULL(sub_data, false);
 
-  ZenohPicoDataMutexLock(sub_data);
-
   if(ZenohPicoDataRelease(sub_data)){
+
     (void)undeclaration_subscription_data(sub_data);
 
     z_drop(z_move(sub_data->liveliness_key));
@@ -164,8 +163,6 @@ static bool zenoh_pico_destroy_subscription_data(ZenohPicoSubData *sub_data)
 
     ZenohPicoDataDestroy(sub_data);
   }
-
-  ZenohPicoDataMutexUnLock(sub_data);
 
   return true;
 }

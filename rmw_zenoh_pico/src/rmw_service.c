@@ -156,9 +156,8 @@ bool zenoh_pico_destroy_service_data(ZenohPicoServiceData *data)
 
   RMW_CHECK_ARGUMENT_FOR_NULL(data, false);
 
-  ZenohPicoDataMutexLock(data);
-
   if(ZenohPicoDataRelease(data)){
+
     z_drop(z_move(data->liveliness_key));
     z_drop(z_move(data->liveliness));
 
@@ -197,8 +196,6 @@ bool zenoh_pico_destroy_service_data(ZenohPicoServiceData *data)
 
     ZenohPicoDataDestroy(data);
   }
-
-  ZenohPicoDataMutexUnLock(data);
 
   return true;
 }

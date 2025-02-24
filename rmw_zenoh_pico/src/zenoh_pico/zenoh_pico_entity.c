@@ -221,7 +221,6 @@ bool zenoh_pico_destroy_entity(ZenohPicoEntity *entity)
 
   RMW_CHECK_ARGUMENT_FOR_NULL(entity, false);
 
-  ZenohPicoDataMutexLock(entity);
 
   if(ZenohPicoDataRelease(entity)){
 
@@ -240,7 +239,6 @@ bool zenoh_pico_destroy_entity(ZenohPicoEntity *entity)
     ZenohPicoDataDestroy(entity);
   }
 
-  ZenohPicoDataMutexUnLock(entity);
 
   return true;
 }

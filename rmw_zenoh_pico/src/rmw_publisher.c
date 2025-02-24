@@ -118,8 +118,6 @@ static bool zenoh_pico_destroy_publisher_data(ZenohPicoPubData *pub_data)
 
   RMW_CHECK_ARGUMENT_FOR_NULL(pub_data, false);
 
-  ZenohPicoDataMutexLock(pub_data);
-
   if(ZenohPicoDataRelease(pub_data)){
 
     (void)undeclaration_publisher_data(pub_data);
@@ -142,8 +140,6 @@ static bool zenoh_pico_destroy_publisher_data(ZenohPicoPubData *pub_data)
       (void)zenoh_pico_destroy_entity(pub_data->entity);
       pub_data->entity = NULL;
     }
-
-    ZenohPicoDataDestroy(pub_data);
   }
 
   ZenohPicoDataMutexUnLock(pub_data);
