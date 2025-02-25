@@ -254,10 +254,11 @@ static void _reply_handler(z_loaned_reply_t *reply, void *ctx) {
     }
 
     ReceiveMessageData * recv_data;
-    if((recv_data = rmw_zenoh_pico_generate_recv_sample_msg_data(sample, zenoh_pico_gen_timestamp())) == NULL) {
-      RMW_ZENOH_LOG_ERROR("unable to generate_recv_msg_data");
-      return;
-    }
+    recv_data = rmw_zenoh_pico_generate_recv_sample_msg_data(sample,zenoh_pico_gen_timestamp());
+    RMW_CHECK_FOR_NULL_WITH_MSG(
+      recv_data,
+      "unable to generate_recv_msg_data",
+      return);
 
     add_new_replay_message(client_data, recv_data);
   }

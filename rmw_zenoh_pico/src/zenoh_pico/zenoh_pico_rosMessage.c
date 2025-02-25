@@ -80,7 +80,8 @@ bool rmw_zenoh_pico_deserialize(void * payload_start,
 }
 
 ReceiveMessageData *
-rmw_zenoh_pico_generate_recv_sample_msg_data(const z_loaned_sample_t *sample, time_t recv_ts)
+rmw_zenoh_pico_generate_recv_sample_msg_data(const z_loaned_sample_t *sample,
+					     time_t recv_ts)
 {
   RMW_ZENOH_FUNC_ENTRY(NULL);
 
@@ -90,6 +91,8 @@ rmw_zenoh_pico_generate_recv_sample_msg_data(const z_loaned_sample_t *sample, ti
     recv_data,
     "failed to allocate struct for the ReceiveMessageData",
     return NULL);
+
+  recv_data->type = Sample;
 
   const z_loaned_bytes_t *payload = z_sample_payload(sample);
   recv_data->payload_start = (void *)TOPIC_MALLOC(z_bytes_len(payload));
@@ -107,6 +110,10 @@ rmw_zenoh_pico_generate_recv_sample_msg_data(const z_loaned_sample_t *sample, ti
   const z_loaned_bytes_t *attachment = z_sample_attachment(sample);
   if(_Z_IS_ERR(attachment_data_get(attachment, &recv_data->attachment))) {
     RMW_ZENOH_LOG_ERROR("unable to receive attachment data");
+
+    TOPIC_FREE(recv_data->payload_start);
+
+    return NULL;
   }
 
   if(rmw_zenoh_pico_debug_level_get() == _Z_LOG_LVL_DEBUG){
@@ -117,7 +124,8 @@ rmw_zenoh_pico_generate_recv_sample_msg_data(const z_loaned_sample_t *sample, ti
 }
 
 ReceiveMessageData *
-rmw_zenoh_pico_generate_recv_query_msg_data(const z_loaned_query_t *query, time_t recv_ts)
+rmw_zenoh_pico_generate_recv_query_msg_data(const z_loaned_query_t *query,
+					    time_t recv_ts)
 {
   RMW_ZENOH_FUNC_ENTRY(NULL);
 
@@ -128,16 +136,53 @@ rmw_zenoh_pico_generate_recv_query_msg_data(const z_loaned_query_t *query, time_
     "failed to allocate struct for the ReceiveMessageData",
     return NULL);
 
-  // copy query
-  z_query_clone(&recv_data->query, query);
+  recv_data->type = Query;
 
+  // duplicate payload
+  const z_loaned_bytes_t *payload = z_query_payload(query);
+  size_t payload_size = z_bytes_len(payload);
+
+  recv_data->payload_start = (void *)TOPIC_MALLOC(z_bytes_len(payload));
+  RMW_CHECK_FOR_NULL_WITH_MSG(
+    recv_data->payload_start,
+    "failed to allocate memory for the payload",
+    return NULL);
+
+  recv_data->payload_size = payload_size;
+  _z_bytes_to_buf(payload, recv_data->payload_start, z_bytes_len(payload));
+
+  // clone query with ref counter.
+  recv_data->query = _z_query_rc_clone(query);
+  _z_query_t *_val = recv_data->query._val;
+
+  // WORKAROUND:
+  // when the query message by z_query_reply() on other places of callback
+  // function on the original zenoh-pico implementation, their function dont send
+  // message for remote zenoh.
+  //
+  // This problem occurs because the original structure(qle_infos.ke_out)
+  // of the aliased keyexpr member in query is cleared by the _z_keyexpr_clear() function.
+  //
+  // Therefore, the keyexpr is alias information which is clone from original query data
+  // is redefined as a member of the query information.
+
+  z_keyexpr_clone(&recv_data->keyexpr, z_query_keyexpr(query));
+  _val->_key = _z_keyexpr_alias(z_loan(recv_data->keyexpr));
+
+  // set receive timestamp
   recv_data->recv_timestamp = recv_ts;
 
-  // copy attachmet. (which is used by rmw_take_request()
+  // copy attachmet. (this data is used by rmw_send_response())
   zenoh_pico_attachemt_data data;
   const z_loaned_bytes_t *attachment = z_query_attachment(query);
   if(_Z_IS_ERR(attachment_data_get(attachment, &recv_data->attachment))) {
     RMW_ZENOH_LOG_ERROR("unable to receive attachment data");
+
+    TOPIC_FREE(recv_data->payload_start);
+    z_drop(z_move(recv_data->keyexpr));
+    _z_query_rc_drop(&recv_data->query);
+
+    return NULL;
   }
 
   if(rmw_zenoh_pico_debug_level_get() == _Z_LOG_LVL_DEBUG){
@@ -149,7 +194,7 @@ rmw_zenoh_pico_generate_recv_query_msg_data(const z_loaned_query_t *query, time_
 
 bool zenoh_pico_delete_recv_msg_data(ReceiveMessageData * recv_data)
 {
-  RMW_ZENOH_FUNC_ENTRY(NULL);
+  RMW_ZENOH_FUNC_ENTRY(recv_data);
 
   RMW_CHECK_ARGUMENT_FOR_NULL(recv_data, false);
 
@@ -160,7 +205,10 @@ bool zenoh_pico_delete_recv_msg_data(ReceiveMessageData * recv_data)
 
     attachment_destroy(&recv_data->attachment);
 
-    z_drop(z_move(recv_data->query));
+    if(recv_data->type == Query){
+      z_drop(z_move(recv_data->keyexpr));
+      _z_query_rc_drop(&recv_data->query);
+    }
 
     ZenohPicoDataDestroy(recv_data);
   }
@@ -179,32 +227,32 @@ void zenoh_pico_debug_dump_msg(const uint8_t *start, size_t size)
       printf("%02x %02x %02x %02x\t%c %c %c %c",
 	     *(ptr +0), *(ptr +1),
 	     *(ptr +2), *(ptr +3),
-	     isascii(*(ptr +0)) ? *(ptr +0) : '.' ,
-	     isascii(*(ptr +1)) ? *(ptr +1) : '.' ,
-	     isascii(*(ptr +2)) ? *(ptr +2) : '.' ,
-	     isascii(*(ptr +3)) ? *(ptr +3) : '.'
+	     isalpha(*(ptr +0)) != 0 ? *(ptr +0) : '.' ,
+	     isalpha(*(ptr +1)) != 0 ? *(ptr +1) : '.' ,
+	     isalpha(*(ptr +2)) != 0 ? *(ptr +2) : '.' ,
+	     isalpha(*(ptr +3)) != 0 ? *(ptr +3) : '.'
 	);
 
     } else if((size -count) >= 3) {
       printf("%02x %02x %02x     \t%c %c %c",
 	     *(ptr +0), *(ptr +1),
 	     *(ptr +2),
-	     isascii(*(ptr +0)) ? *(ptr +0) : '.' ,
-	     isascii(*(ptr +1)) ? *(ptr +1) : '.' ,
-	     isascii(*(ptr +2)) ? *(ptr +2) : '.'
+	     isalpha(*(ptr +0)) != 0 ? *(ptr +0) : '.' ,
+	     isalpha(*(ptr +1)) != 0 ? *(ptr +1) : '.' ,
+	     isalpha(*(ptr +2)) != 0 ? *(ptr +2) : '.'
 	);
 
     } else if((size -count) >= 2) {
       printf("%02x %02x          \t%c %c",
 	     *(ptr +0), *(ptr +1),
-	     isascii(*(ptr +0)) ? *(ptr +0) : '.' ,
-	     isascii(*(ptr +1)) ? *(ptr +1) : '.'
+	     isalpha(*(ptr +0)) != 0 ? *(ptr +0) : '.' ,
+	     isalpha(*(ptr +1)) != 0 ? *(ptr +1) : '.'
 	);
 
     } else if((size -count) >= 1) {
       printf("%02x               \t%c",
 	     *(ptr +0),
-	     isascii(*(ptr +0)) ? *(ptr +0) : '.'
+	     isalpha(*(ptr +0)) != 0 ? *(ptr +0) : '.'
 	);
     }
     printf("\n");
@@ -216,7 +264,8 @@ void rmw_zenoh_pico_debug_recv_msg_data(ReceiveMessageData * recv_data)
 {
   printf("--------- recv msg data ----------\n");
   printf("ref              = %d\n", recv_data->ref);
-  printf("recv_timestamp   = [%d]\n", (int)recv_data->recv_timestamp);
+  printf("recv_timestamp   = [%ld]\n", recv_data->recv_timestamp);
+  printf("query ref        = [%ld]\n", _z_simple_rc_strong_count(recv_data->query._cnt));
 
   // debug attachment
   attachment_debug(&recv_data->attachment);
@@ -323,7 +372,6 @@ ReceiveMessageData *recv_msg_list_pickup(
 
   z_mutex_lock(msg_mutex);
 
-  // ReceiveMessageData *
   ReceiveMessageData *pickup_msg = NULL;
   ReceiveMessageData *current_msg = msg_list->que_top;
   if(current_msg == NULL){
@@ -539,29 +587,11 @@ rmw_zenoh_pico_deserialize_request_msg(ReceiveMessageData *msg_data,
 {
   RMW_ZENOH_FUNC_ENTRY(NULL);
 
-  const z_loaned_bytes_t *payload = z_query_payload(z_loan(msg_data->query));
-  size_t payload_size = z_bytes_len(payload);
-
-  void *payload_start;
-  if(_z_bytes_num_slices(payload) == 1){
-    _z_arc_slice_t *_slice = _z_bytes_get_slice(payload, 0);
-
-    if(!rmw_zenoh_pico_deserialize((void *)_z_arc_slice_data(_slice),
-				   payload_size,
-				   callbacks,
-				   ros_request))
-      return false;
-
-  }else{
-    msg_data->payload_start = (void *)TOPIC_MALLOC(z_bytes_len(payload));
-    msg_data->payload_size = payload_size;
-
-    if(!rmw_zenoh_pico_deserialize(msg_data->payload_start,
-				   msg_data->payload_size,
-				   callbacks,
-				   ros_request))
-      return false;
-  }
+  if(!rmw_zenoh_pico_deserialize(msg_data->payload_start,
+				 msg_data->payload_size,
+				 callbacks,
+				 ros_request))
+    return false;
 
   if(request_header != NULL)
     rmw_zneoh_fill_request_header(request_header, msg_data);

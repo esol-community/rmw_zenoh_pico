@@ -186,11 +186,11 @@ bool zenoh_pico_destroy_service_data(ZenohPicoServiceData *data)
 
     if(recv_msg_list_count(&data->response_queue) > 0){
       while(true){
-	ReceiveMessageData * recv_data = recv_msg_list_pop(&data->response_queue);
-	if(recv_data == NULL)
+	ReceiveMessageData * res_data = recv_msg_list_pop(&data->response_queue);
+	if(res_data == NULL)
 	  break;
 
-	(void)zenoh_pico_delete_recv_msg_data(recv_data);
+	(void)zenoh_pico_delete_recv_msg_data(res_data);
       }
     }
 
@@ -258,10 +258,15 @@ static void request_handler(z_loaned_query_t *query, void *ctx)
   }
 
   ReceiveMessageData * recv_data;
-  if((recv_data = rmw_zenoh_pico_generate_recv_query_msg_data(query, zenoh_pico_gen_timestamp())) == NULL) {
+  recv_data = rmw_zenoh_pico_generate_recv_query_msg_data(query, zenoh_pico_gen_timestamp());
+  if(recv_data == NULL){
     RMW_ZENOH_LOG_ERROR("unable to generate_recv_msg_data");
     error_reply(service_data, query);
     return;
+  }
+
+  if(rmw_zenoh_pico_debug_level_get() == _Z_LOG_LVL_DEBUG){
+    rmw_zenoh_pico_debug_recv_msg_data(recv_data);
   }
 
   add_new_request_message(service_data, recv_data);
@@ -519,6 +524,10 @@ static bool _compare_responce_msg(ReceiveMessageData *msg, const void *data)
   const rmw_request_id_t *service = (const rmw_request_id_t *)data;
 
   const uint8_t *gid_ptr = z_slice_data(z_loan(msg->attachment.gid));
+
+  if(gid_ptr == NULL)
+    return false;
+
   if(memcmp(gid_ptr, service->writer_guid, sizeof(service->writer_guid)) != 0)
     return false;
 
@@ -558,6 +567,11 @@ rmw_send_response(
 						      _compare_responce_msg,
 						      (const void *)request_header);
 
+  RMW_CHECK_FOR_NULL_WITH_MSG(
+    msg_data,
+    "Unable to responce que.",
+    RMW_RET_INVALID_ARGUMENT);
+
   if(rmw_zenoh_pico_debug_level_get() == _Z_LOG_LVL_DEBUG){
     rmw_zenoh_pico_debug_recv_msg_data(msg_data);
   }
@@ -568,6 +582,7 @@ rmw_send_response(
 						 &data_length);
   if(msg_bytes == NULL){
     (void)zenoh_pico_delete_recv_msg_data(msg_data);
+    RMW_ZENOH_LOG_ERROR("serialize error");
     return RMW_RET_ERROR;
   }
 
@@ -577,10 +592,10 @@ rmw_send_response(
   z_query_reply_options_t options;
   z_query_reply_options_default(&options);
 
-  attachment_sequence_num_inc(&service_data->attachment);
   z_owned_bytes_t reply_attachment;
-  if(_Z_IS_ERR(attachment_gen(&service_data->attachment, &reply_attachment))){
+  if(_Z_IS_ERR(attachment_gen(&msg_data->attachment, &reply_attachment))){
     z_mutex_unlock(z_loan_mut(service_data->mutex));
+    RMW_ZENOH_LOG_ERROR("genrate attach data error");
     return RMW_RET_ERROR;
   }
   options.attachment = z_move(reply_attachment);
@@ -590,9 +605,8 @@ rmw_send_response(
   z_bytes_copy_from_buf(&reply_payload, msg_bytes, data_length);
 
   // send response
-  const z_loaned_query_t *query = z_query_loan(&msg_data->query);
-  z_result_t ret = z_query_reply(query,
-				 z_query_keyexpr(query),
+  z_result_t ret = z_query_reply(&msg_data->query,
+				 z_query_keyexpr(&msg_data->query),
 				 z_move(reply_payload),
 				 &options);
 

@@ -34,6 +34,11 @@ extern "C"
 {
 #endif  // if defined(__cplusplus)
 
+  typedef enum _ZenohPicoMessageType {
+    Sample,
+    Query
+  } ZenohPicoMessageType;
+
   typedef struct _ReceiveMessageData {
     struct _ReceiveMessageData *next;
 
@@ -49,8 +54,12 @@ extern "C"
     // attachment data [sequence_num, last timestamp, topic gid]
     zenoh_pico_attachemt_data attachment;
 
+    // type of my message
+    ZenohPicoMessageType type;
+
     // used by rmw_take_request() and rmw_take_request()
-    z_owned_query_t query;
+    _z_query_rc_t      query;
+    z_owned_keyexpr_t  keyexpr;
 
   } ReceiveMessageData;
 

@@ -209,11 +209,12 @@ static void _subscription_data_handler(z_loaned_sample_t *sample, void *ctx) {
     return;
   }
 
-  ReceiveMessageData * recv_data;
-  if((recv_data = rmw_zenoh_pico_generate_recv_sample_msg_data(sample, zenoh_pico_gen_timestamp())) == NULL) {
-    RMW_ZENOH_LOG_ERROR("unable to generate_recv_msg_data");
-    return;
-  }
+  ReceiveMessageData *recv_data;
+  recv_data = rmw_zenoh_pico_generate_recv_sample_msg_data(sample,zenoh_pico_gen_timestamp());
+  RMW_CHECK_FOR_NULL_WITH_MSG(
+    recv_data,
+    "unable to generate_recv_msg_data",
+    return);
 
   (void)add_new_subscription_message(sub_data, recv_data);
 }
