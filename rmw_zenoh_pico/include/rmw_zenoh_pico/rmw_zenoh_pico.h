@@ -35,6 +35,8 @@
 #include <rmw/error_handling.h>
 #include <rmw/validate_full_topic_name.h>
 #include <rmw/names_and_types.h>
+#include <rmw/get_network_flow_endpoints.h>
+#include <rmw/get_topic_endpoint_info.h>
 
 #include <rosidl_runtime_c/message_type_support_struct.h>
 
@@ -60,30 +62,31 @@
 #include <rmw_zenoh_pico/rmw_zenoh_pico_logging.h>
 
 // internal data
-#include <rmw_zenoh_pico/zenoh_pico/rmw_zenoh_pico_nodeInfo.h>
-#include <rmw_zenoh_pico/zenoh_pico/rmw_zenoh_pico_topicInfo.h>
-#include <rmw_zenoh_pico/zenoh_pico/rmw_zenoh_pico_entity.h>
-#include <rmw_zenoh_pico/zenoh_pico/rmw_zenoh_pico_liveliness.h>
 #include <rmw_zenoh_pico/zenoh_pico/rmw_zenoh_pico_attach.h>
-#include <rmw_zenoh_pico/zenoh_pico/rmw_zenoh_pico_gid.h>
-#include <rmw_zenoh_pico/zenoh_pico/rmw_zenoh_pico_string.h>
 #include <rmw_zenoh_pico/zenoh_pico/rmw_zenoh_pico_condition.h>
 #include <rmw_zenoh_pico/zenoh_pico/rmw_zenoh_pico_data.h>
+#include <rmw_zenoh_pico/zenoh_pico/rmw_zenoh_pico_entity.h>
+#include <rmw_zenoh_pico/zenoh_pico/rmw_zenoh_pico_gid.h>
+#include <rmw_zenoh_pico/zenoh_pico/rmw_zenoh_pico_liveliness.h>
+#include <rmw_zenoh_pico/zenoh_pico/rmw_zenoh_pico_nodeInfo.h>
+#include <rmw_zenoh_pico/zenoh_pico/rmw_zenoh_pico_string.h>
+#include <rmw_zenoh_pico/zenoh_pico/rmw_zenoh_pico_topicInfo.h>
 
-#include <rmw_zenoh_pico/rmw_zenoh_pico_rosMessage.h>
-#include <rmw_zenoh_pico/rmw_zenoh_pico_messageType.h>
-
+// rmw data
+#include <rmw_zenoh_pico/rmw_zenoh_pico_event.h>
+#include <rmw_zenoh_pico/rmw_zenoh_pico_guard_condition.h>
 #include <rmw_zenoh_pico/rmw_zenoh_pico_identifiers.h>
 #include <rmw_zenoh_pico/rmw_zenoh_pico_init.h>
-#include <rmw_zenoh_pico/rmw_zenoh_pico_session.h>
-
+#include <rmw_zenoh_pico/rmw_zenoh_pico_logging.h>
+#include <rmw_zenoh_pico/rmw_zenoh_pico_macros.h>
+#include <rmw_zenoh_pico/rmw_zenoh_pico_messageType.h>
 #include <rmw_zenoh_pico/rmw_zenoh_pico_node.h>
-#include <rmw_zenoh_pico/rmw_zenoh_pico_wait.h>
-#include <rmw_zenoh_pico/rmw_zenoh_pico_guard_condition.h>
-#include <rmw_zenoh_pico/rmw_zenoh_pico_event_callbacks.h>
-#include <rmw_zenoh_pico/rmw_zenoh_pico_subscription.h>
 #include <rmw_zenoh_pico/rmw_zenoh_pico_publisher.h>
+#include <rmw_zenoh_pico/rmw_zenoh_pico_rosMessage.h>
 #include <rmw_zenoh_pico/rmw_zenoh_pico_service.h>
+#include <rmw_zenoh_pico/rmw_zenoh_pico_session.h>
+#include <rmw_zenoh_pico/rmw_zenoh_pico_subscription.h>
+#include <rmw_zenoh_pico/rmw_zenoh_pico_wait.h>
 
 // expand zenoh-pico api
 extern void test_qos_profile(rmw_qos_profile_t *qos);

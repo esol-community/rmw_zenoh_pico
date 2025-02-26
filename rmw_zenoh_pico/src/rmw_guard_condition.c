@@ -15,6 +15,53 @@
 
 #include <rmw_zenoh_pico/rmw_zenoh_pico.h>
 
+void guard_condition_trigger(ZenohPicoGuardConditionData *condition_data)
+{
+  z_mutex_lock(z_loan_mut(condition_data->condition_mutex));
+  condition_data->triggered = true;
+
+  if(condition_data->wait_set_data != NULL){
+    ZenohPicoWaitSetData * wait_set_data = condition_data->wait_set_data;
+    wait_condition_lock(wait_set_data);
+    wait_set_data->triggered = true;
+    wait_condition_unlock(wait_set_data);
+  }
+
+  z_mutex_unlock(z_loan_mut(condition_data->condition_mutex));
+}
+
+bool guard_condition_check_and_attach(ZenohPicoGuardConditionData *condition_data,
+				      ZenohPicoWaitSetData * wait_set_data)
+{
+  z_mutex_lock(z_loan_mut(condition_data->condition_mutex));
+
+  if(condition_data->triggered) {
+    z_mutex_unlock(z_loan_mut(condition_data->condition_mutex));
+    return true;
+  }
+
+  if(wait_set_data != NULL){
+    condition_data->wait_set_data = wait_set_data;
+  }
+
+  z_mutex_unlock(z_loan_mut(condition_data->condition_mutex));
+
+  return false;
+}
+
+bool guard_condition_detach_and_is_trigger_set(ZenohPicoGuardConditionData *condition_data)
+{
+  bool value;
+  z_mutex_lock(z_loan_mut(condition_data->condition_mutex));
+
+  value = condition_data->triggered;
+  condition_data->wait_set_data = NULL;
+
+  z_mutex_unlock(z_loan_mut(condition_data->condition_mutex));
+
+  return value;
+}
+
 ZenohPicoGuardConditionData * zenoh_pico_guard_condition_data(void)
 {
   RMW_ZENOH_FUNC_ENTRY(NULL);
@@ -82,6 +129,24 @@ rmw_destroy_guard_condition(rmw_guard_condition_t * guard_condition)
   }
 
   Z_FREE(guard_condition);
+
+  return RMW_RET_OK;
+}
+rmw_ret_t
+rmw_trigger_guard_condition(
+  const rmw_guard_condition_t * guard_condition)
+{
+  RMW_ZENOH_FUNC_ENTRY(guard_condition);
+
+  RMW_CHECK_ARGUMENT_FOR_NULL(guard_condition, RMW_RET_INVALID_ARGUMENT);
+  RMW_CHECK_TYPE_IDENTIFIERS_MATCH(
+    guard_condition->implementation_identifier,
+    return RMW_RET_INCORRECT_RMW_IMPLEMENTATION);
+
+  ZenohPicoGuardConditionData *condition_data = (ZenohPicoGuardConditionData *)guard_condition->data;
+  RMW_CHECK_ARGUMENT_FOR_NULL(condition_data, RMW_RET_INVALID_ARGUMENT);
+
+  guard_condition_trigger(condition_data);
 
   return RMW_RET_OK;
 }

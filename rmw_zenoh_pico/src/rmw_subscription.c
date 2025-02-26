@@ -13,15 +13,6 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-#include "rmw/ret_types.h"
-#include "rmw/types.h"
-
-#include <rmw_zenoh_pico/config.h>
-
-#include <rmw/allocators.h>
-#include <rmw/rmw.h>
-#include <rmw/validate_full_topic_name.h>
-
 #include <rmw_zenoh_pico/rmw_zenoh_pico.h>
 
 static bool declaration_subscription_data(ZenohPicoSubData *sub_data);
@@ -454,7 +445,7 @@ rmw_subscription_count_matched_publishers(
   (void)subscription;
   (void)publisher_count;
   RMW_ZENOH_LOG_INFO(
-    "Function not available; enable RMW_UXRCE_GRAPH configuration profile before using");
+    "Function not available");
   return RMW_RET_UNSUPPORTED;
 }
 
@@ -493,5 +484,40 @@ rmw_subscription_get_content_filter(
   (void) allocator;
   (void) options;
 
+  return RMW_RET_UNSUPPORTED;
+}
+
+rmw_ret_t
+rmw_subscription_get_network_flow_endpoints(
+  const rmw_subscription_t * subscription,
+  rcutils_allocator_t * allocator,
+  rmw_network_flow_endpoint_array_t * network_flow_endpoint_array)
+{
+  RMW_ZENOH_FUNC_ENTRY(subscription);
+
+  (void) subscription;
+  (void) allocator;
+  (void) network_flow_endpoint_array;
+
+  RMW_ZENOH_LOG_INFO("function not implemented");
+  return RMW_RET_UNSUPPORTED;
+}
+
+rmw_ret_t
+rmw_get_subscriptions_info_by_topic(
+  const rmw_node_t * node,
+  rcutils_allocator_t * allocator,
+  const char * topic_name,
+  bool no_mangle,
+  rmw_topic_endpoint_info_array_t * subscriptions_info)
+{
+  RMW_ZENOH_FUNC_ENTRY(node);
+
+  (void)node;
+  (void)allocator;
+  (void)topic_name;
+  (void)no_mangle;
+  (void)subscriptions_info;
+  RMW_ZENOH_LOG_INFO("Function not available");
   return RMW_RET_UNSUPPORTED;
 }

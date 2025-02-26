@@ -31,7 +31,7 @@ rmw_count_publishers(
   (void)topic_name;
   (void)count;
   RMW_ZENOH_LOG_INFO(
-    "Function not available; enable RMW_UXRCE_GRAPH configuration profile before using");
+    "Function not available");
   return RMW_RET_UNSUPPORTED;
 }
 
@@ -47,7 +47,7 @@ rmw_count_subscribers(
   (void)topic_name;
   (void)count;
   RMW_ZENOH_LOG_INFO(
-    "Function not available; enable RMW_UXRCE_GRAPH configuration profile before using");
+    "Function not available");
   return RMW_RET_UNSUPPORTED;
 }
 

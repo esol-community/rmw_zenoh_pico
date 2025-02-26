@@ -144,7 +144,7 @@ rmw_take_sequence(const rmw_subscription_t * subscription,
 
   }
 
-  rmw_ret_t ret;
+  rmw_ret_t ret = RMW_RET_ERROR;
 
   while (*taken < count) {
     bool one_taken = false;
@@ -255,20 +255,6 @@ rmw_return_loaned_message_from_subscription(const rmw_subscription_t * subscript
   (void)subscription;
   (void)loaned_message;
 
-  RMW_ZENOH_LOG_INFO("function not implemented");
-  return RMW_RET_UNSUPPORTED;
-}
-
-rmw_ret_t
-rmw_take_event(const rmw_event_t * event_handle,
-	       void * event_info,
-	       bool * taken)
-{
-  RMW_ZENOH_FUNC_ENTRY(event_handle);
-
-  (void)event_handle;
-  (void)event_info;
-  (void)taken;
   RMW_ZENOH_LOG_INFO("function not implemented");
   return RMW_RET_UNSUPPORTED;
 }

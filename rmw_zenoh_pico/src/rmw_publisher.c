@@ -349,7 +349,6 @@ rmw_destroy_publisher(
     publisher->implementation_identifier,
     return RMW_RET_INCORRECT_RMW_IMPLEMENTATION);
 
-
   ZenohPicoPubData *pub_data = (ZenohPicoPubData *)publisher->data;
 
   if(pub_data != NULL){
@@ -375,8 +374,7 @@ rmw_publisher_count_matched_subscriptions(
 
   (void)publisher;
   (void)subscription_count;
-  RMW_ZENOH_LOG_INFO(
-    "Function not available; enable RMW_UXRCE_GRAPH configuration profile before using");
+  RMW_ZENOH_LOG_INFO("Function not available");
   return RMW_RET_UNSUPPORTED;
 }
 
@@ -448,4 +446,106 @@ rmw_get_gid_for_publisher(
     return RMW_RET_INCORRECT_RMW_IMPLEMENTATION);
 
   return RMW_RET_ERROR;
+}
+
+rmw_ret_t
+rmw_publish(const rmw_publisher_t * publisher,
+	    const void * ros_message,
+	    rmw_publisher_allocation_t * allocation)
+{
+  RMW_ZENOH_FUNC_ENTRY(publisher);
+
+  (void)allocation;
+
+  RMW_CHECK_FOR_NULL_WITH_MSG(
+    publisher, "publisher handle is null",
+    return RMW_RET_INVALID_ARGUMENT);
+  RMW_CHECK_TYPE_IDENTIFIERS_MATCH(
+    publisher->implementation_identifier,
+    return RMW_RET_INCORRECT_RMW_IMPLEMENTATION);
+  RMW_CHECK_FOR_NULL_WITH_MSG(
+    ros_message, "ros message handle is null",
+    return RMW_RET_INVALID_ARGUMENT);
+
+  ZenohPicoPubData *pub_data = (ZenohPicoPubData *)publisher->data;
+
+  return rmw_zenoh_pico_publish(pub_data, ros_message);
+}
+
+rmw_ret_t
+rmw_publish_serialized_message(const rmw_publisher_t * publisher,
+			       const rmw_serialized_message_t * serialized_message,
+			       rmw_publisher_allocation_t * allocation)
+{
+  RMW_ZENOH_FUNC_ENTRY(publisher);
+
+  (void)publisher;
+  (void)serialized_message;
+  (void)allocation;
+  RMW_ZENOH_LOG_INFO("function not implemented");
+  return RMW_RET_UNSUPPORTED;
+}
+
+rmw_ret_t
+rmw_publish_loaned_message(const rmw_publisher_t * publisher,
+			   void * ros_message,
+			   rmw_publisher_allocation_t * allocation)
+{
+  RMW_ZENOH_FUNC_ENTRY(publisher);
+
+  (void)publisher;
+  (void)ros_message;
+  (void)allocation;
+
+  RMW_ZENOH_LOG_INFO("function not implemented");
+  return RMW_RET_UNSUPPORTED;
+}
+
+rmw_ret_t
+rmw_publisher_wait_for_all_acked(const rmw_publisher_t * publisher,
+				 rmw_time_t wait_timeout)
+{
+  RMW_ZENOH_FUNC_ENTRY(publisher);
+
+  (void)publisher;
+  (void)wait_timeout;
+
+  RMW_SET_ERROR_MSG("function not implemented");
+  return RMW_RET_UNSUPPORTED;
+}
+
+rmw_ret_t
+rmw_publisher_get_network_flow_endpoints(
+  const rmw_publisher_t * publisher,
+  rcutils_allocator_t * allocator,
+  rmw_network_flow_endpoint_array_t * network_flow_endpoint_array)
+{
+  RMW_ZENOH_FUNC_ENTRY(publisher);
+
+  (void) publisher;
+  (void) allocator;
+  (void) network_flow_endpoint_array;
+
+  RMW_ZENOH_LOG_INFO("function not implemented");
+  return RMW_RET_UNSUPPORTED;
+}
+
+rmw_ret_t
+rmw_get_publishers_info_by_topic(
+  const rmw_node_t * node,
+  rcutils_allocator_t * allocator,
+  const char * topic_name,
+  bool no_mangle,
+  rmw_topic_endpoint_info_array_t * publishers_info)
+{
+  RMW_ZENOH_FUNC_ENTRY(node);
+
+  (void)node;
+  (void)allocator;
+  (void)topic_name;
+  (void)no_mangle;
+  (void)publishers_info;
+  RMW_ZENOH_LOG_INFO(
+    "Function not available");
+  return RMW_RET_UNSUPPORTED;
 }

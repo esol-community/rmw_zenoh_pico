@@ -235,3 +235,86 @@ rmw_wait(rmw_subscriptions_t * subscriptions,
 
   return wait_result ? RMW_RET_OK : RMW_RET_TIMEOUT;
 }
+
+ZenohPicoWaitSetData * zenoh_pico_generate_wait_set_data(rmw_context_t * context)
+{
+  RMW_ZENOH_FUNC_ENTRY(context);
+
+  ZenohPicoWaitSetData *wait_data = NULL;
+  wait_data = ZenohPicoDataGenerate(wait_data);
+  RMW_CHECK_FOR_NULL_WITH_MSG(
+    wait_data,
+    "failed to allocate struct for the ZenohPicoWaitSetData",
+    return NULL);
+
+  z_mutex_init(&wait_data->condition_mutex);
+  (void)z_condvar_init_with_attr(&wait_data->condition_variable, NULL);
+
+  wait_data->triggered = false;
+
+  wait_data->context = context;
+
+  return wait_data;
+}
+
+bool zenoh_pico_destroy_wait_set_data(ZenohPicoWaitSetData *wait_data)
+{
+  RMW_ZENOH_FUNC_ENTRY(NULL);
+
+  if(ZenohPicoDataRelease(wait_data)){
+    z_mutex_drop(z_move(wait_data->condition_mutex));
+    z_condvar_drop(z_move(wait_data->condition_variable));
+
+    ZenohPicoDataDestroy(wait_data);
+  }
+
+  return true;
+}
+
+rmw_wait_set_t *
+rmw_create_wait_set(rmw_context_t * context, size_t max_conditions)
+{
+  (void)max_conditions;
+
+  RMW_ZENOH_FUNC_ENTRY(context);
+
+  RCUTILS_CHECK_ARGUMENT_FOR_NULL(context, NULL);
+  RMW_CHECK_TYPE_IDENTIFIERS_MATCH(
+    context->implementation_identifier,
+    return NULL);
+
+  rmw_wait_set_t *wait_set = Z_MALLOC(sizeof(rmw_wait_set_t));
+  RMW_CHECK_FOR_NULL_WITH_MSG(
+    wait_set,
+    "failed to allocate wait set",
+    return NULL);
+  wait_set->implementation_identifier = rmw_get_implementation_identifier();
+
+  ZenohPicoWaitSetData *wait_set_data = zenoh_pico_generate_wait_set_data(context);
+  if(wait_set_data == NULL)
+    return NULL;
+
+  wait_set->data = (void *)wait_set_data;
+
+  return wait_set;
+}
+
+rmw_ret_t
+rmw_destroy_wait_set(rmw_wait_set_t * wait_set)
+{
+  RMW_ZENOH_FUNC_ENTRY(wait_set);
+
+  RMW_CHECK_ARGUMENT_FOR_NULL(wait_set, RMW_RET_INVALID_ARGUMENT);
+  RMW_CHECK_ARGUMENT_FOR_NULL(wait_set->data, RMW_RET_INVALID_ARGUMENT);
+
+  RMW_CHECK_TYPE_IDENTIFIERS_MATCH(
+    wait_set->implementation_identifier,
+    return RMW_RET_INCORRECT_RMW_IMPLEMENTATION);
+
+  ZenohPicoWaitSetData *wait_data = (ZenohPicoWaitSetData *)wait_set->data;
+  zenoh_pico_destroy_wait_set_data(wait_data);
+
+  Z_FREE(wait_set);
+
+  return RMW_RET_OK;
+}
