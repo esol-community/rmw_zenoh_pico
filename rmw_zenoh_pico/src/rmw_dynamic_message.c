@@ -13,8 +13,6 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-#include <rmw/dynamic_message_type_support.h>
-
 #include <rmw_zenoh_pico/rmw_zenoh_pico.h>
 
 rmw_ret_t

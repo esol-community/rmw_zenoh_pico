@@ -26,7 +26,7 @@
 
 #include <rmw_zenoh_pico/rmw_zenoh_pico_node.h>
 #include <rmw_zenoh_pico/rmw_zenoh_pico_rosMessage.h>
-#include <rmw_zenoh_pico/rmw_zenoh_pico_event_callbacks.h>
+#include <rmw_zenoh_pico/rmw_zenoh_pico_event.h>
 #include <rmw_zenoh_pico/rmw_zenoh_pico_wait.h>
 
 #define ROS2_MSG_OFFSET 4
@@ -64,8 +64,8 @@ extern "C"
     // recived message list
     ReceiveMessageDataList message_queue;
 
-    // data callback on new message
-    DataCallbackManager data_callback_mgr;
+    // data callback
+    DataEventManager data_event_mgr;
 
     // rmw_wait condition
     z_owned_mutex_t condition_mutex;

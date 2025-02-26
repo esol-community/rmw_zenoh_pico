@@ -121,7 +121,7 @@ ZenohPicoServiceData * zenoh_pico_generate_service_data(
   recv_msg_list_init(&data->response_queue);
 
   // init data callback manager
-  data_callback_init(&data->data_callback_mgr);
+  data_callback_init(&data->data_event_mgr);
 
   // init rmw_wait condition
   z_mutex_init(&data->condition_mutex);
@@ -223,7 +223,7 @@ static void add_new_request_message(ZenohPicoServiceData *service_data, ReceiveM
 {
   (void)recv_msg_list_append(&service_data->request_queue, recv_data);
 
-  (void)data_callback_trigger(&service_data->data_callback_mgr);
+  (void)data_callback_trigger(&service_data->data_event_mgr);
 
   (void)service_condition_trigger(service_data);
 }

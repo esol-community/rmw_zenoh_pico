@@ -58,7 +58,15 @@ static bool _check_and_attach_condition(const rmw_subscriptions_t * const subscr
 
   if(events) {
     for (size_t i = 0; i < events->event_count; ++i) {
-      // T.B.D
+      DataEventManager *event_mgr = (DataEventManager *)events->events[i];
+      if (event_mgr == NULL) {
+        continue;
+      }
+
+      if(event_condition_check_and_attach(event_mgr, wait_set_data)) {
+	// RMW_ZENOH_LOG_INFO("found attach event");
+	return true;
+      }
     }
   }
 
@@ -181,7 +189,17 @@ rmw_wait(rmw_subscriptions_t * subscriptions,
 
   if(events) {
     for (size_t i = 0; i < events->event_count; ++i) {
-      // T.B.D
+      for (size_t i = 0; i < events->event_count; ++i) {
+	DataEventManager *event_mgr = (DataEventManager *)events->events[i];
+	if (event_mgr == NULL) {
+	  continue;
+	}
+
+	if(event_condition_detach_and_queue_is_empty(event_mgr)) {
+	  // RMW_ZENOH_LOG_INFO("found attach event");
+	  return true;
+	}
+      }
     }
   }
 

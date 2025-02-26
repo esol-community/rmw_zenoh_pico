@@ -26,7 +26,7 @@ void client_condition_trigger(ZenohPicoServiceData *data)
 }
 
 bool client_condition_check_and_attach(ZenohPicoServiceData *data,
-					ZenohPicoWaitSetData *wait_set_data)
+				       ZenohPicoWaitSetData *wait_set_data)
 {
   ZenohPicoWaitCondition cond;
   cond.condition_mutex		= z_loan_mut(data->condition_mutex);
@@ -229,7 +229,7 @@ static void add_new_replay_message(ZenohPicoServiceData *client_data, ReceiveMes
 {
   (void)recv_msg_list_append(&client_data->response_queue, recv_data);
 
-  (void)data_callback_trigger(&client_data->data_callback_mgr);
+  (void)data_callback_trigger(&client_data->data_event_mgr);
 
   (void)client_condition_trigger(client_data);
 }

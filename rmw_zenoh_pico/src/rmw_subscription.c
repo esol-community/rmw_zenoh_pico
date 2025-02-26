@@ -82,7 +82,7 @@ static ZenohPicoSubData * zenoh_pico_generate_subscription_data(
   recv_msg_list_init(&sub_data->message_queue);
 
   // init data callback manager
-  data_callback_init(&sub_data->data_callback_mgr);
+  data_callback_init(&sub_data->data_event_mgr);
 
   // init rmw_wait condition
   z_mutex_init(&sub_data->condition_mutex);
@@ -178,7 +178,7 @@ static void add_new_subscription_message(ZenohPicoSubData *sub_data, ReceiveMess
 
   (void)recv_msg_list_append(&sub_data->message_queue, recv_data);
 
-  (void)data_callback_trigger(&sub_data->data_callback_mgr);
+  (void)data_callback_trigger(&sub_data->data_event_mgr);
 
   (void)subscription_condition_trigger(sub_data);
 

@@ -22,7 +22,7 @@
 
 #include <rmw_zenoh_pico/rmw_zenoh_pico_node.h>
 #include <rmw_zenoh_pico/rmw_zenoh_pico_rosMessage.h>
-#include <rmw_zenoh_pico/rmw_zenoh_pico_event_callbacks.h>
+#include <rmw_zenoh_pico/rmw_zenoh_pico_event.h>
 #include <rmw_zenoh_pico/rmw_zenoh_pico_wait.h>
 
 #if defined(__cplusplus)
@@ -59,7 +59,7 @@ extern "C"
     z_owned_queryable_t qable;
 
     // data callback on new message
-    DataCallbackManager data_callback_mgr;
+    DataEventManager data_event_mgr;
 
     // Wait set data/rmw_wait condition
     z_owned_mutex_t condition_mutex;

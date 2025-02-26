@@ -320,6 +320,10 @@ rmw_create_publisher(
   rmw_publisher->data				= (void *)pub_data;
   memcpy(&rmw_publisher->options, publisher_options, sizeof(rmw_publisher_options_t));
 
+  // init data callback manager
+  data_callback_init(&pub_data->data_event_mgr);
+
+  // declare topic data
   if(!declaration_publisher_data(pub_data))
     goto error;
 

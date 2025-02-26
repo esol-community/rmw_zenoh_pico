@@ -13,10 +13,6 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-#include <rmw/rmw.h>
-#include <rmw/error_handling.h>
-#include <rmw/sanity_checks.h>
-
 #include <rmw_zenoh_pico/rmw_zenoh_pico.h>
 
 rmw_ret_t

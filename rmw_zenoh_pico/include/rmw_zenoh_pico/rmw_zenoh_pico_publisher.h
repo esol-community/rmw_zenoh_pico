@@ -27,6 +27,7 @@
 #include <rmw_zenoh_pico/zenoh_pico/rmw_zenoh_pico_attach.h>
 
 #include <rmw_zenoh_pico/rmw_zenoh_pico_node.h>
+#include <rmw_zenoh_pico/rmw_zenoh_pico_event.h>
 
 #if defined(__cplusplus)
 extern "C"
@@ -54,6 +55,9 @@ extern "C"
 
     // CDR callback
     const message_type_support_callbacks_t *callbacks;
+
+    // data callback
+    DataEventManager data_event_mgr;
 
     // Store the actual QoS profile used to configure this publisher.
     rmw_qos_profile_t adapted_qos_profile;

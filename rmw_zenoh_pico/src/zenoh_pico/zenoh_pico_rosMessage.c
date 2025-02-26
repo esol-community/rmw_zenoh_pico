@@ -421,6 +421,9 @@ int recv_msg_list_count(ReceiveMessageDataList *msg_list)
 {
   int ret;
 
+  if(msg_list == NULL)
+    return 0;
+
   z_loaned_mutex_t *msg_mutex = z_loan_mut(msg_list->mutex);
 
   z_mutex_lock(msg_mutex);
@@ -432,6 +435,9 @@ int recv_msg_list_count(ReceiveMessageDataList *msg_list)
 
 bool recv_msg_list_empty(ReceiveMessageDataList *msg_list)
 {
+  if(msg_list == NULL)
+    return false;
+
   return recv_msg_list_count(msg_list) == 0 ? true : false;
 }
 
