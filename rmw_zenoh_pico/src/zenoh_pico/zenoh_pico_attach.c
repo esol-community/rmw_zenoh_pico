@@ -17,11 +17,14 @@
 #include <stdint.h>
 #include <rmw_zenoh_pico/rmw_zenoh_pico.h>
 
-time_t zenoh_pico_gen_timestamp(void) {
+uint64_t zenoh_pico_gen_timestamp(void) {
   struct timespec ts;
   clock_gettime(CLOCK_REALTIME, &ts);
 
-  time_t timestamp = ts.tv_sec*1000000000 + ts.tv_nsec;
+  uint64_t timestamp;
+  timestamp = (uint64_t)(ts.tv_sec);
+  timestamp *= 1000000000ull;
+  timestamp += (uint64_t)ts.tv_nsec;
 
   return timestamp;
 }
@@ -121,7 +124,7 @@ z_result_t attachment_gen(zenoh_pico_attachemt_data *data, z_owned_bytes_t *atta
   ze_serializer_empty(&serializer);
 
   // update timestamp
-  time_t timestamp = zenoh_pico_gen_timestamp();
+  uint64_t timestamp = zenoh_pico_gen_timestamp();
   data->timestamp = timestamp;
 
   // serialize attachment data
@@ -151,8 +154,13 @@ bool attachment_destroy(zenoh_pico_attachemt_data *attachmet_data)
 void attachment_debug(zenoh_pico_attachemt_data *data)
 {
   printf("--------- attachment data ----------\n");
-  printf("sequence_num = [%ld]\n", data->sequence_num);
-  printf("timestamp    = [%ld]\n", data->timestamp);
+#if defined(__x86_64__)
+  printf("sequence_num = [%lu]\n", data->sequence_num);
+  printf("timestamp    = [%lu]\n", data->timestamp);
+#else
+  printf("sequence_num = [%llu]\n", data->sequence_num);
+  printf("timestamp    = [%llu]\n", data->timestamp);
+#endif
   printf("gid          = [");
   const uint8_t *gid_ptr = z_slice_data(z_loan(data->gid));
   size_t len = z_slice_len(z_loan(data->gid));
@@ -164,5 +172,9 @@ void attachment_debug(zenoh_pico_attachemt_data *data)
 	   *(gid_ptr +index +2),
 	   *(gid_ptr +index +3));
   }
+#if defined(__x86_64__)
   printf("][%ld]\n", len);
+#else
+  printf("][%d]\n", len);
+#endif
 }

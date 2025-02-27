@@ -34,7 +34,7 @@ repositories:
     type: git
     url: https://github.com/ros2/rclc.git
     version: jazzy
-  uros/zenohpico:
-    type: git
-    url: https://github.com/eclipse-zenoh/zenoh-pico.git
-    version: 0.11.0
+# uros/zenohpico:
+#   type: git
+#   url: https://github.com/eclipse-zenoh/zenoh-pico.git
+#   version: 1.1.1

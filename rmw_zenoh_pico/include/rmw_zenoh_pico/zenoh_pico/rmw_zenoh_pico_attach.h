@@ -31,7 +31,7 @@ extern "C"
     z_owned_slice_t gid;
   } zenoh_pico_attachemt_data;
 
-  extern time_t zenoh_pico_gen_timestamp(void);
+  extern uint64_t zenoh_pico_gen_timestamp(void);
 
   extern uint64_t   attachment_sequence_num_inc(zenoh_pico_attachemt_data *data);
   extern z_result_t attachment_data_get(const z_loaned_bytes_t *attachment, zenoh_pico_attachemt_data *data);

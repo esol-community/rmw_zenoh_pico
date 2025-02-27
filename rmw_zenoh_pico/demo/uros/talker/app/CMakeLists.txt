@@ -24,6 +24,8 @@ find_package(std_msgs REQUIRED)
 
 add_executable(${PROJECT_NAME} main.c)
 
+set(CMAKE_C_FLAGS "${CMAKE_C_FLAGS} -Wno-unused-result")
+
 ament_target_dependencies(${PROJECT_NAME}
   rclc
   microcdr

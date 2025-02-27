@@ -73,10 +73,10 @@ extern "C"
 
   extern ReceiveMessageData * rmw_zenoh_pico_generate_recv_sample_msg_data(
     const z_loaned_sample_t *sample,
-    time_t recv_ts);
+    uint64_t recv_ts);
   extern ReceiveMessageData * rmw_zenoh_pico_generate_recv_query_msg_data(
     const z_loaned_query_t *query,
-    time_t recv_ts);
+    uint64_t recv_ts);
 
   extern bool zenoh_pico_delete_recv_msg_data(ReceiveMessageData * recv_data);
 

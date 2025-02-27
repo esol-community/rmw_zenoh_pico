@@ -14,13 +14,13 @@
 
 cmake_minimum_required(VERSION 3.5)
 
-project(listener LANGUAGES C)
+project(client LANGUAGES C)
 
 find_package(ament_cmake REQUIRED)
 find_package(microcdr REQUIRED)
 find_package(rclc REQUIRED)
 find_package(rmw_zenoh_pico REQUIRED)
-find_package(std_msgs REQUIRED)
+find_package(example_interfaces REQUIRED)
 
 add_executable(${PROJECT_NAME} main.c)
 
@@ -30,7 +30,7 @@ ament_target_dependencies(${PROJECT_NAME}
   rclc
   microcdr
   rmw_zenoh_pico
-  std_msgs
+  example_interfaces
 )
 
 target_include_directories(${PROJECT_NAME}

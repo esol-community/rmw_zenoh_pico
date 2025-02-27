@@ -1,0 +1,26 @@
+{
+    "names": {
+        "rosidl_typesupport": {
+            "cmake-args": [
+                "-DROSIDL_TYPESUPPORT_SINGLE_TYPESUPPORT=ON"
+            ]
+        },
+
+        "tracetools": {
+            "cmake-args": [
+                "-DTRACETOOLS_DISABLED=ON",
+                "-DTRACETOOLS_STATUS_CHECKING_TOOL=OFF"
+            ]
+        },
+
+        "rmw_zenoh_pico":{
+            "cmake-args":[
+                "-DRMW_ZENOH_PICO_TRANSPORT=unicast",
+                "-DRMW_ZENOH_PICO_TRANSPORT_MODE=client",
+                "-DRMW_ZENOH_PICO_CONNECT=127.0.0.1",
+                "-DRMW_ZENOH_PICO_CONNECT_PORT=7447",
+                "-DBUILD_DEMO=OFF"
+            ]
+        }
+    }
+}

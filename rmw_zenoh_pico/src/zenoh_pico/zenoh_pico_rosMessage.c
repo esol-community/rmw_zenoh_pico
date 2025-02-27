@@ -81,7 +81,7 @@ bool rmw_zenoh_pico_deserialize(void * payload_start,
 
 ReceiveMessageData *
 rmw_zenoh_pico_generate_recv_sample_msg_data(const z_loaned_sample_t *sample,
-					     time_t recv_ts)
+					     uint64_t recv_ts)
 {
   RMW_ZENOH_FUNC_ENTRY(NULL);
 
@@ -125,7 +125,7 @@ rmw_zenoh_pico_generate_recv_sample_msg_data(const z_loaned_sample_t *sample,
 
 ReceiveMessageData *
 rmw_zenoh_pico_generate_recv_query_msg_data(const z_loaned_query_t *query,
-					    time_t recv_ts)
+					    uint64_t recv_ts)
 {
   RMW_ZENOH_FUNC_ENTRY(NULL);
 
@@ -264,9 +264,13 @@ void rmw_zenoh_pico_debug_recv_msg_data(ReceiveMessageData * recv_data)
 {
   printf("--------- recv msg data ----------\n");
   printf("ref              = %d\n", recv_data->ref);
-  printf("recv_timestamp   = [%ld]\n", recv_data->recv_timestamp);
+#if defined(__x86_64__)
+  printf("recv_timestamp   = [%lu]\n", recv_data->recv_timestamp);
   printf("query ref        = [%ld]\n", _z_simple_rc_strong_count(recv_data->query._cnt));
-
+#else
+  printf("recv_timestamp   = [%llu]\n", recv_data->recv_timestamp);
+  printf("query ref        = [%d]\n", _z_simple_rc_strong_count(recv_data->query._cnt));
+#endif
   // debug attachment
   attachment_debug(&recv_data->attachment);
 

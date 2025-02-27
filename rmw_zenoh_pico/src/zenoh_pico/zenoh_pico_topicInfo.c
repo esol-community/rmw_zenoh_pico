@@ -90,10 +90,18 @@ void zenoh_pico_debug_topic_info(ZenohPicoTopicInfo *topic)
   const z_loaned_string_t *hash = z_loan(topic->hash);
   const z_loaned_string_t *qos  = z_loan(topic->qos);
 
+#if defined(__x86_64__)
   printf("\tname = [%.*s][%ld]\n", (int)z_string_len(name), z_string_data(name), z_string_len(name));
   printf("\ttype = [%.*s][%ld]\n", (int)z_string_len(type), z_string_data(type), z_string_len(type));
   printf("\thash = [%.*s][%ld]\n", (int)z_string_len(hash), z_string_data(hash), z_string_len(hash));
   printf("\tqos  = [%.*s][%ld]\n", (int)z_string_len(qos),  z_string_data(qos), z_string_len(qos));
+#else
+  printf("\tname = [%.*s][%d]\n", (int)z_string_len(name), z_string_data(name), z_string_len(name));
+  printf("\ttype = [%.*s][%d]\n", (int)z_string_len(type), z_string_data(type), z_string_len(type));
+  printf("\thash = [%.*s][%d]\n", (int)z_string_len(hash), z_string_data(hash), z_string_len(hash));
+  printf("\tqos  = [%.*s][%d]\n", (int)z_string_len(qos),  z_string_data(qos), z_string_len(qos));
+#endif
+
 }
 
 // ------

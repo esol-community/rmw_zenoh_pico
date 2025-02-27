@@ -215,10 +215,17 @@ rmw_create_node(rmw_context_t * context, const char * name, const char * namespa
   }
 
   if(rmw_zenoh_pico_debug_level_get() == _Z_LOG_LVL_DEBUG){
+#if defined(__x86_64__)
     RMW_ZENOH_LOG_INFO("name = [%s], namespace = [%s], domain = [%ld]",
 		       name,
 		       namespace,
 		       context->actual_domain_id);
+#else
+    RMW_ZENOH_LOG_INFO("name = [%s], namespace = [%s], domain = [%d]",
+		       name,
+		       namespace,
+		       context->actual_domain_id);
+#endif
   }
 
   ZenohPicoSession *session = (ZenohPicoSession *)context->impl;

@@ -1,3 +1,4 @@
+// -*- tab-width : 8 , c-indentation-style : bsd -*-
 /*
  * Copyright(C) 2024 eSOL Co., Ltd.
  *
@@ -19,60 +20,57 @@
 #include <rclc/rclc.h>
 #include <rclc/executor.h>
 
-#include <std_msgs/msg/string.h>
+#include "example_interfaces/srv/add_two_ints.h"
 
 #include <stdio.h>
+#include <unistd.h>
 
 #define USE_ROS_DOMAIN_ID
 #ifdef USE_ROS_DOMAIN_ID
 #define ROS_DOMAIN_ID 64
 #endif
 
-#define ARRAY_LEN 200
-
-#define RCCHECK(fn) {                                           \
+#define RCCHECK(fn) {						\
     rcl_ret_t temp_rc = fn;					\
-    if((temp_rc != RCL_RET_OK))	{				\
+    if((temp_rc != RCL_RET_OK))					\
+      {								\
 	printf("Failed status on line %d: %d. Aborting.\n",	\
 	       __LINE__,(int)temp_rc);				\
-	return 1;						\
       }								\
   }
 
 #define RCSOFTCHECK(fn) {					\
     rcl_ret_t temp_rc = fn;					\
-    if((temp_rc != RCL_RET_OK)) {				\
-      printf("Failed status on line %d: %d. Continuing.\n",	\
-	     __LINE__,(int)temp_rc);				\
-    }								\
+    if((temp_rc != RCL_RET_OK))					\
+      {								\
+	printf("Failed status on line %d: %d. Continuing.\n",	\
+	       __LINE__,(int)temp_rc);				\
+      }								\
   }
 
-rcl_subscription_t subscriber;
-std_msgs__msg__String msg;
-char test_array[ARRAY_LEN];
+void service_callback(const void * req, void * res) {
+  example_interfaces__srv__AddTwoInts_Request * req_in = (example_interfaces__srv__AddTwoInts_Request *) req;
+  example_interfaces__srv__AddTwoInts_Response * res_in = (example_interfaces__srv__AddTwoInts_Response *) res;
 
-void subscription_callback(const void * msgin)
-{
-  const std_msgs__msg__String * msg = (const std_msgs__msg__String *)msgin;
-  printf("I have heard: \"%s\"\n", msg->data.data);
+  res_in->sum = req_in->a + req_in->b;
+
+  printf("Incoming request [a:%lld + b:%lld] => %lld\n", req_in->a, req_in->b, res_in->sum);
 }
 
-int main(int argc, const char * const * argv)
+int main(int argc, char *argv[])
 {
-  memset(test_array,'z',ARRAY_LEN);
-
   rcl_allocator_t allocator = rcl_get_default_allocator();
-  rclc_support_t support;
 
   // create init_options
-  RCCHECK(rclc_support_init(&support, argc, argv, &allocator));
+  rclc_support_t support;
+  RCCHECK(rclc_support_init(&support, 0, NULL, &allocator));
 
   // create node
   rcl_node_t node;
 
 #ifdef USE_ROS_DOMAIN_ID
   rcl_init_options_t init_options = rcl_get_zero_initialized_init_options();
-  rcl_init_options_init(&init_options, allocator);
+  (void)rcl_init_options_init(&init_options, allocator);
   RCCHECK(rcl_init_options_set_domain_id(&init_options, ROS_DOMAIN_ID));
   RCCHECK(rclc_support_init_with_options(&support,
 					 0,
@@ -81,37 +79,37 @@ int main(int argc, const char * const * argv)
 #endif
 
   RCCHECK(rclc_node_init_default(&node,
-				 "listener_node",
+				 "add_two_ints_server_rclc",
 				 "",
 				 &support));
 
-  // create subscriber
-  RCCHECK(rclc_subscription_init_default(
-	    &subscriber,
+  // create service
+  rcl_service_t service;
+  RCCHECK(rclc_service_init_default(
+	    &service,
 	    &node,
-	    ROSIDL_GET_MSG_TYPE_SUPPORT(std_msgs, msg, String),
-	    "chatter"));
+	    ROSIDL_GET_SRV_TYPE_SUPPORT(example_interfaces, srv, AddTwoInts),
+	    "add_two_ints"));
 
   // create executor
-  rclc_executor_t executor = rclc_executor_get_zero_initialized_executor();
-  RCCHECK(rclc_executor_init(
-	    &executor,
-	    &support.context,
-	    1,
-	    &allocator));
-  RCCHECK(rclc_executor_add_subscription(
-	    &executor,
-	    &subscriber,
-	    &msg,
-	    &subscription_callback,
-	    ON_NEW_DATA));
+  rclc_executor_t executor;
+  RCCHECK(rclc_executor_init(&executor,
+			     &support.context,
+			     1,
+			     &allocator));
 
-  msg.data.data = (char * ) malloc(ARRAY_LEN * sizeof(char));
-  msg.data.size = 0;
-  msg.data.capacity = ARRAY_LEN;
+  example_interfaces__srv__AddTwoInts_Response res;
+  example_interfaces__srv__AddTwoInts_Request req;
+  RCCHECK(rclc_executor_add_service(&executor,
+				    &service,
+				    &req,
+				    &res,
+				    service_callback));
 
   rclc_executor_spin(&executor);
 
-  RCCHECK(rcl_subscription_fini(&subscriber, &node));
+  RCCHECK(rcl_service_fini(&service, &node));
   RCCHECK(rcl_node_fini(&node));
+
+  return(0);
 }

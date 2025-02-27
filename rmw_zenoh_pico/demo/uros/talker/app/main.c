@@ -85,7 +85,10 @@ int main(int argc, const char * const * argv)
 					 &allocator));
 #endif
 
-  RCCHECK(rclc_node_init_default(&node, "talker_node", "", &support));
+  RCCHECK(rclc_node_init_default(&node,
+				 "talker_node",
+				 "",
+				 &support));
 
   // create publisher
   RCCHECK(rclc_publisher_init_default(
