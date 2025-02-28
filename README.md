@@ -49,9 +49,7 @@ The rmw API for rmw_zenoh_pico is not currently as well supported as rmw_zenoh a
 This [list](./rmw_zenoh_pico_rmw_list.md) is support of rmw_zenoh_pico.
 
 > [!IMPORTANT]
-> The prototype implementation of rmw_zenoh_pico does not yet support graph information (gid).  
-> Therefore, this implementation only supports pub/sub connections. Other connection types (server/client, node information, etc.) are not yet supported.  
->
+> The prototype implementation of rmw_zenoh_pico does not yet support graph-cache information (gid).  
 > For rmw_zenoh_pico to support gid, several [issues](#known-issueslimitations) should be considered.   
 > The rmw_zenoh_pico would like to support zenoh_pico and rmw_zenoh along with future updates from the ROS community.  
 
@@ -65,10 +63,8 @@ Table: Related repositories
 
 | Repository      | Branch      | SID                                      | URL                                               |
 |-----------------|-------------|------------------------------------------|---------------------------------------------------|
-| micro_ros_setup | jazzy       | 9ae1ca79ca3cb5f8fbd3867d02a6e43686388f05 | <https://github.com/micro-ROS/micro_ros_setup>    |
-| zenoh-c         | main        | 57d5e4d31d9b38fef34d7bcad3d3e54869c4ce73 | <https://github.com/eclipse-zenoh/zenoh-c.git>    |
-| zenoh-cpp       | main        | 964b64dc8b935a43147287199e7bb12da7b141e6 | <https://github.com/eclipse-zenoh/zenoh-cpp>      |
-| zenoh-pico      | main        | a24f7c12f45bcc8e4a7fae13bad3389f363d76a4 | <https://github.com/eclipse-zenoh/zenoh-pico.git> |
+| micro_ros_setup | jazzy       | d60bb3ae889d3617a7a408ae78765e472eda7af9 | <https://github.com/micro-ROS/micro_ros_setup>    |
+| zenoh-pico      | 1.1.1       | 94e3acd9f7e003ee979f2fbe497a082b03f64eba | <https://github.com/eclipse-zenoh/zenoh-pico.git> |
 | rmw_zenoh       | jazzy/0.2.0 | cf84677b966fbd414097a9e72db7e4a1e1dea6bf | <https://github.com/ros2/rmw_zenoh.git>           |
 
 ### Create a workspace and download the micro-ROS tools
@@ -158,6 +154,8 @@ pushd $FW_TARGETDIR/$DEV_WS_DIR >/dev/null
     if [ $OPTION == "bookworm_v12" ]; then
         TOOLCHAIN_URL="https://..."              /* Change URL of cross-compile toolchain */
                                                  /* For match target Raspberry Pi OS environment */
+                    :
+                    :
     else
         echo "Platform not supported."
         exit 1
@@ -230,7 +228,7 @@ The following commands are executed on another terminal, respectively.
 
 T.D.B
 
-### Name of node/topic on ROS 2 (option)
+### Name of node/topic on ROS 2
 
 The ROS 2 CLI command starts a new ROS 2 daemon task, and the daemon caches data.  
 If the ROS 2 daemon is already running, it must be stopped before executing ROS 2 CLI commands. 
@@ -283,9 +281,20 @@ For a list of other open-source components included in this repository, see the 
 ## Known Issues/Limitations
 
 1. The rmw_zenoh_pico using malloc() system futures when there is a new memory region.  
-The XRCE-DDS implementation has simple memory futures in its layer.
+The XRCE-DDS implementation has simple memory futures in its layer.  
 This memory future is designed to run ROS 2 communication for small resource systems.  
 The rmw_zenoh layer can execute on a Linux system with a memory subsystem for a large system with Zenoh.  
 The zenoh-pico is designed for small resource systems.  
 However, the zenoh-pico memory is compiling into its system, and it is not designed to use the same data area with an upside layer, which is rmw_zenoh_pico.  
-If you use rmw_zeno_pico on a small resource system with any RTOS, you might need to add some customizations for zenoh-pico and rmw_zenoh_pico.
+If you use rmw_zeno_pico on a small resource system with any RTOS, you might need to add some customizations for zenoh-pico and rmw_zenoh_pico.  
+
+1. This implementation of rmw_zenoh_pico does not support graph caching.  
+The graph cache is a key component in maintaining the overall structure of ROS2.  
+However, we feel that it will be used less in micro ros for microcontroller targets.  
+Moreover, rmw_zenoh_pico needs to dynamically allocate memory to hold the graph-cache.  
+On the other hand, the graph-cache is closely related to the Qos feature of ROS2.  
+Since zenoh is based on TCP/IP, the OS basically guarantees packet reliability, so there are few problems.  
+However, this can be an issue when communicating directly with ROS using the zenoh plugin, etc.  
+We feel it is necessary to add limited OoS functionality to the link layer used by the microcontroller.  
+The ROS QoS implementation works in conjunction with ROS event processing.  
+The current implementation of rmw_zenoh_pico only implements the event framework (compile only).  
