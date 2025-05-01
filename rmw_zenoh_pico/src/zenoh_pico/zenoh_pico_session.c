@@ -61,10 +61,6 @@ bool zenoh_pico_destroy_session(ZenohPicoSession *session)
 
   if(ZenohPicoDataRelease(session)){
 
-    z_drop(z_move(session->config));
-    z_drop(z_move(session->session));
-    z_drop(z_move(session->enclave));
-
     // stop background zenoh task
     if(session->enable_session){
       zp_stop_read_task(z_loan_mut(session->session));
@@ -73,6 +69,8 @@ bool zenoh_pico_destroy_session(ZenohPicoSession *session)
 
     zenoh_pico_destroy_guard_condition_data((ZenohPicoGuardConditionData *)session->graph_guard_condition.data);
 
+    z_drop(z_move(session->config));
+    z_drop(z_move(session->enclave));
     z_drop(z_move(session->session));
   }
 
