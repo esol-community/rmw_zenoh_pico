@@ -110,7 +110,6 @@ static bool _check_and_attach_condition(const rmw_subscriptions_t * const subscr
 	return true;
       }
     }
-    return true;
   }
 
   return false;
