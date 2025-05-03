@@ -64,8 +64,8 @@ Table: Related repositories
 | Repository      | Branch      | SID                                      | URL                                               |
 |-----------------|-------------|------------------------------------------|---------------------------------------------------|
 | micro_ros_setup | jazzy       | d60bb3ae889d3617a7a408ae78765e472eda7af9 | <https://github.com/micro-ROS/micro_ros_setup>    |
-| zenoh-pico      | 1.1.1       | 94e3acd9f7e003ee979f2fbe497a082b03f64eba | <https://github.com/eclipse-zenoh/zenoh-pico.git> |
-| rmw_zenoh       | jazzy/0.2.0 | cf84677b966fbd414097a9e72db7e4a1e1dea6bf | <https://github.com/ros2/rmw_zenoh.git>           |
+| zenoh-pico      | 1.3.1       | 86c67c30930b19c4df0163e86e1f1821feedc1fe | <https://github.com/eclipse-zenoh/zenoh-pico.git> |
+| rmw_zenoh       | jazzy/0.2.4 | 02e67ae014a99fa50700d4efeb7648aeb5d09397 | <https://github.com/ros2/rmw_zenoh.git>           |
 
 ### Create a workspace and download the micro-ROS tools
 
