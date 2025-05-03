@@ -62,32 +62,19 @@ z_result_t attachment_data_get(const z_loaned_bytes_t *attachment, zenoh_pico_at
 {
   ze_deserializer_t deserializer = ze_deserializer_from_bytes(attachment);
 
-  size_t item_num = 3;
+  // get sequence_number
+  z_owned_string_t sequence_num;
+  z_string_empty(&sequence_num);
+  CHECK_ATTACHMENT_DESERIALIZE_INT64(deserializer, data->sequence_num);
 
-  for(size_t count = 0; count < item_num; count++){
-    z_owned_string_t key;
+  // get source_timestamp
+  int64_t timestamp;
+  CHECK_ATTACHMENT_DESERIALIZE_INT64(deserializer, timestamp);
+  data->timestamp = timestamp;
 
-    CHECK_ATTACHMENT_DESERIALIZE_STRING(deserializer, key);
-
-    if(strncmp("sequence_number", Z_STRING_VAL(key), Z_STRING_LEN(key)) == 0){
-      z_owned_string_t sequence_num;
-
-      z_string_empty(&sequence_num);
-      CHECK_ATTACHMENT_DESERIALIZE_INT64(deserializer, data->sequence_num);
-
-    } else if (strncmp("source_timestamp", Z_STRING_VAL(key), Z_STRING_LEN(key)) == 0){
-      int64_t timestamp;
-
-      CHECK_ATTACHMENT_DESERIALIZE_INT64(deserializer, timestamp);
-      data->timestamp = timestamp;
-
-    } else if (strncmp("source_gid", Z_STRING_VAL(key), Z_STRING_LEN(key)) == 0) {
-      z_slice_empty(&data->gid);
-      CHECK_ATTACHMENT_DESERIALIZE_SLICE(deserializer, data->gid);
-    }
-
-    z_drop(z_move(key));
-  }
+  // get source_gid
+  z_slice_empty(&data->gid);
+  CHECK_ATTACHMENT_DESERIALIZE_SLICE(deserializer, data->gid);
 
   return(Z_OK);
 }
@@ -128,11 +115,8 @@ z_result_t attachment_gen(zenoh_pico_attachemt_data *data, z_owned_bytes_t *atta
   data->timestamp = timestamp;
 
   // serialize attachment data
-  CHECK_ATTACHMENT_SERIALIZE_STRING(serializer, "sequence_number");
   CHECK_ATTACHMENT_SERIALIZE_INT64(serializer, data->sequence_num);
-  CHECK_ATTACHMENT_SERIALIZE_STRING(serializer, "source_timestamp");
   CHECK_ATTACHMENT_SERIALIZE_INT64(serializer, data->timestamp);
-  CHECK_ATTACHMENT_SERIALIZE_STRING(serializer, "source_gid");
   CHECK_ATTACHMENT_SERIALIZE_SLICE(serializer, data->gid);
 
   ze_serializer_finish(z_move(serializer), attachment);
