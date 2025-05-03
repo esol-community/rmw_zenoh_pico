@@ -162,7 +162,7 @@ rmw_wait(rmw_subscriptions_t * subscriptions,
       }
     }
 
-    RMW_ZENOH_LOG_DEBUG("wakeup from wait condition....");
+    /* RMW_ZENOH_LOG_DEBUG("wakeup from wait condition...."); */
 
     wait_set_data->triggered = false;
 
