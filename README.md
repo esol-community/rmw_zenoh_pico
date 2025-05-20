@@ -36,7 +36,6 @@ This package can be configured via CMake arguments.
 | RMW_ZENOH_PICO_CONNECT_PORT     | Sets the scout port.                                         | 7447         | OK     |
 | RMW_ZENOH_PICO_LISTEN           | Sets the listen address.                                     | 127.0.0.1    |        |
 | RMW_ZENOH_PICO_LISTEN_PORT      | Sets the listen port.                                        | -1           |        |
-| RMW_ZENOH_PICO_SERIAL_DEVICE    | Sets the agent serial port.                                  | /dev/ttyAMA0 | OK     |
 | RMW_ZENOH_PICO_SERIAL_DEVICE    | Sets the agent serial port.*1                                | /dev/ttyAMA0 | OK     |
 | RMW_ZENOH_PICO_MAX_LINENESS_LEN | This value sets the number of max liveliness resource length | 256          |        |
 | RMW_ZENOH_PICO_C_STANDARD       | Version of the C language used to build the library          | 99           |        |
