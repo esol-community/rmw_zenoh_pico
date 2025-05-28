@@ -181,6 +181,7 @@ The following commands are executed on another terminal, respectively.
     ``` bash
     # cd <directory in install rmw_zenoh> 
     source install/setup.bash
+    export ZENOH_CONFIG_OVERRIDE='transport/link/tx/lease=10000'
     ros2 run rmw_zenoh_cpp rmw_zenohd
     ```
 
