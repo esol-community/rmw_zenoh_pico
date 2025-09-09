@@ -1,0 +1,22 @@
+ROS_DISTR	= jazzy
+TARGET_PLATFORM = raspbian
+TARGET_TARGET   = bookworm_v12
+
+CONNECT_TYPE    = unicast
+# CONNECT_TYPE  = mcast
+
+# FEATURE_INTEREST = on
+
+CONNECT_IP      = 10.0.10.30
+CONNECT_PORT	= 7447
+# CONNECT_PORT	= 8000
+
+# LISTEN_IP	= 10.0.10.50
+# LISTEN_PORT	= 8000
+LISTEN_PORT     = -1
+
+MCAST_IP        = 224.0.0.123
+MCAST_PORT      = 8000
+MCAST_DEV	= host0
+
+TARGET_APP	= server

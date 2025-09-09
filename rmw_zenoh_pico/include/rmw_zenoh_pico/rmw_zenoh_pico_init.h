@@ -41,9 +41,8 @@ extern "C"
     char connect_addr[MAX_INET_DEVICE];
     char listen_addr[MAX_INET_DEVICE];
 
-#elif defined (RMW_ZENOH_PICO_TRANSPORT_MCAST)
-    char locator_addr[MAX_INET_DEVICE];
-    char listen_addr[MAX_INET_DEVICE];
+#elif defined (RMW_ZENOH_PICO_TRANSPORT_MULTICAST)
+    char mcast_addr[MAX_INET_DEVICE];
 
 #elif defined (RMW_ZENOH_PICO_TRANSPORT_SERIAL)
     char serial_device[MAX_SERIAL_DEVICE];

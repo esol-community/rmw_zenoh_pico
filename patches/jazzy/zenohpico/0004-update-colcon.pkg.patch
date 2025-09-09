@@ -1,0 +1,62 @@
+From 3343f5d3306b99dd3c27e024f70a21c90ad1ca38 Mon Sep 17 00:00:00 2001
+From: Katsumi Yamazaki <v-yamazaki8668@esol.co.jp>
+Date: Mon, 19 May 2025 16:40:33 +0900
+Subject: [PATCH 4/8] update colcon.pkg
+
+---
+ colcon.pkg           | 2 +-
+ include/zenoh-pico.h | 6 +++---
+ library.json         | 4 ++--
+ 3 files changed, 6 insertions(+), 6 deletions(-)
+
+diff --git a/colcon.pkg b/colcon.pkg
+index 0841abcc..f018f679 100644
+--- a/colcon.pkg
++++ b/colcon.pkg
+@@ -1,4 +1,4 @@
+ {
+     "name": "zenohpico",
+-    "type": "cmake",
++    "type": "cmake"
+ }
+diff --git a/include/zenoh-pico.h b/include/zenoh-pico.h
+index 62b219e0..6a077457 100644
+--- a/include/zenoh-pico.h
++++ b/include/zenoh-pico.h
+@@ -17,11 +17,11 @@
+ #ifndef ZENOH_PICO_H
+ #define ZENOH_PICO_H
+ 
+-#define ZENOH_PICO "1.2.1.0"
++#define ZENOH_PICO "1.3.1"
+ #define ZENOH_PICO_MAJOR 1
+-#define ZENOH_PICO_MINOR 2
++#define ZENOH_PICO_MINOR 3
+ #define ZENOH_PICO_PATCH 1
+-#define ZENOH_PICO_TWEAK 0
++#define ZENOH_PICO_TWEAK 
+ 
+ #include "zenoh-pico/api/constants.h"
+ #include "zenoh-pico/api/encoding.h"
+diff --git a/library.json b/library.json
+index 59d84849..abdf76b0 100644
+--- a/library.json
++++ b/library.json
+@@ -1,6 +1,6 @@
+ {
+     "name": "zenoh-pico",
+-    "version": "1.2.1.0",
++    "version": "1.3.1.",
+     "description": "The Eclipse Zenoh: Zero Overhead Pub/sub, Store/Query and Compute. It unifies data in motion, data in-use, data at rest and computations. It carefully blends traditional pub/sub with geo-distributed storages, queries and computations, while retaining a level of time and space efficiency that is well beyond any of the mainstream stacks. Zenoh-Pico is the implementation able to scale down to extremely constrainded devices and networks.",
+     "keywords": [
+         "pubsub",
+@@ -43,4 +43,4 @@
+     "build": {
+         "extraScript": "extra_script.py"
+     }
+-}
+\ No newline at end of file
++}
+-- 
+2.43.0
+

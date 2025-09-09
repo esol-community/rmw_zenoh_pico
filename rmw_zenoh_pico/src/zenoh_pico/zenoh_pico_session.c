@@ -13,7 +13,6 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-#include "rmw_zenoh_pico/rmw_zenoh_pico_logging.h"
 #include <rmw_zenoh_pico/rmw_zenoh_pico.h>
 #include <string.h>
 
@@ -91,13 +90,13 @@ rmw_ret_t session_connect(ZenohPicoSession *session)
   RMW_ZENOH_LOG_DEBUG("Opening session...");
 
   if(_Z_IS_ERR(z_open(&session->session, z_move(session->config), NULL))){
-    RMW_SET_ERROR_MSG("Error setting up zenoh session");
+    RMW_ZENOH_LOG_ERROR("Error setting up zenoh session");
     return RMW_RET_ERROR;
   }
 
   if (_Z_IS_ERR(zp_start_read_task(z_loan_mut(session->session), NULL))
       || _Z_IS_ERR(zp_start_lease_task(z_loan_mut(session->session), NULL))) {
-    RMW_SET_ERROR_MSG("Unable to start read and lease tasks");
+    RMW_ZENOH_LOG_ERROR("Unable to start read and lease tasks");
     z_drop(z_move(session->config));
     z_drop(z_move(session->session));
     return RMW_RET_ERROR;

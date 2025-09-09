@@ -19,21 +19,26 @@
 static z_owned_mutex_t mutex_logging;
 
 // Timestamp function
-#if defined(ZENOH_LINUX)
-void z_log_prefix(const char *prefix, const char *func_name) {
-  char time_stamp[64];
+#if defined(ZENOH_LINUX) || defined (ZENOH_ARDUINO_ESP32) || defined (ZENOH_ESPIDF)
+
+void z_log_prefix(const char *prefix, const char *func_name, const char *fmt, ...) {
+  static char tstamp[64];
+  static char msg[128];
 
   struct timespec abstime;
-  memset(&abstime, 0, sizeof(abstime));
   clock_gettime(CLOCK_REALTIME, &abstime);
 
-  snprintf(time_stamp, sizeof(time_stamp), "%ld.%09ld", abstime.tv_sec, abstime.tv_nsec);
+  snprintf(tstamp, sizeof(tstamp) -1, "%ld.%09ld", abstime.tv_sec, abstime.tv_nsec);
 
-  printf("[%-5s] [%s] [%s] : ",  prefix, time_stamp, func_name);
+  va_list args;
+  va_start(args , fmt);
+  int ret = vsnprintf(msg, sizeof(msg) -1, fmt, args);
+  va_end(args);
+
+  printf("[%-5s] [%s] [%s] : %s\n",  prefix, tstamp, func_name, msg);
 }
 #else
-#include "zenoh-pico/system/platform/void.h"
-#error "Unknown platform"
+#error "Unsupported platform"
 #endif
 
 static int rmw_zenoh_pico_debug_level = _Z_LOG_LVL_ERROR;
@@ -46,11 +51,14 @@ void rmw_zenoh_pico_debug_level_init(void)
 
   rmw_zenoh_pico_debug_level = _Z_LOG_LVL_ERROR;
   if(strncmp(pathvar, "Z_LOG_DEBUG", sizeof("Z_LOG_DEBUG")) == 0) {
-    rmw_zenoh_pico_debug_level = _Z_LOG_LVL_DEBUG;
+    if(rmw_zenoh_pico_debug_level < _Z_LOG_LVL_DEBUG)
+      rmw_zenoh_pico_debug_level = _Z_LOG_LVL_DEBUG;
   } else if (strncmp(pathvar, "Z_LOG_INFO", sizeof("Z_LOG_INFO")) == 0) {
-    rmw_zenoh_pico_debug_level = _Z_LOG_LVL_INFO;
+    if(rmw_zenoh_pico_debug_level < _Z_LOG_LVL_INFO)
+      rmw_zenoh_pico_debug_level = _Z_LOG_LVL_INFO;
   } else if (strncmp(pathvar, "Z_LOG_ERROR", sizeof("Z_LOG_ERROR")) == 0) {
-    rmw_zenoh_pico_debug_level = _Z_LOG_LVL_ERROR;
+    if(rmw_zenoh_pico_debug_level < _Z_LOG_LVL_ERROR)
+      rmw_zenoh_pico_debug_level = _Z_LOG_LVL_ERROR;
   }
 
   return;
@@ -77,6 +85,13 @@ bool rmw_zenoh_pico_check_validate_name(const char * name)
 int rmw_zenoh_pico_debug_level_get(void)
 {
   return rmw_zenoh_pico_debug_level;
+}
+
+int rmw_zenoh_pico_debug_level_set(int level)
+{
+  rmw_zenoh_pico_debug_level = level;
+
+  return rmw_zenoh_pico_debug_level_get();
 }
 
 void rmw_zenoh_pico_log_init()

@@ -16,7 +16,7 @@
 
 #include <rmw_zenoh_pico/rmw_zenoh_pico.h>
 
-#if defined(ZENOH_LINUX)
+#if defined(ZENOH_LINUX) || defined (ZENOH_ARDUINO_ESP32) || defined (ZENOH_ESPIDF)
 
 z_result_t z_condvar_init_with_attr(z_owned_condvar_t *cv, pthread_condattr_t *attr){
   _Z_CHECK_SYS_ERR(pthread_cond_init(&cv->_val, attr));
@@ -43,8 +43,7 @@ z_result_t z_condvar_timewait(z_loaned_condvar_t *cv, z_loaned_mutex_t *mp, stru
   return ret;
 }
 #else
-#include "zenoh-pico/system/platform/void.h"
-#error "Unknown platform"
+#error "Unsupported platform"
 #endif
 
 void zenoh_pico_condition_trigger(ZenohPicoWaitCondition *cond){

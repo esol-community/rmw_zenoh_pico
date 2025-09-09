@@ -134,7 +134,7 @@ ZenohPicoEntity * zenoh_pico_generate_publisher_entity(
   const rosidl_message_type_support_t * type_support,
   const rmw_qos_profile_t *qos_profile)
 {
-  return zenoh_pico_generate_topic_entity(zid, nid, node_info, topic_name, type_support, qos_profile, Subscription);
+  return zenoh_pico_generate_topic_entity(zid, nid, node_info, topic_name, type_support, qos_profile, Publisher);
 }
 
 const message_type_support_callbacks_t * get_request_callback(
@@ -245,12 +245,12 @@ bool zenoh_pico_destroy_entity(ZenohPicoEntity *entity)
 
 void zenoh_pico_debug_entity(ZenohPicoEntity *entity)
 {
-  printf("--------- entity data ----------\n");
-  printf("ref = %d\n", entity->ref);
+  DEBUG_PRINT("--------- entity data ----------\n");
+  DEBUG_PRINT("ref = %d\n", entity->ref);
 
   Z_STRING_PRINTF(entity->zid, zid);
-  printf("id  = %d\n", (int)entity->id);
-  printf("nid = %d\n", (int)entity->nid);
+  DEBUG_PRINT("id  = %d\n", (int)entity->id);
+  DEBUG_PRINT("nid = %d\n", (int)entity->nid);
 
   const char *_type_name = "unknown type";
   switch(entity->type){
@@ -260,19 +260,19 @@ void zenoh_pico_debug_entity(ZenohPicoEntity *entity)
   case Service:			_type_name = "Service"; break;
   case Client:			_type_name = "Client"; break;
   }
-  printf("type = %s\n",	_type_name);
+  DEBUG_PRINT("type = %s\n",	_type_name);
 
   // debug node_info
   if(entity->node_info != NULL)
     zenoh_pico_debug_node_info(entity->node_info);
   else
-    printf("not found node info\n");
+    DEBUG_PRINT("not found node info\n");
 
   // debug topic_info
   if(entity->topic_info != NULL)
     zenoh_pico_debug_topic_info(entity->topic_info);
   else
-    printf("not found topic info\n");
+    DEBUG_PRINT("not found topic info\n");
 
   return;
 }

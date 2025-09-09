@@ -27,6 +27,7 @@
 #include <limits.h>
 #include <time.h>
 #include <string.h>
+#include <stdarg.h>
 
 #include <rmw/rmw.h>
 #include <rmw/ret_types.h>
@@ -57,7 +58,16 @@
 #include <zenoh-pico/system/platform.h>
 #include <zenoh-pico/utils/result.h>
 
+// debug print
+#ifdef LINUX_POSIX
+#define DEBUG_PRINT(fmt, ...) printf(fmt, ##__VA_ARGS__)
+#else
+extern int target_print(const char *fmt, ...);
+#define DEBUG_PRINT(fmt, ...) target_print(fmt, ##__VA_ARGS__)
+#endif
+
 // utility
+#include <rmw_zenoh_pico/rmw_zenoh_pico_options.h>
 #include <rmw_zenoh_pico/rmw_zenoh_pico_macros.h>
 #include <rmw_zenoh_pico/rmw_zenoh_pico_logging.h>
 

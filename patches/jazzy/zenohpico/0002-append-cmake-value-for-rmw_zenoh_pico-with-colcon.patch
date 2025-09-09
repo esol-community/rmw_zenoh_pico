@@ -1,0 +1,43 @@
+From 9bbe5f5179247f53850f0383ffad98fc9d936688 Mon Sep 17 00:00:00 2001
+From: Katsumi Yamazaki <v-yamazaki8668@esol.co.jp>
+Date: Sat, 18 Jan 2025 12:51:24 +0900
+Subject: [PATCH 2/8] append cmake value for rmw_zenoh_pico with colcon.
+
+---
+ CMakeLists.txt         | 2 +-
+ PackageConfig.cmake.in | 9 +++++++++
+ 2 files changed, 10 insertions(+), 1 deletion(-)
+
+diff --git a/CMakeLists.txt b/CMakeLists.txt
+index 33740dfa..195e74fb 100644
+--- a/CMakeLists.txt
++++ b/CMakeLists.txt
+@@ -200,7 +200,7 @@ else()
+ endif()
+ 
+ # Compiler definition
+-message("Compilers in use: ${CMAKE_C_COMPILER_ID}, ${CMAKE_CXX_COMPILER_ID}")
++message(STATUS "Compilers in use: ${CMAKE_C_COMPILER_ID}, ${CMAKE_CXX_COMPILER_ID}")
+ if (CMAKE_CXX_COMPILER_ID STREQUAL "Clang" OR CMAKE_C_COMPILER_ID STREQUAL "Clang")
+   pico_add_compile_definition(ZENOH_COMPILER_CLANG)
+ elseif (CMAKE_CXX_COMPILER_ID STREQUAL "GNU" OR CMAKE_C_COMPILER_ID STREQUAL "GNU")
+diff --git a/PackageConfig.cmake.in b/PackageConfig.cmake.in
+index 79d55fce..50076651 100644
+--- a/PackageConfig.cmake.in
++++ b/PackageConfig.cmake.in
+@@ -29,3 +29,12 @@ if(@BUILD_SHARED_LIBS@)
+ else()
+   add_library(zenohpico::lib ALIAS zenohpico::zenohpico_static)
+ endif()
++
++# for rmw_zenoh_pico with colcon
++set(zenohpico_INCLUDE_DIRS "@CMAKE_INSTALL_PREFIX@/@CMAKE_INSTALL_INCLUDEDIR@")
++
++if(@BUILD_SHARED_LIBS@)
++  set(zenohpico_LIBRARIES "@CMAKE_INSTALL_PREFIX@/@CMAKE_INSTALL_LIBDIR@/@STATICLIB@libzenohpico.so")
++else()
++  set(zenohpico_LIBRARIES "@CMAKE_INSTALL_PREFIX@/@CMAKE_INSTALL_LIBDIR@/@STATICLIB@libzenohpico.a")
++endif()
+-- 
+2.43.0
+

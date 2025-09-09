@@ -1,0 +1,38 @@
+From 2208047f45ebf499bb5b2497ea04829379511405 Mon Sep 17 00:00:00 2001
+From: Katsumi Yamazaki <v-yamazaki8668@esol.co.jp>
+Date: Fri, 18 Jul 2025 17:40:16 +0900
+Subject: [PATCH 7/8] typo PLATFORMID_CPPPATH -> PLATFORMIO_CPPPATH
+
+---
+ CMakeLists.txt | 6 +++---
+ 1 file changed, 3 insertions(+), 3 deletions(-)
+
+diff --git a/CMakeLists.txt b/CMakeLists.txt
+index 3eba3f39..5815e8f5 100644
+--- a/CMakeLists.txt
++++ b/CMakeLists.txt
+@@ -385,18 +385,18 @@ if(PICO_SHARED)
+ endif()
+ 
+ # Platformio definition
+-if (PLATFORMID_CPPPATH)
++if (PLATFORMIO_CPPPATH)
+   if(PICO_STATIC)
+     target_include_directories(${Libname}_static
+       PRIVATE
+-      ${PLATFORMID_CPPPATH}
++      ${PLATFORMIO_CPPPATH}
+     )
+   endif()
+ 
+   if(PICO_SHARED)
+     target_include_directories(${Libname}_shared
+       PRIVATE
+-      ${PLATFORMID_CPPPATH}
++      ${PLATFORMIO_CPPPATH}
+     )
+   endif()
+ endif()
+-- 
+2.43.0
+

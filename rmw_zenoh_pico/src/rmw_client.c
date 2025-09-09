@@ -388,7 +388,7 @@ rmw_take_response(
       return RMW_RET_ERROR;
     }
 
-    ZenohPicoDataDestroy(msg_data);
+    zenoh_pico_delete_recv_msg_data(msg_data);
   }
 
   return RMW_RET_OK;

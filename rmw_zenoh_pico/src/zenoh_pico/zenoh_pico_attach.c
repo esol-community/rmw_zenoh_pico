@@ -81,11 +81,11 @@ z_result_t attachment_data_get(const z_loaned_bytes_t *attachment, zenoh_pico_at
 
 #define CHECK_ATTACHMENT_SERIALIZE_STRING(data, value)			\
   {									\
-  z_result_t ret = ze_serializer_serialize_str(z_loan_mut(data), value); \
-  if(_Z_IS_ERR(ret)) {							\
+    z_result_t ret = ze_serializer_serialize_str(z_loan_mut(data), value); \
+    if(_Z_IS_ERR(ret)) {						\
       return(ret);							\
     }									\
-    }
+  }
 
 #define CHECK_ATTACHMENT_SERIALIZE_INT64(data, value)			\
   {									\
@@ -137,28 +137,28 @@ bool attachment_destroy(zenoh_pico_attachemt_data *attachmet_data)
 
 void attachment_debug(zenoh_pico_attachemt_data *data)
 {
-  printf("--------- attachment data ----------\n");
+  DEBUG_PRINT("--------- attachment data ----------\n");
 #if defined(__x86_64__)
-  printf("sequence_num = [%lu]\n", data->sequence_num);
-  printf("timestamp    = [%lu]\n", data->timestamp);
+  DEBUG_PRINT("sequence_num = [%lu]\n", data->sequence_num);
+  DEBUG_PRINT("timestamp    = [%lu]\n", data->timestamp);
 #else
-  printf("sequence_num = [%llu]\n", data->sequence_num);
-  printf("timestamp    = [%llu]\n", data->timestamp);
+  DEBUG_PRINT("sequence_num = [%llu]\n", data->sequence_num);
+  DEBUG_PRINT("timestamp    = [%llu]\n", data->timestamp);
 #endif
-  printf("gid          = [");
+  DEBUG_PRINT("gid          = [");
   const uint8_t *gid_ptr = z_slice_data(z_loan(data->gid));
   size_t len = z_slice_len(z_loan(data->gid));
 
   for(size_t index = 0; index < len; index += 4){
-    printf("%02x%02x%02x%02x",
-	   *(gid_ptr +index +0),
-	   *(gid_ptr +index +1),
-	   *(gid_ptr +index +2),
-	   *(gid_ptr +index +3));
+    DEBUG_PRINT("%02x%02x%02x%02x",
+		*(gid_ptr +index +0),
+		*(gid_ptr +index +1),
+		*(gid_ptr +index +2),
+		*(gid_ptr +index +3));
   }
 #if defined(__x86_64__)
-  printf("][%ld]\n", len);
+  DEBUG_PRINT("][%ld]\n", len);
 #else
-  printf("][%d]\n", len);
+  DEBUG_PRINT("][%d]\n", len);
 #endif
 }

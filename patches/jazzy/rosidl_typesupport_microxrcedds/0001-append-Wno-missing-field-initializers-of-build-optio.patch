@@ -1,0 +1,98 @@
+From 9195a6e9ff42a59ee3d93a1f6cccc2aaec1531e3 Mon Sep 17 00:00:00 2001
+From: Katsumi Yamazaki <v-yamazaki8668@esol.co.jp>
+Date: Wed, 31 Jul 2024 17:23:59 +0900
+Subject: [PATCH] append "-Wno-missing-field-initializers" of build option.
+
+---
+ rosidl_typesupport_microxrcedds_c/CMakeLists.txt               | 1 +
+ ...rosidl_typesupport_microxrcedds_c_generate_interfaces.cmake | 1 +
+ rosidl_typesupport_microxrcedds_cpp/CMakeLists.txt             | 1 +
+ ...sidl_typesupport_microxrcedds_cpp_generate_interfaces.cmake | 1 +
+ test/c/CMakeLists.txt                                          | 1 +
+ test/cpp/CMakeLists.txt                                        | 3 ++-
+ 6 files changed, 7 insertions(+), 1 deletion(-)
+
+diff --git a/rosidl_typesupport_microxrcedds_c/CMakeLists.txt b/rosidl_typesupport_microxrcedds_c/CMakeLists.txt
+index f35d375..79237d0 100644
+--- a/rosidl_typesupport_microxrcedds_c/CMakeLists.txt
++++ b/rosidl_typesupport_microxrcedds_c/CMakeLists.txt
+@@ -58,6 +58,7 @@ target_compile_options(${PROJECT_NAME}
+   PRIVATE
+     $<$<C_COMPILER_ID:GNU>:-Wall>
+     $<$<C_COMPILER_ID:GNU>:-Wextra>
++    $<$<C_COMPILER_ID:GNU>:-Wno-missing-field-initializers>
+     $<$<C_COMPILER_ID:GNU>:-Wpedantic>
+   )
+ 
+diff --git a/rosidl_typesupport_microxrcedds_c/cmake/rosidl_typesupport_microxrcedds_c_generate_interfaces.cmake b/rosidl_typesupport_microxrcedds_c/cmake/rosidl_typesupport_microxrcedds_c_generate_interfaces.cmake
+index 8587799..cb7630e 100644
+--- a/rosidl_typesupport_microxrcedds_c/cmake/rosidl_typesupport_microxrcedds_c_generate_interfaces.cmake
++++ b/rosidl_typesupport_microxrcedds_c/cmake/rosidl_typesupport_microxrcedds_c_generate_interfaces.cmake
+@@ -135,6 +135,7 @@ target_compile_options(${rosidl_generate_interfaces_TARGET}${_target_suffix}
+   PRIVATE
+     $<$<PLATFORM_ID:Linux>:-Wall>
+     $<$<PLATFORM_ID:Linux>:-Wextra>
++    $<$<C_COMPILER_ID:GNU>:-Wno-missing-field-initializers>
+     $<$<PLATFORM_ID:Linux>:-Wpedantic>
+     $<$<PLATFORM_ID:Windows>:/W4>
+   )
+diff --git a/rosidl_typesupport_microxrcedds_cpp/CMakeLists.txt b/rosidl_typesupport_microxrcedds_cpp/CMakeLists.txt
+index 36a97d7..e8fa51e 100644
+--- a/rosidl_typesupport_microxrcedds_cpp/CMakeLists.txt
++++ b/rosidl_typesupport_microxrcedds_cpp/CMakeLists.txt
+@@ -57,6 +57,7 @@ target_compile_options(${PROJECT_NAME}
+   PRIVATE
+     $<$<C_COMPILER_ID:GNU>:-Wall>
+     $<$<C_COMPILER_ID:GNU>:-Wextra>
++    $<$<C_COMPILER_ID:GNU>:-Wno-missing-field-initializers>
+     $<$<C_COMPILER_ID:GNU>:-Wpedantic>
+   )
+ 
+diff --git a/rosidl_typesupport_microxrcedds_cpp/cmake/rosidl_typesupport_microxrcedds_cpp_generate_interfaces.cmake b/rosidl_typesupport_microxrcedds_cpp/cmake/rosidl_typesupport_microxrcedds_cpp_generate_interfaces.cmake
+index 66282f9..1c2e51b 100644
+--- a/rosidl_typesupport_microxrcedds_cpp/cmake/rosidl_typesupport_microxrcedds_cpp_generate_interfaces.cmake
++++ b/rosidl_typesupport_microxrcedds_cpp/cmake/rosidl_typesupport_microxrcedds_cpp_generate_interfaces.cmake
+@@ -137,6 +137,7 @@ target_compile_options(${rosidl_generate_interfaces_TARGET}${_target_suffix}
+   PRIVATE
+     $<$<PLATFORM_ID:Linux>:-Wall>
+     $<$<PLATFORM_ID:Linux>:-Wextra>
++    $<$<C_COMPILER_ID:GNU>:-Wno-missing-field-initializers>
+     $<$<PLATFORM_ID:Linux>:-Wpedantic>
+     $<$<PLATFORM_ID:Windows>:/W4>
+   )
+diff --git a/test/c/CMakeLists.txt b/test/c/CMakeLists.txt
+index 243734e..f76cae1 100644
+--- a/test/c/CMakeLists.txt
++++ b/test/c/CMakeLists.txt
+@@ -56,6 +56,7 @@ if(BUILD_TESTING)
+     PRIVATE
+       $<$<C_COMPILER_ID:GNU>:-Wall>
+       $<$<C_COMPILER_ID:GNU>:-Wextra>
++      $<$<C_COMPILER_ID:GNU>:-Wno-missing-field-initializers>
+       $<$<C_COMPILER_ID:GNU>:-pedantic>
+     )
+ 
+diff --git a/test/cpp/CMakeLists.txt b/test/cpp/CMakeLists.txt
+index 4db1e66..acdd64b 100644
+--- a/test/cpp/CMakeLists.txt
++++ b/test/cpp/CMakeLists.txt
+@@ -23,7 +23,7 @@ if(BUILD_TESTING)
+   ament_lint_auto_find_test_dependencies()
+ 
+   find_package(rosidl_typesupport_microxrcedds_cpp REQUIRED)
+-  find_package(rosidl_typesupport_microxrcedds_test_msg REQUIRED)  
++  find_package(rosidl_typesupport_microxrcedds_test_msg REQUIRED)
+   find_package(rosidl_runtime_cpp REQUIRED)
+   find_package(rosidl_typesupport_cpp REQUIRED)
+   find_package(ament_cmake_gtest REQUIRED)
+@@ -48,6 +48,7 @@ if(BUILD_TESTING)
+     PRIVATE
+       $<$<C_COMPILER_ID:GNU>:-Wall>
+       $<$<C_COMPILER_ID:GNU>:-Wextra>
++      $<$<C_COMPILER_ID:GNU>:-Wno-missing-field-initializers>
+       $<$<C_COMPILER_ID:GNU>:-pedantic>
+     )
+ 
+-- 
+2.43.0
+

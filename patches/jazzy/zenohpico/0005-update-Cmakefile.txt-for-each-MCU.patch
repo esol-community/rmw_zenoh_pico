@@ -1,0 +1,117 @@
+From 940741744f70b3f7a4c75e0907d9228720934e10 Mon Sep 17 00:00:00 2001
+From: Katsumi Yamazaki <v-yamazaki8668@esol.co.jp>
+Date: Wed, 21 May 2025 09:46:19 +0900
+Subject: [PATCH 5/8] update Cmakefile.txt for each MCU.
+
+---
+ CMakeLists.txt | 51 ++++++++++++++++++++++++++++++++++++++++++++++----
+ 1 file changed, 47 insertions(+), 4 deletions(-)
+
+diff --git a/CMakeLists.txt b/CMakeLists.txt
+index 195e74fb..3eba3f39 100644
+--- a/CMakeLists.txt
++++ b/CMakeLists.txt
+@@ -15,7 +15,7 @@ cmake_minimum_required(VERSION 3.13)
+ 
+ file(READ ${CMAKE_CURRENT_SOURCE_DIR}/version.txt version)
+ 
+-project(zenohpico VERSION ${version} LANGUAGES C)
++project(zenohpico VERSION ${version} LANGUAGES C CXX)
+ 
+ set(CMAKE_MODULE_PATH "${CMAKE_CURRENT_SOURCE_DIR}/cmake" ${CMAKE_MODULE_PATH})
+ include(helpers)
+@@ -47,16 +47,22 @@ option(WITH_ZEPHYR "Build for Zephyr RTOS" OFF)
+ option(WITH_FREERTOS_PLUS_TCP "Build for FreeRTOS RTOS and FreeRTOS-Plus-TCP network stack" OFF)
+ option(WITH_FREERTOS_LWIP "Build for FreeRTOS RTOS and LWIP (Lightweight IP) network stack" OFF)
+ option(WITH_RPI_PICO "Build for Raspberry Pi Pico" OFF)
++
++option(WITH_ARDUINO_ESP32 "Build for ESP32 on Arduino" OFF)
++option(WITH_ARDUINO_OPENCR "Build for OPENCR on Arduino" OFF)
++option(WITH_ESPIDF "Build for ESP32 on espidf" OFF)
++option(WITH_MBED "Build for mbed" OFF)
++
+ set(ZENOH_LOG "" CACHE STRING "Use this to set the ZENOH_LOG variable")
+ set(ZENOH_LOG_PRINT "" CACHE STRING "Use this to set the ZENOH_LOG_PRINT variable")
+ set(CMAKE_EXPORT_COMPILE_COMMANDS ON CACHE INTERNAL "")
+ if(CMAKE_EXPORT_COMPILE_COMMANDS)
+-  set(CMAKE_CXX_STANDARD_INCLUDE_DIRECTORIES 
++  set(CMAKE_CXX_STANDARD_INCLUDE_DIRECTORIES
+       ${CMAKE_CXX_IMPLICIT_INCLUDE_DIRECTORIES})
+ endif()
+ 
+ if(CMAKE_SYSTEM_NAME MATCHES "Windows")
+-  if (BUILD_SHARED_LIBS) 
++  if (BUILD_SHARED_LIBS)
+     set(CMAKE_WINDOWS_EXPORT_ALL_SYMBOLS ON)
+   endif()
+ elseif(CMAKE_SYSTEM_NAME MATCHES "Generic")
+@@ -159,7 +165,7 @@ endfunction()
+ 
+ pico_add_compile_definition(ZENOH_C_STANDARD=${CMAKE_C_STANDARD})
+ 
+-if (NOT CMAKE_BUILD_TYPE MATCHES "RELEASE" OR "Release") 
++if (NOT CMAKE_BUILD_TYPE MATCHES "RELEASE" OR "Release")
+   # while in development, use timestamp for patch version:
+   string(TIMESTAMP PROJECT_VERSION_PATCH "%Y%m%ddev")
+   set(PROJECT_VERSION "${PROJECT_VERSION_MAJOR}.${PROJECT_VERSION_MINOR}.${PROJECT_VERSION_PATCH}")
+@@ -190,6 +196,15 @@ elseif(CMAKE_SYSTEM_NAME MATCHES "Generic")
+     pico_add_compile_definition(ZENOH_FREERTOS_PLUS_TCP)
+   elseif(WITH_FREERTOS_LWIP)
+     pico_add_compile_definition(ZENOH_FREERTOS_LWIP)
++  elseif(WITH_ARDUINO_ESP32)
++    pico_add_compile_definition(ZENOH_ARDUINO_ESP32)
++  elseif(WITH_ARDUINO_OPENCR)
++    pico_add_compile_definition(ZENOH_ARDUINO_OPENCR)
++    pico_add_compile_definition(Z_FEATURE_MULTI_THREAD=0)
++  elseif(WITH_ESPIDF)
++    pico_add_compile_definition(ZENOH_ESPIDF)
++  elseif(WITH_MBED)
++    pico_add_compile_definition(ZENOH_MBED)
+   endif()
+ elseif(CMAKE_SYSTEM_NAME MATCHES "PICO") # Raspberry Pi Pico Series
+   pico_add_compile_definition(ZENOH_RPI_PICO)
+@@ -369,6 +384,22 @@ if(PICO_SHARED)
+       $<INSTALL_INTERFACE:include>)
+ endif()
+ 
++# Platformio definition
++if (PLATFORMID_CPPPATH)
++  if(PICO_STATIC)
++    target_include_directories(${Libname}_static
++      PRIVATE
++      ${PLATFORMID_CPPPATH}
++    )
++  endif()
++
++  if(PICO_SHARED)
++    target_include_directories(${Libname}_shared
++      PRIVATE
++      ${PLATFORMID_CPPPATH}
++    )
++  endif()
++endif()
+ 
+ file(GLOB_RECURSE Sources
+   "src/api/*.c"
+@@ -405,6 +436,18 @@ elseif(CMAKE_SYSTEM_NAME MATCHES "Emscripten")
+ elseif(CMAKE_SYSTEM_NAME MATCHES "Windows")
+   file (GLOB Sources_Windows "src/system/windows/*.c")
+   list(APPEND Sources ${Sources_Windows})
++elseif(WITH_ARDUINO_ESP32)
++  file (GLOB Sources_arduino_esp32 "src/system/arduino/esp32/*")
++  list(APPEND Sources ${Sources_arduino_esp32})
++elseif(WITH_ARDUINO_OPENCR)
++  file (GLOB Sources_arduino_opencr "src/system/arduino/opencr/*")
++  list(APPEND Sources ${Sources_arduino_opencr})
++elseif(WITH_ESPIDF)
++  file (GLOB Sources_espidf "src/zenohpico/src/system/espidf/*")
++  list(APPEND Sources ${Sources_espidf})
++elseif(WITH_MBED)
++  file (GLOB Sources_mbed "src/zenohpico/src/system/espidf/*")
++  list(APPEND Sources ${Sources_mbed})
+ endif()
+ 
+ set(LIBRARY_OUTPUT_PATH ${CMAKE_BINARY_DIR}/lib)
+-- 
+2.43.0
+

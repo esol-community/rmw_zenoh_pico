@@ -20,10 +20,10 @@
   {							\
     if(data == NULL){					\
       data = (T *)Z_MALLOC(sizeof(T));			\
-      z_mutex_init(&data->lock);			\
     }							\
     if(data != NULL){					\
       memset(data, 0, sizeof(T));			\
+      z_mutex_init(&data->lock);			\
       data->ref += 1;					\
     }							\
     return data;					\
@@ -40,7 +40,6 @@
   {							\
     z_mutex_lock(z_loan_mut(data->lock));		\
     data->ref += 1;					\
-    int ret = data->ref;				\
     z_mutex_unlock(z_loan_mut(data->lock));		\
     return data;					\
   }							\

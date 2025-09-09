@@ -32,11 +32,37 @@ find_package(zenohpico REQUIRED)
 # Build options
 option(BUILD_DOCUMENTATION              "Use doxygen to create product documentation" OFF)
 
+option(WITH_ZEPHYR                      "Build for Zephyr RTOS" OFF)
+option(WITH_FREERTOS_PLUS_TCP           "Build for FreeRTOS RTOS and FreeRTOS-Plus-TCP network stack" OFF)
+option(WITH_RPI_PICO                    "Build for Raspberry Pi Pico" OFF)
+
+option(WITH_ARDUINO_ESP32               "Build for ESP32 on Arduino" OFF)
+option(WITH_ARDUINO_OPENCR              "Build for OPENCR on Arduino" OFF)
+option(WITH_ESPIDF                      "Build for ESP32 on espidf" OFF)
+option(WITH_MBED                        "Build for mbed" OFF)
+
+if(WITH_ZEPHYR)
+  add_definitions(-DZENOH_ZEPHYR)
+elseif(WITH_FREERTOS_PLUS_TCP)
+  add_definitions(-DZENOH_FREERTOS_PLUS_TCP)
+elseif(WITH_ARDUINO_ESP32)
+  add_definitions(-DZENOH_ARDUINO_ESP32)
+  add_definitions(-DZENOH_COMPILER_GCC)
+elseif(WITH_ARDUINO_OPENCR)
+  add_definitions(-DZENOH_ARDUINO_OPENCR)
+  add_definitions(-DZ_FEATURE_MULTI_THREAD=0)
+elseif(WITH_ESPIDF)
+  add_definitions(-DZENOH_ESPIDF)
+elseif(WITH_MBED)
+  add_definitions(-DZENOH_MBED)
+else()
+  add_definitions(-DLINUX_POSIX)
+endif()
+
 # --- RMW CONFIGURATION ---
 set(RMW_ZENOH_PICO_ZID                  "-1"           CACHE STRING "Sets zenoh (-1:autogen | value of uuid")
 
-set(RMW_ZENOH_PICO_TRANSPORT_TYPE       "unicast"      CACHE STRING "Sets zenoh pico transport to use. (unicast | serial)")
-set(RMW_ZENOH_PICO_TRANSPORT_MODE       "client"       CACHE STRING "zenoh transport connect mode")
+set(RMW_ZENOH_PICO_TRANSPORT_TYPE       "unicast"      CACHE STRING "Sets zenoh pico transport to use. (unicast | mcast | serial)")
 
 set(RMW_ZENOH_PICO_CONNECT              "127.0.0.1"    CACHE STRING "Sets the scout address.")
 set(RMW_ZENOH_PICO_CONNECT_PORT         "7447"         CACHE STRING "Sets the scout port.")
@@ -45,11 +71,12 @@ set(RMW_ZENOH_PICO_LISTEN_PORT          "-1"           CACHE STRING "Sets the li
 
 set(RMW_ZENOH_PICO_MCAST                "224.0.0.224"  CACHE STRING "Sets the multicast address")
 set(RMW_ZENOH_PICO_MCAST_PORT           "7446"         CACHE STRING "Sets the multicast port")
-set(RMW_ZENOH_PICO_MCAST_DEV            "lo"           CACHE STRING "Sets the multicast device")
+set(RMW_ZENOH_PICO_MCAST_DEV            "eth0"         CACHE STRING "Sets the multicast device")
 
-set(RMW_ZENOH_PICO_SERIAL_DEVICE        "/dev/ttyAMA0" CACHE STRING "Sets the agent serial port.")
+set(RMW_ZENOH_PICO_SERIAL_DEVICE        "serial/usb"   CACHE STRING "Sets the agent serial port.")
+set(RMW_ZENOH_PICO_SERIAL_PARAM         "baudrate=115200" CACHE STRING "Sets the agent serial parameter.")
+
 set(RMW_ZENOH_PICO_MAX_LINENESS_LEN     "256"          CACHE STRING "This value sets the number of max liveliness resource length")
-
 set(RMW_ZENOH_PICO_C_STANDARD           "99"           CACHE STRING  "Version of the C language used to build the library")
 
 # Transport handle define macros.
@@ -61,10 +88,10 @@ if(${RMW_ZENOH_PICO_TRANSPORT_TYPE} STREQUAL "serial")
   set(RMW_ZENOH_PICO_TRANSPORT_SERIAL ON)
 elseif(${RMW_ZENOH_PICO_TRANSPORT_TYPE} STREQUAL "unicast")
   set(RMW_ZENOH_PICO_TRANSPORT_UNICAST ON)
-elseif(${RMW_ZENOH_PICO_TRANSPORT_TYPE} STREQUAL "multicast")
+elseif(${RMW_ZENOH_PICO_TRANSPORT_TYPE} STREQUAL "mcast")
   set(RMW_ZENOH_PICO_TRANSPORT_MULTICAST ON)
 else()
-  message(FATAL_ERROR "Transport not supported. Use \"unicast\", \"serial\"")
+  message(FATAL_ERROR "Transport not supported. Use \"unicast\", \"mcast\",  \"serial\"")
 endif()
 
 # Set install directories
@@ -160,6 +187,13 @@ target_include_directories(${PROJECT_NAME}
     $<BUILD_INTERFACE:${PROJECT_SOURCE_DIR}/src>
 )
 
+if (PLATFORMIO_CPPPATH)
+  target_include_directories(${PROJECT_NAME}
+    PRIVATE
+    ${PLATFORMIO_CPPPATH}
+  )
+endif()
+
 set_target_properties(${PROJECT_NAME} PROPERTIES
   C_STANDARD
     ${RMW_ZENOH_PICO_C_STANDARD}
@@ -219,7 +253,7 @@ register_rmw_implementation(${implementations})
 if(BUILD_DEMO)
   find_package(ament_lint_auto REQUIRED)
   ament_lint_auto_find_test_dependencies()
-  add_subdirectory(demo/host)
+  add_subdirectory(app)
 endif()
 
 # Create source files with the define

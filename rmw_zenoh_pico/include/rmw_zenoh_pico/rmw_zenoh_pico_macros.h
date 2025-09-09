@@ -51,9 +51,9 @@ extern "C"
   {									\
     const z_loaned_string_t *__z_str = z_loan(_z_str);			\
     if(z_string_is_empty(__z_str))					\
-      printf(#tag " = []\n");						\
+      DEBUG_PRINT(#tag " = []\n");					\
     else								\
-      printf(#tag " = [%.*s]\n", (int)z_string_len(__z_str), z_string_data(__z_str)); \
+      DEBUG_PRINT(#tag " = [%.*s]\n", (int)z_string_len(__z_str), z_string_data(__z_str)); \
   }									\
 
 #if defined(__cplusplus)
