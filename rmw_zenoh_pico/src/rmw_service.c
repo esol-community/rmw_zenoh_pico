@@ -136,7 +136,7 @@ ZenohPicoServiceData * zenoh_pico_generate_service_data(
 
   return data;
 
-  error:
+error:
   if(node_info != NULL)
     zenoh_pico_destroy_node_info(node_info);
 
@@ -202,13 +202,13 @@ bool zenoh_pico_destroy_service_data(ZenohPicoServiceData *data)
 
 void zenoh_pico_debug_service_data(ZenohPicoServiceData *data)
 {
-  printf("--------- client data ----------\n");
-  printf("ref = %d\n", data->ref);
+  DEBUG_PRINT("--------- client data ----------\n");
+  DEBUG_PRINT("ref = %d\n", data->ref);
 
   Z_STRING_PRINTF(data->liveliness_key, liveliness_key);
   Z_STRING_PRINTF(data->topic_key, topic_key);
 
-  printf("request_queue = %d\n", recv_msg_list_count(&data->request_queue));
+  DEBUG_PRINT("request_queue = %d\n", recv_msg_list_count(&data->request_queue));
 
   // debug attachment
   attachment_debug(&data->attachment);
@@ -402,7 +402,7 @@ rmw_create_service(
 
   return rmw_service;
 
-  error:
+error:
   if(service_data != NULL)
     zenoh_pico_destroy_service_data(service_data);
 

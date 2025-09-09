@@ -95,7 +95,7 @@ static ZenohPicoPubData * zenoh_pico_generate_publisher_data(
 
   return pub_data;
 
-  error:
+error:
   if(topic_info != NULL)
     zenoh_pico_destroy_topic_info(topic_info);
 
@@ -140,17 +140,17 @@ static bool zenoh_pico_destroy_publisher_data(ZenohPicoPubData *pub_data)
       (void)zenoh_pico_destroy_entity(pub_data->entity);
       pub_data->entity = NULL;
     }
-  }
 
-  ZenohPicoDataMutexUnLock(pub_data);
+    ZenohPicoDataDestroy(pub_data);
+  }
 
   return true;
 }
 
 static void zenoh_pico_debug_publisher_data(ZenohPicoPubData *pub_data)
 {
-  printf("--------- publisher data ----------\n");
-  printf("ref = %d\n", pub_data->ref);
+  DEBUG_PRINT("--------- publisher data ----------\n");
+  DEBUG_PRINT("ref = %d\n", pub_data->ref);
 
   Z_STRING_PRINTF(pub_data->liveliness_key, liveliness_key);
   Z_STRING_PRINTF(pub_data->topic_key, topic_key);
@@ -173,9 +173,9 @@ static bool declaration_publisher_data(ZenohPicoPubData *pub_data)
   options.congestion_control = Z_CONGESTION_CONTROL_DROP;
   if(pub_data->adapted_qos_profile.history == RMW_QOS_POLICY_HISTORY_KEEP_ALL &&
      pub_data->adapted_qos_profile.reliability == RMW_QOS_POLICY_RELIABILITY_RELIABLE)
-    {
-      options.congestion_control = Z_CONGESTION_CONTROL_BLOCK;
-    }
+  {
+    options.congestion_control = Z_CONGESTION_CONTROL_BLOCK;
+  }
 
   // topic declare
   z_view_keyexpr_t ke;
@@ -268,11 +268,11 @@ rmw_create_publisher(
 
   RMW_CHECK_ARGUMENT_FOR_NULL(publisher_options, NULL);
   if (publisher_options->require_unique_network_flow_endpoints == RMW_UNIQUE_NETWORK_FLOW_ENDPOINTS_STRICTLY_REQUIRED)
-    {
-      RMW_SET_ERROR_MSG(
-	"Strict requirement on unique network flow endpoints for publishers not supported");
-      return NULL;
-    }
+  {
+    RMW_SET_ERROR_MSG(
+      "Strict requirement on unique network flow endpoints for publishers not supported");
+    return NULL;
+  }
 
   // Get node data
   ZenohPicoNodeData *node_data = (ZenohPicoNodeData *)node->data;
@@ -329,7 +329,7 @@ rmw_create_publisher(
 
   return rmw_publisher;
 
-  error:
+error:
   if(pub_data != NULL)
     zenoh_pico_destroy_publisher_data(pub_data);
 

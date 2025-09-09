@@ -219,62 +219,62 @@ bool zenoh_pico_delete_recv_msg_data(ReceiveMessageData * recv_data)
 #define PAYLOAD_DUMP_MAX 32
 void zenoh_pico_debug_dump_msg(const uint8_t *start, size_t size)
 {
-  printf("size = [%d]\n", (int)size);
+  DEBUG_PRINT("size = [%d]\n", (int)size);
   for(size_t count = 0; count < size  && count <= PAYLOAD_DUMP_MAX; count += 4){
     const uint8_t *ptr = start + count;
 
     if((size -count)>= 4){
-      printf("%02x %02x %02x %02x\t%c %c %c %c",
-	     *(ptr +0), *(ptr +1),
-	     *(ptr +2), *(ptr +3),
-	     isalpha(*(ptr +0)) != 0 ? *(ptr +0) : '.' ,
-	     isalpha(*(ptr +1)) != 0 ? *(ptr +1) : '.' ,
-	     isalpha(*(ptr +2)) != 0 ? *(ptr +2) : '.' ,
-	     isalpha(*(ptr +3)) != 0 ? *(ptr +3) : '.'
+      DEBUG_PRINT("%02x %02x %02x %02x\t%c %c %c %c",
+		  *(ptr +0), *(ptr +1),
+		  *(ptr +2), *(ptr +3),
+		  isalpha(*(ptr +0)) != 0 ? *(ptr +0) : '.' ,
+		  isalpha(*(ptr +1)) != 0 ? *(ptr +1) : '.' ,
+		  isalpha(*(ptr +2)) != 0 ? *(ptr +2) : '.' ,
+		  isalpha(*(ptr +3)) != 0 ? *(ptr +3) : '.'
 	);
 
     } else if((size -count) >= 3) {
-      printf("%02x %02x %02x     \t%c %c %c",
-	     *(ptr +0), *(ptr +1),
-	     *(ptr +2),
-	     isalpha(*(ptr +0)) != 0 ? *(ptr +0) : '.' ,
-	     isalpha(*(ptr +1)) != 0 ? *(ptr +1) : '.' ,
-	     isalpha(*(ptr +2)) != 0 ? *(ptr +2) : '.'
+      DEBUG_PRINT("%02x %02x %02x     \t%c %c %c",
+		  *(ptr +0), *(ptr +1),
+		  *(ptr +2),
+		  isalpha(*(ptr +0)) != 0 ? *(ptr +0) : '.' ,
+		  isalpha(*(ptr +1)) != 0 ? *(ptr +1) : '.' ,
+		  isalpha(*(ptr +2)) != 0 ? *(ptr +2) : '.'
 	);
 
     } else if((size -count) >= 2) {
-      printf("%02x %02x          \t%c %c",
-	     *(ptr +0), *(ptr +1),
-	     isalpha(*(ptr +0)) != 0 ? *(ptr +0) : '.' ,
-	     isalpha(*(ptr +1)) != 0 ? *(ptr +1) : '.'
+      DEBUG_PRINT("%02x %02x          \t%c %c",
+		  *(ptr +0), *(ptr +1),
+		  isalpha(*(ptr +0)) != 0 ? *(ptr +0) : '.' ,
+		  isalpha(*(ptr +1)) != 0 ? *(ptr +1) : '.'
 	);
 
     } else if((size -count) >= 1) {
-      printf("%02x               \t%c",
-	     *(ptr +0),
-	     isalpha(*(ptr +0)) != 0 ? *(ptr +0) : '.'
+      DEBUG_PRINT("%02x               \t%c",
+		  *(ptr +0),
+		  isalpha(*(ptr +0)) != 0 ? *(ptr +0) : '.'
 	);
     }
-    printf("\n");
+    DEBUG_PRINT("\n");
   }
 
   return;
 }
 void rmw_zenoh_pico_debug_recv_msg_data(ReceiveMessageData * recv_data)
 {
-  printf("--------- recv msg data ----------\n");
-  printf("ref              = %d\n", recv_data->ref);
+  DEBUG_PRINT("--------- recv msg data ----------\n");
+  DEBUG_PRINT("ref              = %d\n", recv_data->ref);
 #if defined(__x86_64__)
-  printf("recv_timestamp   = [%lu]\n", recv_data->recv_timestamp);
-  printf("query ref        = [%ld]\n", _z_simple_rc_strong_count(recv_data->query._cnt));
+  DEBUG_PRINT("recv_timestamp   = [%lu]\n", recv_data->recv_timestamp);
+  DEBUG_PRINT("query ref        = [%ld]\n", _z_simple_rc_strong_count(recv_data->query._cnt));
 #else
-  printf("recv_timestamp   = [%llu]\n", recv_data->recv_timestamp);
-  printf("query ref        = [%d]\n", _z_simple_rc_strong_count(recv_data->query._cnt));
+  DEBUG_PRINT("recv_timestamp   = [%llu]\n", recv_data->recv_timestamp);
+  DEBUG_PRINT("query ref        = [%d]\n", _z_simple_rc_strong_count(recv_data->query._cnt));
 #endif
   // debug attachment
   attachment_debug(&recv_data->attachment);
 
-  printf("--------- recv simple data ----------\n");
+  DEBUG_PRINT("--------- recv simple data ----------\n");
   zenoh_pico_debug_dump_msg(recv_data->payload_start, recv_data->payload_size);
 }
 
@@ -448,28 +448,28 @@ bool recv_msg_list_empty(ReceiveMessageDataList *msg_list)
 void recv_msg_list_debug(ReceiveMessageDataList *msg_list)
 {
   if(msg_list == NULL){
-    printf("msg_list is NULL\n");
+    DEBUG_PRINT("msg_list is NULL\n");
     return;
   }
 
   z_loaned_mutex_t *msg_mutex = z_loan_mut(msg_list->mutex);
 
-  printf("data dump start [%d]... \n", msg_list->count);
+  DEBUG_PRINT("data dump start [%d]... \n", msg_list->count);
 
-  printf("que top    = [%p]\n", msg_list->que_top);
-  printf("que bottom = [%p]\n", msg_list->que_bottom);
+  DEBUG_PRINT("que top    = [%p]\n", msg_list->que_top);
+  DEBUG_PRINT("que bottom = [%p]\n", msg_list->que_bottom);
 
   z_mutex_lock(msg_mutex);
   ReceiveMessageData * msg_data = msg_list->que_top;
 
   for(size_t count = 0; msg_data != NULL; count++){
-    printf("[%d]\n", (int)count);
+    DEBUG_PRINT("[%d]\n", (int)count);
     rmw_zenoh_pico_debug_recv_msg_data(msg_data);
     msg_data = msg_data->next;
   }
   z_mutex_unlock(msg_mutex);
 
-  printf("data dump end  ... \n");
+  DEBUG_PRINT("data dump end  ... \n");
 }
 
 // ----------------------------

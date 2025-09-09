@@ -72,7 +72,7 @@ ZenohPicoNodeData * zenoh_pico_generate_node_data(size_t domain_id,
 
   return node_data;
 
-  error:
+error:
   if(node_info != NULL)
     zenoh_pico_destroy_node_info(node_info);
 
@@ -112,8 +112,8 @@ bool zenoh_pico_destroy_node_data(ZenohPicoNodeData *node_data)
 
 void zenoh_pico_debug_node_data(ZenohPicoNodeData *node_data)
 {
-  printf("--------- node data ----------\n");
-  printf("ref = %d\n", node_data->ref);
+  DEBUG_PRINT("--------- node data ----------\n");
+  DEBUG_PRINT("ref = %d\n", node_data->ref);
 
   Z_STRING_PRINTF(node_data->liveliness_key, liveliness_key);
 
@@ -257,7 +257,7 @@ rmw_create_node(rmw_context_t * context, const char * name, const char * namespa
 
   return rmw_node;
 
-  error:
+error:
   if(node_data != NULL)
     zenoh_pico_destroy_node_data(node_data);
 

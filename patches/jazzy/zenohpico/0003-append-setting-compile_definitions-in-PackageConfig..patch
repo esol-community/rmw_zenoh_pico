@@ -1,0 +1,45 @@
+From 5f0a9bf72773ca1a28f71745ba251229ba25904a Mon Sep 17 00:00:00 2001
+From: Katsumi Yamazaki <v-yamazaki8668@esol.co.jp>
+Date: Sat, 18 Jan 2025 17:34:52 +0900
+Subject: [PATCH 3/8] append setting compile_definitions in
+ PackageConfig.cmake.in from zenoh_0.11.
+
+---
+ PackageConfig.cmake.in | 21 +++++++++++++++++++++
+ 1 file changed, 21 insertions(+)
+
+diff --git a/PackageConfig.cmake.in b/PackageConfig.cmake.in
+index 50076651..f72517fc 100644
+--- a/PackageConfig.cmake.in
++++ b/PackageConfig.cmake.in
+@@ -31,6 +31,27 @@ else()
+ endif()
+ 
+ # for rmw_zenoh_pico with colcon
++
++if(CMAKE_SYSTEM_NAME MATCHES "Linux")
++  add_compile_definitions(ZENOH_LINUX)
++elseif(POSIX_COMPATIBLE)
++  add_compile_definitions(ZENOH_LINUX)
++elseif(CMAKE_SYSTEM_NAME MATCHES "BSD")
++  add_compile_definitions(ZENOH_BSD)
++elseif(CMAKE_SYSTEM_NAME MATCHES "Darwin")
++  add_compile_definitions(ZENOH_MACOS)
++elseif(CMAKE_SYSTEM_NAME MATCHES "Emscripten")
++  add_compile_definitions(EMSCRIPTEN)
++elseif(CMAKE_SYSTEM_NAME MATCHES "Windows")
++  add_compile_definitions(ZENOH_WINDOWS)
++elseif(CMAKE_SYSTEM_NAME MATCHES "Generic")
++  if(WITH_ZEPHYR)
++    add_compile_definitions(ZENOH_ZEPHYR)
++  elseif(WITH_FREERTOS_PLUS_TCP)
++    add_compile_definitions(ZENOH_FREERTOS_PLUS_TCP)
++  endif()
++endif()
++
+ set(zenohpico_INCLUDE_DIRS "@CMAKE_INSTALL_PREFIX@/@CMAKE_INSTALL_INCLUDEDIR@")
+ 
+ if(@BUILD_SHARED_LIBS@)
+-- 
+2.43.0
+

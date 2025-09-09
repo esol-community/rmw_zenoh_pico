@@ -1,0 +1,40 @@
+From 1404d9729b7f31ff4935eeeb7b7617f94ce38a94 Mon Sep 17 00:00:00 2001
+From: Katsumi Yamazaki <v-yamazaki8668@esol.co.jp>
+Date: Sat, 26 Jul 2025 13:06:13 +0900
+Subject: [PATCH 8/8] [WORKAROUND] modified _z_task_detach() in arduino/esp32
+
+[IMPORTANT]
+This patch does not adequately handle the termination and restart of read/lease tasks.
+Therefore, THIS PATCH IS A TEMPORARY SOLUTION UNTIL AN OFFICIAL SOLUTION IS RELEASED BY THE ZENOH-PICO COMMUNITY.
+---
+ src/system/arduino/esp32/system.c | 14 +++++++++++++-
+ 1 file changed, 13 insertions(+), 1 deletion(-)
+
+diff --git a/src/system/arduino/esp32/system.c b/src/system/arduino/esp32/system.c
+index 304d6333..3e46d100 100644
+--- a/src/system/arduino/esp32/system.c
++++ b/src/system/arduino/esp32/system.c
+@@ -125,7 +125,19 @@ z_result_t _z_task_join(_z_task_t *task) {
+ 
+ z_result_t _z_task_detach(_z_task_t *task) {
+     // Note: task/thread detach not supported on FreeRTOS API, so we force its deletion instead.
+-    return _z_task_cancel(task);
++    // return _z_task_cancel(task);
++
++    // WORKAROUND:
++    // This function is also called from the lease task.
++    // It then executes z_reopen() of Z_FEATURE_AUTO_RECONNECT.
++    // However, if you call vTaskDelete(), your task will disappear, so the desired function will not be executed.
++    // THIS PATCH IS A TEMPORARY SOLUTION UNTIL AN OFFICIAL SOLUTION IS RELEASED BY THE ZENOH-PICO COMMUNITY.
++
++    TaskHandle_t xHandle = xTaskGetCurrentTaskHandle();
++    if (task->handle != xHandle)
++      return _z_task_cancel(task);
++
++    return _Z_RES_OK;
+ }
+ 
+ z_result_t _z_task_cancel(_z_task_t *task) {
+-- 
+2.43.0
+

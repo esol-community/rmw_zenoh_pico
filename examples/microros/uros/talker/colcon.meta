@@ -1,0 +1,32 @@
+{
+    "names": {
+        "rosidl_typesupport": {
+            "cmake-args": [
+                "-DROSIDL_TYPESUPPORT_SINGLE_TYPESUPPORT=ON"
+            ]
+        },
+
+        "tracetools": {
+            "cmake-args": [
+                "-DTRACETOOLS_DISABLED=ON",
+                "-DTRACETOOLS_STATUS_CHECKING_TOOL=OFF"
+            ]
+        },
+
+        "zenohpico":{
+            "cmake-args":[
+                "-DTESTS=OFF",
+                "-DEXAMPLES=OFF",
+                "-DBUILD_DEMO=OFF",
+                "-DBATCH_UNICAST_SIZE=1024",
+                "-DFRAG_MAX_SIZE=2048"
+            ]
+        },
+
+        "rmw_zenoh_pico":{
+            "cmake-args":[
+                "-DBUILD_DEMO=OFF"
+            ]
+        }
+    }
+}

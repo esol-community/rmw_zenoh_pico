@@ -83,7 +83,7 @@ bool zenoh_pico_destroy_topic_info(ZenohPicoTopicInfo *topic)
 
 void zenoh_pico_debug_topic_info(ZenohPicoTopicInfo *topic)
 {
-  printf("topic info ...\n");
+  DEBUG_PRINT("topic info ...\n");
 
   const z_loaned_string_t *name = z_loan(topic->name);
   const z_loaned_string_t *type = z_loan(topic->type);
@@ -91,15 +91,15 @@ void zenoh_pico_debug_topic_info(ZenohPicoTopicInfo *topic)
   const z_loaned_string_t *qos  = z_loan(topic->qos);
 
 #if defined(__x86_64__)
-  printf("\tname = [%.*s][%ld]\n", (int)z_string_len(name), z_string_data(name), z_string_len(name));
-  printf("\ttype = [%.*s][%ld]\n", (int)z_string_len(type), z_string_data(type), z_string_len(type));
-  printf("\thash = [%.*s][%ld]\n", (int)z_string_len(hash), z_string_data(hash), z_string_len(hash));
-  printf("\tqos  = [%.*s][%ld]\n", (int)z_string_len(qos),  z_string_data(qos), z_string_len(qos));
+  DEBUG_PRINT("\tname = [%.*s][%ld]\n", (int)z_string_len(name), z_string_data(name), z_string_len(name));
+  DEBUG_PRINT("\ttype = [%.*s][%ld]\n", (int)z_string_len(type), z_string_data(type), z_string_len(type));
+  DEBUG_PRINT("\thash = [%.*s][%ld]\n", (int)z_string_len(hash), z_string_data(hash), z_string_len(hash));
+  DEBUG_PRINT("\tqos  = [%.*s][%ld]\n", (int)z_string_len(qos),  z_string_data(qos), z_string_len(qos));
 #else
-  printf("\tname = [%.*s][%d]\n", (int)z_string_len(name), z_string_data(name), z_string_len(name));
-  printf("\ttype = [%.*s][%d]\n", (int)z_string_len(type), z_string_data(type), z_string_len(type));
-  printf("\thash = [%.*s][%d]\n", (int)z_string_len(hash), z_string_data(hash), z_string_len(hash));
-  printf("\tqos  = [%.*s][%d]\n", (int)z_string_len(qos),  z_string_data(qos), z_string_len(qos));
+  DEBUG_PRINT("\tname = [%.*s][%d]\n", (int)z_string_len(name), z_string_data(name), z_string_len(name));
+  DEBUG_PRINT("\ttype = [%.*s][%d]\n", (int)z_string_len(type), z_string_data(type), z_string_len(type));
+  DEBUG_PRINT("\thash = [%.*s][%d]\n", (int)z_string_len(hash), z_string_data(hash), z_string_len(hash));
+  DEBUG_PRINT("\tqos  = [%.*s][%d]\n", (int)z_string_len(qos),  z_string_data(qos), z_string_len(qos));
 #endif
 
 }

@@ -90,7 +90,7 @@ static ZenohPicoSubData * zenoh_pico_generate_subscription_data(
 
   return sub_data;
 
-  error:
+error:
   if(node_info != NULL)
     zenoh_pico_destroy_node_info(node_info);
 
@@ -160,13 +160,13 @@ static bool zenoh_pico_destroy_subscription_data(ZenohPicoSubData *sub_data)
 
 static void zenoh_pico_debug_subscription_data(ZenohPicoSubData *sub_data)
 {
-  printf("--------- subscription data ----------\n");
-  printf("ref = %d\n", sub_data->ref);
+  DEBUG_PRINT("--------- subscription data ----------\n");
+  DEBUG_PRINT("ref = %d\n", sub_data->ref);
 
   Z_STRING_PRINTF(sub_data->liveliness_key, liveliness_key);
   Z_STRING_PRINTF(sub_data->topic_key, topic_key);
 
-  printf("message_queue = %d\n", recv_msg_list_count(&sub_data->message_queue));
+  DEBUG_PRINT("message_queue = %d\n", recv_msg_list_count(&sub_data->message_queue));
 
   // debug entity member
   zenoh_pico_debug_entity(sub_data->entity);
@@ -397,7 +397,7 @@ rmw_create_subscription(
 
   return rmw_subscription;
 
-  error:
+error:
   if(sub_data != NULL)
     zenoh_pico_destroy_subscription_data(sub_data);
 

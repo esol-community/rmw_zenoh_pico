@@ -16,7 +16,7 @@
 
 #include <rmw_zenoh_pico/rmw_zenoh_pico.h>
 
-#if defined(ZENOH_LINUX)
+#if defined(ZENOH_LINUX) || defined(ZENOH_ARDUINO_ESP32) || defined (ZENOH_ESPIDF)
 
 #define XXH_STATIC_LINKING_ONLY /* access advanced declarations */
 #define XXH_IMPLEMENTATION      /* access definitions */
@@ -35,8 +35,7 @@ static bool _zenoh_pico_gen_gid(const void *data, size_t length, uint64_t *high6
 }
 
 #else
-#include "zenoh-pico/system/platform/void.h"
-#error "Unknown platform"
+#error "Unsupported platform"
 #endif
 
 z_result_t zenoh_pico_gen_gid(const z_loaned_string_t *key, uint8_t *gid)

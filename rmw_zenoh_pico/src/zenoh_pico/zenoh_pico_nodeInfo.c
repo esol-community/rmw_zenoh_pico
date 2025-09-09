@@ -66,15 +66,15 @@ bool zenoh_pico_destroy_node_info(ZenohPicoNodeInfo *node)
 
 void zenoh_pico_debug_node_info(ZenohPicoNodeInfo *node)
 {
-  printf("node info ...\n");
+  DEBUG_PRINT("node info ...\n");
 
   const z_loaned_string_t *domain	= z_loan(node->domain);
   const z_loaned_string_t *ns		= z_loan(node->ns);
   const z_loaned_string_t *name		= z_loan(node->name);
   const z_loaned_string_t *enclave	= z_loan(node->enclave);
 
-  printf("\tdomain        = %.*s\n", (int)z_string_len(domain),  z_string_data(domain));
-  printf("\tnamespace     = %.*s\n", (int)z_string_len(ns),      z_string_data(ns));
-  printf("\tname          = %.*s\n", (int)z_string_len(name),    z_string_data(name));
-  printf("\tenclave_      = %.*s\n", (int)z_string_len(enclave), z_string_data(enclave));
+  DEBUG_PRINT("\tdomain        = %.*s\n", (int)z_string_len(domain),  z_string_data(domain));
+  DEBUG_PRINT("\tnamespace     = %.*s\n", (int)z_string_len(ns),      z_string_data(ns));
+  DEBUG_PRINT("\tname          = %.*s\n", (int)z_string_len(name),    z_string_data(name));
+  DEBUG_PRINT("\tenclave_      = %.*s\n", (int)z_string_len(enclave), z_string_data(enclave));
 }

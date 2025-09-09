@@ -337,6 +337,12 @@ void data_callback_trigger(DataEventManager *data_callback)
   z_mutex_unlock(z_loan_mut(data_callback->mutex));
 }
 
+bool
+rmw_event_type_is_supported(rmw_event_type_t rmw_event_type)
+{
+  return support_event_type(rmw_event_type) == -1 ? false : true;
+}
+
 rmw_ret_t
 rmw_take_event(const rmw_event_t * event_handle,
 	       void * event_info,

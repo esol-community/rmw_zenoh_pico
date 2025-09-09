@@ -1,0 +1,25 @@
+From bb719e2966081a2fba2b54503f8ccdb8f127fe42 Mon Sep 17 00:00:00 2001
+From: Katsumi Yamazaki <v-yamazaki8668@esol.co.jp>
+Date: Thu, 22 May 2025 19:46:19 +0900
+Subject: [PATCH 6/8] add _z_condvar_wait on arduino on esp32.
+
+---
+ src/system/arduino/esp32/system.c | 2 ++
+ 1 file changed, 2 insertions(+)
+
+diff --git a/src/system/arduino/esp32/system.c b/src/system/arduino/esp32/system.c
+index 1c80f4b3..304d6333 100644
+--- a/src/system/arduino/esp32/system.c
++++ b/src/system/arduino/esp32/system.c
+@@ -184,6 +184,8 @@ z_result_t _z_condvar_signal(_z_condvar_t *cv) { _Z_CHECK_SYS_ERR(pthread_cond_s
+ 
+ z_result_t _z_condvar_signal_all(_z_condvar_t *cv) { _Z_CHECK_SYS_ERR(pthread_cond_broadcast(cv)); }
+ 
++z_result_t _z_condvar_wait(_z_condvar_t *cv, _z_mutex_t *m) { _Z_CHECK_SYS_ERR(pthread_cond_wait(cv, m)); }
++
+ z_result_t _z_condvar_wait_until(_z_condvar_t *cv, _z_mutex_t *m, const z_clock_t *abstime) {
+     int error = pthread_cond_timedwait(cv, m, abstime);
+ 
+-- 
+2.43.0
+

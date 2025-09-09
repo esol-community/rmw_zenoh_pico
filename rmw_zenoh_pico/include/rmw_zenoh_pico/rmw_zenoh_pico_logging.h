@@ -27,15 +27,11 @@
 
 #include <zenoh-pico.h>
 
-extern void z_log_prefix(const char *prefix, const char *func_name);
+extern void z_log_prefix(const char *prefix, const char *func_name, const char *fmt, ...);
 
 // Logging values
-#define _Z_LOG_LVL_ERROR 1
-#define _Z_LOG_LVL_INFO  2
-#define _Z_LOG_LVL_DEBUG 3
 
 extern void rmw_zenoh_pico_debug_level_init(void);
-extern int  rmw_zenoh_pico_debug_level_get(void);
 
 extern bool rmw_zenoh_pico_check_validate_name(const char * name);
 
@@ -81,9 +77,7 @@ extern void rmw_zenoh_pico_log_unlock(void);
   do {								\
     if (rmw_zenoh_pico_debug_level_get() >= _Z_LOG_LVL_DEBUG) {	\
       rmw_zenoh_pico_log_lock();				\
-      z_log_prefix("DEBUG", f);					\
-      printf(__VA_ARGS__);					\
-      printf("\r\n");						\
+      z_log_prefix("DEBUG", f, __VA_ARGS__);			\
       rmw_zenoh_pico_log_unlock();				\
     }								\
   } while (false)
@@ -92,9 +86,7 @@ extern void rmw_zenoh_pico_log_unlock(void);
   do {								\
     if (rmw_zenoh_pico_debug_level_get() >= _Z_LOG_LVL_INFO) {	\
       rmw_zenoh_pico_log_lock();				\
-      z_log_prefix("INFO", f);					\
-      printf(__VA_ARGS__);					\
-      printf("\r\n");						\
+      z_log_prefix("INFO", f, __VA_ARGS__);			\
       rmw_zenoh_pico_log_unlock();				\
     }								\
   } while (false)
@@ -103,9 +95,7 @@ extern void rmw_zenoh_pico_log_unlock(void);
   do {								\
     if (rmw_zenoh_pico_debug_level_get() >= _Z_LOG_LVL_ERROR) {	\
       rmw_zenoh_pico_log_lock();				\
-      z_log_prefix("ERROR", f);					\
-      printf(__VA_ARGS__);					\
-      printf("\r\n");						\
+      z_log_prefix("ERROR", f, __VA_ARGS__);			\
       rmw_zenoh_pico_log_unlock();				\
     }								\
   } while (false)
