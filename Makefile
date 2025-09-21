@@ -21,24 +21,12 @@ setup :
 	  touch ${CURDIR}/rmw_zenoh_pico/COLCON_IGNORE; \
 	fi
 
-ifeq ($(MICRO_ROS_SETUP_PATH),)
-	if [ ! -d "$(SRC_DIR)" ]; then \
-	  echo 'download github' \
-	  mkdir -p "$(SRC_DIR)"; \
-	  git clone https://github.com/micro-ROS/micro_ros_setup.git -b $(ROS_DISTR) $(SRC_DIR)/micro_ros_setup; \
-	  pushd $(SRC_DIR)/micro_ros_setup; \
-	  git apply $(SETUP_PATCH_DIR)/*; \
-	  popd; \
-	  colcon build; \
-	fi
-else
 	if [ ! -d "$(SRC_DIR)" ]; then \
 	  echo 'clone develop git repo' \
 	  mkdir -p "$(SRC_DIR)"; \
-	  git clone $(MICRO_ROS_SETUP_PATH) -b develop_1.x $(SRC_DIR)/micro_ros_setup ; \
+	  git clone -b rmw_zenoh_pico https://github.com/esol-community/micro_ros_setup $(SRC_DIR)/micro_ros_setup ; \
 	  colcon build; \
 	fi
-endif
 
 .PHONY: create
 create :

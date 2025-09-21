@@ -371,17 +371,8 @@ Images that can be generated with this Makefile:
 #### 1. Create a workspace and download
 
 ``` bash
-git clone -b rmw_zenoh_pico https://github.com/esol-community/rmw_zenoh_pico uros_ws
+git clone -b 1.4.0 https://github.com/esol-community/rmw_zenoh_pico uros_ws
 ```
-
-or
-
-``` bash
-git clone -b microros https://github.com/esol-community/rmw_zenoh_pico uros_ws
-```
-
-> [!NOTE]
-> The branch of 'microros' is minimally structured
 
 #### 2. Download and apply the patch to the micro-ROS tools
 
