@@ -43,7 +43,7 @@ ZenohPicoSession *zenoh_pico_generate_session(const z_loaned_config_t *config,
   }
 
   session->graph_guard_condition.implementation_identifier = rmw_get_implementation_identifier();
-  session->graph_guard_condition.data = zenoh_pico_guard_condition_data;
+  session->graph_guard_condition.data = zenoh_pico_guard_condition_data();
 
   session->enable_session = false;
 
