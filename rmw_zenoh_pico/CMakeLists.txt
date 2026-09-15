@@ -109,6 +109,7 @@ set(SRCS
   src/zenoh_pico/zenoh_pico_data.c
   src/zenoh_pico/zenoh_pico_entity.c
   src/zenoh_pico/zenoh_pico_gid.c
+  src/zenoh_pico/zenoh_pico_graph_cache.c
   src/zenoh_pico/zenoh_pico_liveliness.c
   src/zenoh_pico/zenoh_pico_messageType.c
   src/zenoh_pico/zenoh_pico_nodeInfo.c

@@ -137,6 +137,20 @@ rmw_create_client(
   if(!declaration_service_data(client_data))
     goto error;
 
+  // register with the session-wide graph cache so remote liveliness
+  // discovery can match against this client (backs
+  // rmw_service_server_is_available()). Non-fatal if it fails -- the
+  // client itself is otherwise fully functional, is_available() will just
+  // always report false.
+  (void)graph_cache_register_local(
+    client_data->node->session,
+    Client,
+    z_loan(client_data->entity->topic_info->name),
+    z_loan(client_data->entity->topic_info->type),
+    &client_data->qos_profile,
+    &client_data->data_event_mgr,
+    client_data);
+
   return rmw_client;
 
   error:
@@ -166,6 +180,7 @@ rmw_destroy_client(
   ZenohPicoServiceData *client_data = (ZenohPicoServiceData *)client->data;
 
   if(client_data != NULL){
+    graph_cache_unregister_local(client_data->node->session, client_data);
     undeclaration_service_data(client_data);
     zenoh_pico_destroy_service_data(client_data);
     client->data = NULL;
@@ -401,9 +416,27 @@ rmw_ret_t rmw_service_server_is_available(
 {
   RMW_ZENOH_FUNC_ENTRY(node);
 
-  (void)node;
-  (void)client;
-  (void)is_available;
-  RMW_ZENOH_LOG_INFO("function not implemented");
-  return RMW_RET_UNSUPPORTED;
+  RMW_CHECK_ARGUMENT_FOR_NULL(node, RMW_RET_INVALID_ARGUMENT);
+  RMW_CHECK_ARGUMENT_FOR_NULL(client, RMW_RET_INVALID_ARGUMENT);
+  RMW_CHECK_ARGUMENT_FOR_NULL(is_available, RMW_RET_INVALID_ARGUMENT);
+  RMW_CHECK_TYPE_IDENTIFIERS_MATCH(
+    node->implementation_identifier,
+    return RMW_RET_INCORRECT_RMW_IMPLEMENTATION);
+  RMW_CHECK_TYPE_IDENTIFIERS_MATCH(
+    client->implementation_identifier,
+    return RMW_RET_INCORRECT_RMW_IMPLEMENTATION);
+
+  ZenohPicoServiceData * client_data = (ZenohPicoServiceData *)client->data;
+  RMW_CHECK_FOR_NULL_WITH_MSG(
+    client_data,
+    "Unable to retrieve client_data from client.",
+    RMW_RET_INVALID_ARGUMENT);
+
+  // Backed by the same liveliness-discovery graph cache QoS event/matching
+  // already uses (zenoh_pico_graph_cache.c) -- available_services is kept
+  // up to date as matching "SS" (service) liveliness tokens are discovered
+  // or lost. See graph_cache_register_local()'s call in rmw_create_client().
+  *is_available = client_data->available_services > 0;
+
+  return RMW_RET_OK;
 }

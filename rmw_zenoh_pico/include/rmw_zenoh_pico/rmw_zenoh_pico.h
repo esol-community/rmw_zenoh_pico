@@ -77,6 +77,7 @@ extern int target_print(const char *fmt, ...);
 #include <rmw_zenoh_pico/zenoh_pico/rmw_zenoh_pico_data.h>
 #include <rmw_zenoh_pico/zenoh_pico/rmw_zenoh_pico_entity.h>
 #include <rmw_zenoh_pico/zenoh_pico/rmw_zenoh_pico_gid.h>
+#include <rmw_zenoh_pico/zenoh_pico/rmw_zenoh_pico_graph_cache.h>
 #include <rmw_zenoh_pico/zenoh_pico/rmw_zenoh_pico_liveliness.h>
 #include <rmw_zenoh_pico/zenoh_pico/rmw_zenoh_pico_nodeInfo.h>
 #include <rmw_zenoh_pico/zenoh_pico/rmw_zenoh_pico_string.h>

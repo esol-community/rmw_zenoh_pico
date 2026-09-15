@@ -29,16 +29,18 @@ extern "C"
 {
 #endif  // if defined(__cplusplus)
 
-  // Note :
-  // the current implement of rmw_zenoh_pico does not support event.
-  // because, the gid_cache is not implemented on rmw_zenoh_pico.
-  //
+  // Note:
+  // QoS event/matching support -- see rmw_zenoh_pico_graph_cache.h. Only
+  // the two events a real discovered-peer QoS comparison can actually
+  // drive are enabled: MESSAGE_LOST and the INCOMPATIBLE_TYPE pair need
+  // per-sample/per-type-hash tracking this project doesn't implement, and
+  // remain genuinely unsupported.
   static rmw_event_type_t _support_event[] = {
-    // RMW_EVENT_REQUESTED_QOS_INCOMPATIBLE,
-    // RMW_EVENT_OFFERED_QOS_INCOMPATIBLE,
+    RMW_EVENT_REQUESTED_QOS_INCOMPATIBLE,
+    RMW_EVENT_OFFERED_QOS_INCOMPATIBLE,
     // RMW_EVENT_MESSAGE_LOST,
-    // RMW_EVENT_SUBSCRIPTION_MATCHED,
-    // RMW_EVENT_PUBLICATION_MATCHED,
+    RMW_EVENT_SUBSCRIPTION_MATCHED,
+    RMW_EVENT_PUBLICATION_MATCHED,
     // RMW_EVENT_SUBSCRIPTION_INCOMPATIBLE_TYPE,
     // RMW_EVENT_PUBLISHER_INCOMPATIBLE_TYPE,
   };
@@ -51,6 +53,15 @@ extern "C"
     size_t current_count;
     size_t current_count_change;
     bool changed;
+    // Only meaningful for RMW_EVENT_REQUESTED_QOS_INCOMPATIBLE /
+    // RMW_EVENT_OFFERED_QOS_INCOMPATIBLE -- which policy caused the most
+    // recent incompatibility (rmw_*_qos_incompatible_event_status_t's own
+    // documented field). rclpy's own default incompatible-QoS callback
+    // reads this unconditionally once such an event is taken, so it has
+    // to be a real rmw_qos_policy_kind_t value, never left at its
+    // zero-initialized default (0 is not a valid rmw_qos_policy_kind_t --
+    // see qos_policy_kind.h, every value there is a nonzero bit flag).
+    rmw_qos_policy_kind_t last_policy_kind;
   } EventStatus;
 
   typedef struct _DataEventManager {
@@ -76,6 +87,9 @@ extern "C"
 
   extern void add_rmw_zenoh_pico_event_total(DataEventManager *event_mgr, rmw_event_type_t type, bool change);
   extern void add_rmw_zenoh_pico_event_current(DataEventManager *event_mgr, rmw_event_type_t type, bool change);
+  extern void sub_rmw_zenoh_pico_event_current(DataEventManager *event_mgr, rmw_event_type_t type, bool change);
+  extern void set_rmw_zenoh_pico_event_last_policy_kind(DataEventManager *event_mgr, rmw_event_type_t type, rmw_qos_policy_kind_t policy_kind);
+  extern size_t get_rmw_zenoh_pico_event_current_count(DataEventManager *event_mgr, rmw_event_type_t type);
   extern bool is_rmw_zenoh_pico_event_changed(DataEventManager *event_mgr, rmw_event_type_t type);
 
   extern bool event_condition_check_and_attach(DataEventManager *event_data,

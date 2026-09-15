@@ -395,6 +395,20 @@ rmw_create_subscription(
   if(!declaration_subscription_data(sub_data))
     goto error;
 
+  // register with the session-wide graph cache so remote liveliness
+  // discovery can match against this subscription (QoS event/matching
+  // support). Non-fatal if it fails -- the subscription itself is
+  // otherwise fully functional, it just won't report MATCHED/QOS_INCOMPATIBLE
+  // events.
+  (void)graph_cache_register_local(
+    sub_data->node->session,
+    Subscription,
+    z_loan(sub_data->entity->topic_info->name),
+    z_loan(sub_data->entity->topic_info->type),
+    &sub_data->adapted_qos_profile,
+    &sub_data->data_event_mgr,
+    sub_data);
+
   return rmw_subscription;
 
 error:
@@ -423,6 +437,7 @@ rmw_destroy_subscription(
   ZenohPicoSubData *sub_data = (ZenohPicoSubData *)subscription->data;
 
   if(sub_data != NULL){
+    graph_cache_unregister_local(sub_data->node->session, sub_data);
     undeclaration_subscription_data(sub_data);
     zenoh_pico_destroy_subscription_data(sub_data);
     subscription->data = NULL;
@@ -442,11 +457,17 @@ rmw_subscription_count_matched_publishers(
   size_t * publisher_count)
 {
   RMW_ZENOH_FUNC_ENTRY(subscription);
-  (void)subscription;
-  (void)publisher_count;
-  RMW_ZENOH_LOG_INFO(
-    "Function not available");
-  return RMW_RET_UNSUPPORTED;
+
+  RMW_CHECK_ARGUMENT_FOR_NULL(subscription, RMW_RET_INVALID_ARGUMENT);
+  RMW_CHECK_ARGUMENT_FOR_NULL(subscription->data, RMW_RET_INVALID_ARGUMENT);
+  RMW_CHECK_ARGUMENT_FOR_NULL(publisher_count, RMW_RET_INVALID_ARGUMENT);
+
+  ZenohPicoSubData *sub_data = (ZenohPicoSubData *)subscription->data;
+
+  *publisher_count = get_rmw_zenoh_pico_event_current_count(
+    &sub_data->data_event_mgr, RMW_EVENT_SUBSCRIPTION_MATCHED);
+
+  return RMW_RET_OK;
 }
 
 rmw_ret_t

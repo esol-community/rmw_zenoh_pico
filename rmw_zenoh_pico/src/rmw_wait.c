@@ -57,8 +57,23 @@ static bool _check_and_attach_condition(const rmw_subscriptions_t * const subscr
   }
 
   if(events) {
+    // `events->events[i]` here is an `rmw_event_t*`, not a
+    // DataEventManager* directly -- rcl's own rcl_wait_set_add_event()
+    // (rcl/src/rcl/wait.c) explicitly stores the `rmw_event_t*` handle
+    // itself at this index (its own SET_ADD_RMW() macro writes
+    // `rmw_handle->data` there first, then this function overwrites it
+    // with `rmw_handle`), and every other rmw implementation agrees --
+    // e.g. rmw_fastrtps's own rmw_wait.cpp does
+    // `static_cast<rmw_event_t *>(events->events[i])` before ever
+    // touching `->data`. Casting `events->events[i]` directly to
+    // DataEventManager* used to reinterpret an unrelated rmw_event_t's
+    // bytes (implementation_identifier/data/event_type) as a
+    // DataEventManager -- current_count/changed/etc. landing on whatever
+    // garbage happened to overlap, which is how a bare pointer's bytes
+    // usually happen to look "changed=true" and never quiesce.
     for (size_t i = 0; i < events->event_count; ++i) {
-      DataEventManager *event_mgr = (DataEventManager *)events->events[i];
+      rmw_event_t *rmw_event = (rmw_event_t *)events->events[i];
+      DataEventManager *event_mgr = (rmw_event != NULL) ? (DataEventManager *)rmw_event->data : NULL;
       if (event_mgr == NULL) {
         continue;
       }
@@ -187,17 +202,30 @@ rmw_wait(rmw_subscriptions_t * subscriptions,
   }
 
   if(events) {
+    // This used to be a nested `for` loop shadowing its own index
+    // variable (a copy-paste duplicate of the identical loop header),
+    // whose body ended with `return true;` even though rmw_wait()
+    // returns `rmw_ret_t`, not `bool` -- `true` is 1, which is
+    // RMW_RET_ERROR here, so the very first ready event made the whole
+    // call fail with an unhelpful "Error from rmw_wait(): 1 error not
+    // set" (no message ever set to go with that code). Matches the
+    // subscriptions/services/clients loops just below: record readiness
+    // in `wait_result` and null out an entry rcl should treat as not
+    // ready, instead of returning early. Also: `events->events[i]` is an
+    // `rmw_event_t*` (see the identical fix and full rationale in
+    // _check_and_attach_condition() above), not a DataEventManager*
+    // directly -- go through `->data` to get the real manager.
     for (size_t i = 0; i < events->event_count; ++i) {
-      for (size_t i = 0; i < events->event_count; ++i) {
-	DataEventManager *event_mgr = (DataEventManager *)events->events[i];
-	if (event_mgr == NULL) {
-	  continue;
-	}
+      rmw_event_t *rmw_event = (rmw_event_t *)events->events[i];
+      DataEventManager *event_mgr = (rmw_event != NULL) ? (DataEventManager *)rmw_event->data : NULL;
+      if (event_mgr == NULL) {
+	continue;
+      }
 
-	if(event_condition_detach_and_queue_is_empty(event_mgr)) {
-	  // RMW_ZENOH_LOG_INFO("found attach event");
-	  return true;
-	}
+      if(event_condition_detach_and_queue_is_empty(event_mgr)) {
+	events->events[i] = NULL;
+      }else{
+	wait_result = true;
       }
     }
   }

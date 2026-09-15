@@ -47,6 +47,10 @@ ZenohPicoSession *zenoh_pico_generate_session(const z_loaned_config_t *config,
 
   session->enable_session = false;
 
+  z_mutex_init(&session->graph_lock);
+  session->graph_liveliness_sub_active = false;
+  session->graph_local_entities = NULL;
+
   ZenohPicoDataRefClone(session);
 
   return session;
@@ -67,6 +71,9 @@ bool zenoh_pico_destroy_session(ZenohPicoSession *session)
     }
 
     zenoh_pico_destroy_guard_condition_data((ZenohPicoGuardConditionData *)session->graph_guard_condition.data);
+
+    graph_cache_session_destroy(session);
+    z_drop(z_move(session->graph_lock));
 
     z_drop(z_move(session->config));
     z_drop(z_move(session->enclave));

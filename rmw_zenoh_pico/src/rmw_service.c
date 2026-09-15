@@ -134,6 +134,8 @@ ZenohPicoServiceData * zenoh_pico_generate_service_data(
   z_slice_copy_from_buf(&data->attachment.gid, _gid, sizeof(_gid));
   data->attachment.sequence_num = 0;
 
+  data->available_services = 0;
+
   return data;
 
 error:

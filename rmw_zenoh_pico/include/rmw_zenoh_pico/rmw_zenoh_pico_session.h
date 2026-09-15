@@ -44,6 +44,15 @@ extern "C"
     // graph infomation
     rmw_guard_condition_t graph_guard_condition;
 
+    // QoS matching: session-wide liveliness discovery subscriber (declared
+    // once, lazily, on the first local publisher/subscription registered --
+    // see rmw_zenoh_pico_graph_cache.h) plus the list of this session's own
+    // local publishers/subscriptions it matches remote discoveries against.
+    z_owned_subscriber_t graph_liveliness_sub;
+    bool graph_liveliness_sub_active;
+    struct _ZenohPicoGraphLocalEntity *graph_local_entities;
+    z_owned_mutex_t graph_lock;
+
   } ZenohPicoSession;
 
   extern ZenohPicoSession *zenoh_pico_generate_session(const z_loaned_config_t *config,

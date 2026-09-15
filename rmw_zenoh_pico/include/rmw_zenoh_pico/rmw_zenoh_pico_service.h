@@ -74,6 +74,14 @@ extern "C"
     // Internal mutex.
     z_owned_mutex_t mutex;
 
+    // Client only: count of currently-discovered remote services matching
+    // this client's topic_name/topic_type (kept up to date by
+    // zenoh_pico_graph_cache.c's liveliness discovery, the same
+    // infrastructure QoS event/matching already uses). Backs
+    // rmw_service_server_is_available(). Always 0 for a Service entity --
+    // nothing currently needs a service to know about its clients.
+    int available_services;
+
   } ZenohPicoServiceData;
 
   // common

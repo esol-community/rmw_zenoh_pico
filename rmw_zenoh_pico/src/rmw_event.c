@@ -17,12 +17,21 @@
 
 static int support_event_type(rmw_event_type_t type)
 {
-#ifndef EVENT_TABLE_SIZE
+  // This used to read `#ifndef EVENT_TABLE_SIZE` -- but that macro (see
+  // rmw_zenoh_pico_event.h) is unconditionally defined by the very
+  // header this file includes, so the #ifndef is always false and the
+  // lookup loop below was preprocessed out entirely, unconditionally.
+  // support_event_type() therefore always fell straight through to
+  // `return -1`, for every event type, no matter what `_support_event[]`
+  // actually listed -- silently skipping every
+  // add_rmw_zenoh_pico_event_total()/_current()/take_event_status() call
+  // project-wide, and making rmw_publisher_event_init()/
+  // rmw_subscription_event_init() always fail "unsupported" regardless
+  // of `_support_event[]`'s contents.
   for(size_t index = 0; index < EVENT_TABLE_SIZE; index++){
     if(_support_event[index] == type)
       return index;
   }
-#endif
   return -1;
 }
 
@@ -73,6 +82,62 @@ void add_rmw_zenoh_pico_event_current(DataEventManager *event_mgr, rmw_event_typ
   return;
 }
 
+// Counterpart to add_rmw_zenoh_pico_event_current() for event types whose
+// current_count can genuinely decrease (RMW_EVENT_*_MATCHED: how many
+// peers are matched *right now*, as opposed to the monotonic total_count
+// lifetime counter -- see rmw_matched_status_t's own documented
+// semantics). Floors at 0 rather than underflowing.
+void sub_rmw_zenoh_pico_event_current(DataEventManager *event_mgr, rmw_event_type_t type, bool change)
+{
+  z_mutex_lock(z_loan_mut(event_mgr->mutex));
+
+  EventStatus *status = take_event_status(event_mgr, type);
+  if(status != NULL && status->current_count > 0){
+    status->current_count -= 1;
+    if(change)
+      status->current_count_change += 1;
+    status->changed = true;
+  }
+
+  z_mutex_unlock(z_loan_mut(event_mgr->mutex));
+
+  return;
+}
+
+// Sets which QoS policy caused the most recent
+// REQUESTED/OFFERED_QOS_INCOMPATIBLE incident (rmw_*_qos_incompatible_
+// event_status_t's own documented last_policy_kind field).
+void set_rmw_zenoh_pico_event_last_policy_kind(DataEventManager *event_mgr, rmw_event_type_t type, rmw_qos_policy_kind_t policy_kind)
+{
+  z_mutex_lock(z_loan_mut(event_mgr->mutex));
+
+  EventStatus *status = take_event_status(event_mgr, type);
+  if(status != NULL){
+    status->last_policy_kind = policy_kind;
+  }
+
+  z_mutex_unlock(z_loan_mut(event_mgr->mutex));
+}
+
+// Reads back an event's live current_count (e.g. RMW_EVENT_*_MATCHED)
+// without consuming/clearing its "changed" flag -- used by
+// rmw_publisher_count_matched_subscriptions()/
+// rmw_subscription_count_matched_publishers(), which report a live
+// snapshot rather than a one-shot event.
+size_t get_rmw_zenoh_pico_event_current_count(DataEventManager *event_mgr, rmw_event_type_t type)
+{
+  z_mutex_lock(z_loan_mut(event_mgr->mutex));
+
+  size_t count = 0;
+  EventStatus *status = take_event_status(event_mgr, type);
+  if(status != NULL)
+    count = status->current_count;
+
+  z_mutex_unlock(z_loan_mut(event_mgr->mutex));
+
+  return count;
+}
+
 bool is_rmw_zenoh_pico_event_changed(DataEventManager *event_mgr, rmw_event_type_t type)
 {
   z_mutex_lock(z_loan_mut(event_mgr->mutex));
@@ -93,14 +158,18 @@ bool is_rmw_zenoh_pico_event_changed(DataEventManager *event_mgr, rmw_event_type
 
 static bool event_condition_check(DataEventManager *event_mgr)
 {
-#ifndef EVENT_TABLE_SIZE
+  // Same broken `#ifndef EVENT_TABLE_SIZE` issue as support_event_type()
+  // above -- always false, so this loop was always skipped and
+  // event_condition_check() always returned false. Meant rmw_wait()
+  // could never be woken by a genuine event-status change reaching
+  // event_condition_check_and_attach()/
+  // event_condition_detach_and_queue_is_empty() through this path.
   for(size_t index = 0; index < EVENT_TABLE_SIZE; index++){
     rmw_event_type_t type = _support_event[index];
 
     if(is_rmw_zenoh_pico_event_changed(event_mgr, type))
       return true;
   }
-#endif
 
   return false;
 }
@@ -295,7 +364,20 @@ void data_callback_init(DataEventManager *data_callback)
   data_callback->callback = NULL;
   data_callback->user_data = NULL;
   data_callback->unread_count = 0;
-  memset(data_callback->event_status, 0, sizeof(EventStatus));
+  // sizeof(EventStatus) (one entry) used to be passed here instead of
+  // sizeof(data_callback->event_status) (the whole EVENT_TABLE_SIZE-entry
+  // array) -- only event_status[0] ever got zeroed, every other slot
+  // kept whatever garbage was already in this struct's memory.
+  memset(data_callback->event_status, 0, sizeof(data_callback->event_status));
+  // A zeroed last_policy_kind is not a valid rmw_qos_policy_kind_t
+  // (every real value in qos_policy_kind.h is a nonzero bit flag) --
+  // rclpy's default incompatible-QoS callback reads it unconditionally
+  // once such an event is taken, and raises ValueError on a raw 0
+  // instead of a real value. RMW_QOS_POLICY_INVALID is qos_policy_kind.h's
+  // own designated "no specific policy" value -- a safe, real default.
+  for (size_t index = 0; index < EVENT_TABLE_SIZE; index++) {
+    data_callback->event_status[index].last_policy_kind = RMW_QOS_POLICY_INVALID;
+  }
 }
 
 void data_callback_set(DataEventManager *data_callback,
@@ -311,7 +393,7 @@ void data_callback_set(DataEventManager *data_callback,
       data_callback->callback(data_callback->user_data,
 			      data_callback->unread_count);
       data_callback->unread_count = 0;
-      memset(data_callback->event_status, 0, sizeof(EventStatus));
+      memset(data_callback->event_status, 0, sizeof(data_callback->event_status));
     }
     data_callback->user_data = user_data;
     data_callback->callback  = callback;
@@ -365,12 +447,43 @@ rmw_take_event(const rmw_event_t * event_handle,
     "Publisher implementation identifier not from this implementation",
     return RMW_RET_INCORRECT_RMW_IMPLEMENTATION);
 
+  // event_condition_check() (used by rmw_wait() to decide whether a
+  // wait-set entry is "ready") checks whether *any* of this shared
+  // DataEventManager's event types changed, not specifically the one
+  // `event_handle` represents here -- a publisher/subscription with more
+  // than one registered rmw_event_t (e.g. a default incompatible-QoS
+  // handler alongside a real MATCHED status change) had every sibling
+  // handle spuriously reported "ready" whenever *any* of them changed.
+  // This function used to compound that by never checking its own
+  // type's `changed` flag either, so a spurious wakeup for -- say --
+  // OFFERED_QOS_INCOMPATIBLE would still unconditionally report
+  // total_count=0/last_policy_kind=RMW_QOS_POLICY_INVALID with
+  // *taken=true, firing the caller's incompatible-QoS callback for an
+  // incident that never happened. Gate on this event's own `changed`
+  // flag first: a genuine change still reports normally below (and the
+  // switch cases each clear `changed` once taken); nothing to report
+  // otherwise -- standard rmw_take_event() semantics.
+  z_mutex_lock(z_loan_mut(event_mgr->mutex));
+  bool has_changed = st->changed;
+  z_mutex_unlock(z_loan_mut(event_mgr->mutex));
+  if (!has_changed) {
+    return RMW_RET_OK;
+  }
+
   switch (event_type) {
   case RMW_EVENT_REQUESTED_QOS_INCOMPATIBLE:
   {
     rmw_requested_qos_incompatible_event_status_t *ei = (rmw_requested_qos_incompatible_event_status_t *)event_info;
     ei->total_count = st->total_count;
     ei->total_count_change = st->total_count_change;
+    // last_policy_kind used to be left unset here -- rclpy's own default
+    // incompatible-QoS callback (event_handler.py's
+    // _default_incompatible_qos_callback -> qos.py's
+    // qos_policy_kind_from_kind()) reads it unconditionally once this
+    // event is taken, and raised ValueError on whatever uninitialized
+    // garbage happened to be there instead of a real
+    // rmw_qos_policy_kind_t value.
+    ei->last_policy_kind = st->last_policy_kind;
     st->changed = false;
     *taken = true;
     return RMW_RET_OK;
@@ -381,6 +494,7 @@ rmw_take_event(const rmw_event_t * event_handle,
     rmw_requested_qos_incompatible_event_status_t *ei = (rmw_requested_qos_incompatible_event_status_t *)event_info;
     ei->total_count = st->total_count;
     ei->total_count_change = st->total_count_change;
+    ei->last_policy_kind = st->last_policy_kind;
     st->changed = false;
     *taken = true;
     return RMW_RET_OK;
