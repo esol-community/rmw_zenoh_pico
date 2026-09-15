@@ -308,7 +308,21 @@ rmw_send_request(
   // set attachment value
   z_get_options_t options;
   z_get_options_default(&options);
-  *sequence_id = attachment_sequence_num_inc(&client_data->attachment);
+  // attachment_sequence_num_inc() is a post-increment: it returns the
+  // OLD value and only then bumps client_data->attachment.sequence_num.
+  // attachment_gen() below always serializes the struct's CURRENT
+  // (already-bumped) field -- so the *sequence_id handed back to the
+  // caller here used to be permanently one behind whatever sequence
+  // number actually went out on the wire (and therefore whatever the
+  // eventual reply's echoed request_id.sequence_number reports). rclpy's
+  // own Client.call_async() keys its pending-request dict by this
+  // *sequence_id, so every reply's sequence number looked up a request
+  // that was never registered -- a plain KeyError, silently swallowed by
+  // executors.py's `except KeyError: pass`, so the future the caller is
+  // waiting on never resolves. Bump first, then read the field back, so
+  // *sequence_id is the exact value attachment_gen() is about to embed.
+  (void)attachment_sequence_num_inc(&client_data->attachment);
+  *sequence_id = (int64_t)client_data->attachment.sequence_num;
 
   z_owned_bytes_t attachment;
   if(_Z_IS_ERR(attachment_gen(&client_data->attachment, &attachment))){
