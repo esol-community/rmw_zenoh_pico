@@ -240,7 +240,7 @@ rmw_publisher_event_init(
 
   if(support_event_type(event_type) < 0){
     RMW_SET_ERROR_MSG("Publisher implementation identifier not from this implementation");
-    return RMW_RET_INCORRECT_RMW_IMPLEMENTATION;
+    return RMW_RET_UNSUPPORTED;
   }
 
   ZenohPicoPubData *pub_data = (ZenohPicoPubData *)publisher->data;
@@ -271,7 +271,7 @@ rmw_subscription_event_init(
 
   if(support_event_type(event_type) < 0){
     RMW_SET_ERROR_MSG("Publisher implementation identifier not from this implementation");
-    return RMW_RET_INCORRECT_RMW_IMPLEMENTATION;
+    return RMW_RET_UNSUPPORTED;
   }
 
   ZenohPicoSubData *pub_data = (ZenohPicoSubData *)subscription->data;
