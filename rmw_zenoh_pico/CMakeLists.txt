@@ -25,23 +25,6 @@ project(rmw_zenoh_pico
 find_package(ament_cmake REQUIRED)
 find_package(ament_cmake_ros_core REQUIRED)
 
-# ament_target_dependencies() was removed in newer ament_cmake (e.g. rolling).
-# Minimal drop-in replacement using the classic *_INCLUDE_DIRS/_LIBRARIES/_DEFINITIONS vars.
-if(NOT COMMAND ament_target_dependencies)
-  macro(ament_target_dependencies _target)
-    foreach(_dep ${ARGN})
-      if(DEFINED ${_dep}_INCLUDE_DIRS)
-        target_include_directories(${_target} PUBLIC ${${_dep}_INCLUDE_DIRS})
-      endif()
-      if(DEFINED ${_dep}_LIBRARIES)
-        target_link_libraries(${_target} ${${_dep}_LIBRARIES})
-      endif()
-      if(DEFINED ${_dep}_DEFINITIONS)
-        target_compile_definitions(${_target} PUBLIC ${${_dep}_DEFINITIONS})
-      endif()
-    endforeach()
-  endmacro()
-endif()
 find_package(rosidl_runtime_c REQUIRED)
 find_package(rcutils REQUIRED)
 find_package(rmw REQUIRED)
@@ -49,8 +32,7 @@ find_package(microcdr REQUIRED)
 find_package(zenohpico REQUIRED)
 
 if(EMSCRIPTEN)
-  # zenoh-pico gates its own emscripten platform code on this define; the
-  # ament_target_dependencies() shim above doesn't propagate it, so set it directly.
+  # zenoh-pico gates its own emscripten platform code on this define.
   add_definitions(-DZENOH_EMSCRIPTEN)
 endif()
 
@@ -175,8 +157,8 @@ target_link_libraries(${PROJECT_NAME}
 # Type support lock-up mechanism
 find_package(rosidl_typesupport_microxrcedds_c)
 if(rosidl_typesupport_microxrcedds_c_FOUND)
-  ament_target_dependencies(${PROJECT_NAME}
-    "rosidl_typesupport_microxrcedds_c"
+  target_link_libraries(${PROJECT_NAME}
+    rosidl_typesupport_microxrcedds_c::rosidl_typesupport_microxrcedds_c
 )
   target_compile_definitions(${PROJECT_NAME}
     PUBLIC
@@ -187,8 +169,8 @@ else()
 endif()
 
 if(rosidl_typesupport_microxrcedds_cpp_FOUND)
-  ament_target_dependencies(${PROJECT_NAME}
-    "rosidl_typesupport_microxrcedds_cpp"
+  target_link_libraries(${PROJECT_NAME}
+    rosidl_typesupport_microxrcedds_cpp::rosidl_typesupport_microxrcedds_cpp
 )
   target_compile_definitions(${PROJECT_NAME}
     PUBLIC
@@ -196,10 +178,10 @@ if(rosidl_typesupport_microxrcedds_cpp_FOUND)
 )
 endif()
 
-ament_target_dependencies(${PROJECT_NAME}
-  "zenohpico"
-  "rcutils"
-  "rmw"
+target_link_libraries(${PROJECT_NAME}
+  zenohpico::lib
+  rcutils::rcutils
+  rmw::rmw
 )
 
 configure_rmw_library(${PROJECT_NAME})
