@@ -89,11 +89,32 @@ rmw_ret_t session_connect(ZenohPicoSession *session)
 
   RMW_ZENOH_LOG_DEBUG("Opening session...");
 
-  if(_Z_IS_ERR(z_open(&session->session, z_move(session->config), NULL))){
-    RMW_ZENOH_LOG_ERROR("Error setting up zenoh session");
+  // NOTE (no-Asyncify): z_open()'s own zenoh session/link-open handshake
+  // can genuinely need several attempts to complete -- each recv()/send()
+  // in zenoh-pico's emscripten link layer now makes exactly one
+  // non-blocking attempt per call instead of internally sleeping-and-
+  // retrying (see zenoh-pico's own emscripten-nonblocking-io.patch: there
+  // is no way to cooperatively yield to the browser's event loop from
+  // inside a single synchronous call without Asyncify). session_connect()
+  // is therefore expected to be called repeatedly (from a caller-side
+  // retry loop, e.g. rclpy.init() driven through a Python `await
+  // asyncio.sleep()` loop) until it stops returning RMW_RET_ERROR.
+  //
+  // z_open() takes ownership of (z_move()s) whatever config pointer it's
+  // given, whether or not it ultimately succeeds -- so retrying with
+  // session->config itself (as before) would hand z_open() an
+  // already-consumed, invalid config on the second and every later
+  // attempt. Clone a fresh, disposable copy for each attempt instead:
+  // this keeps the ORIGINAL session->config (set up once in
+  // zenoh_pico_generate_session()) alive and valid across every retry.
+  z_owned_config_t attempt_config;
+  z_config_clone(&attempt_config, z_loan(session->config));
+  if(_Z_IS_ERR(z_open(&session->session, z_move(attempt_config), NULL))){
+    RMW_ZENOH_LOG_DEBUG("zenoh session not yet established, will retry");
     return RMW_RET_ERROR;
   }
 
+#if Z_FEATURE_MULTI_THREAD == 1
   if (_Z_IS_ERR(zp_start_read_task(z_loan_mut(session->session), NULL))
       || _Z_IS_ERR(zp_start_lease_task(z_loan_mut(session->session), NULL))) {
     RMW_ZENOH_LOG_ERROR("Unable to start read and lease tasks");
@@ -101,6 +122,14 @@ rmw_ret_t session_connect(ZenohPicoSession *session)
     z_drop(z_move(session->session));
     return RMW_RET_ERROR;
   }
+#else
+  // No background read/lease task to start in single-threaded mode.
+  // zp_start_read_task()/zp_start_lease_task() are hard-coded to always
+  // return -1 here (see zenoh-pico's own zp_start_read_task() -- it's an
+  // intentional "not supported without real threads" sentinel, not a real
+  // failure): rmw_wait() pumps zp_read()/zp_send_keep_alive() itself
+  // instead (see this same patch's own change to rmw_wait.c).
+#endif
 
   session->enable_session = true;
 

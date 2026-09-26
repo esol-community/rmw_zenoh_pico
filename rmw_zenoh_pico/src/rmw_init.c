@@ -154,7 +154,12 @@ static rmw_ret_t rmw_zenoh_pico_init_option(ZenohPicoTransportParams *params)
     memset(params->connect_addr, 0, sizeof(params->connect_addr));
     if(strcmp(_rmw_zenoh_pico_connect_port, "-1") != 0){
       memset(buf, 0, sizeof(buf));
+      // Browsers have no raw TCP sockets; emscripten builds use WebSocket instead.
+#if defined(ZENOH_EMSCRIPTEN)
+      snprintf(buf, sizeof(buf), "ws/%s:%s",
+#else
       snprintf(buf, sizeof(buf), "tcp/%s:%s",
+#endif
 	       _rmw_zenoh_pico_connect,
 	       _rmw_zenoh_pico_connect_port);
       if(strlen(buf) >= sizeof(params->connect_addr) -1) {
@@ -224,7 +229,10 @@ rmw_init_options_init(rmw_init_options_t * init_options, rcutils_allocator_t all
   init_options->enclave                   = "/";
   init_options->domain_id		  = 0;
   init_options->security_options	  = rmw_get_default_security_options();
+#ifdef RMW_LOCALHOST_ONLY_DEFAULT
+  // Removed from rmw_init_options_s on newer distros (folded into discovery_options).
   init_options->localhost_only		  = RMW_LOCALHOST_ONLY_DEFAULT;
+#endif
 
   // This can be call before rmw_init()
   ZenohPicoTransportParams *params = zenoh_pico_generate_param(NULL);

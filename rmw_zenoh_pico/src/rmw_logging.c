@@ -19,7 +19,7 @@
 static z_owned_mutex_t mutex_logging;
 
 // Timestamp function
-#if defined(ZENOH_LINUX) || defined (ZENOH_ARDUINO_ESP32) || defined (ZENOH_ESPIDF)
+#if defined(ZENOH_LINUX) || defined (ZENOH_ARDUINO_ESP32) || defined (ZENOH_ESPIDF) || defined(ZENOH_EMSCRIPTEN)
 
 void z_log_prefix(const char *prefix, const char *func_name, const char *fmt, ...) {
   static char tstamp[64];

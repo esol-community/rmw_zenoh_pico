@@ -22,12 +22,19 @@ project(rmw_zenoh_pico
     C
 )
 
-find_package(ament_cmake_ros REQUIRED)
+find_package(ament_cmake REQUIRED)
+find_package(ament_cmake_ros_core REQUIRED)
+
 find_package(rosidl_runtime_c REQUIRED)
 find_package(rcutils REQUIRED)
 find_package(rmw REQUIRED)
 find_package(microcdr REQUIRED)
 find_package(zenohpico REQUIRED)
+
+if(EMSCRIPTEN)
+  # zenoh-pico gates its own emscripten platform code on this define.
+  add_definitions(-DZENOH_EMSCRIPTEN)
+endif()
 
 # Build options
 option(BUILD_DOCUMENTATION              "Use doxygen to create product documentation" OFF)
@@ -150,8 +157,8 @@ target_link_libraries(${PROJECT_NAME}
 # Type support lock-up mechanism
 find_package(rosidl_typesupport_microxrcedds_c)
 if(rosidl_typesupport_microxrcedds_c_FOUND)
-  ament_target_dependencies(${PROJECT_NAME}
-    "rosidl_typesupport_microxrcedds_c"
+  target_link_libraries(${PROJECT_NAME}
+    rosidl_typesupport_microxrcedds_c::rosidl_typesupport_microxrcedds_c
 )
   target_compile_definitions(${PROJECT_NAME}
     PUBLIC
@@ -162,8 +169,8 @@ else()
 endif()
 
 if(rosidl_typesupport_microxrcedds_cpp_FOUND)
-  ament_target_dependencies(${PROJECT_NAME}
-    "rosidl_typesupport_microxrcedds_cpp"
+  target_link_libraries(${PROJECT_NAME}
+    rosidl_typesupport_microxrcedds_cpp::rosidl_typesupport_microxrcedds_cpp
 )
   target_compile_definitions(${PROJECT_NAME}
     PUBLIC
@@ -171,10 +178,10 @@ if(rosidl_typesupport_microxrcedds_cpp_FOUND)
 )
 endif()
 
-ament_target_dependencies(${PROJECT_NAME}
-  "zenohpico"
-  "rcutils"
-  "rmw"
+target_link_libraries(${PROJECT_NAME}
+  zenohpico::lib
+  rcutils::rcutils
+  rmw::rmw
 )
 
 configure_rmw_library(${PROJECT_NAME})

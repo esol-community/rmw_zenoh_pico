@@ -16,7 +16,7 @@
 
 #include <rmw_zenoh_pico/rmw_zenoh_pico.h>
 
-#if defined(ZENOH_LINUX) || defined(ZENOH_ARDUINO_ESP32) || defined (ZENOH_ESPIDF)
+#if defined(ZENOH_LINUX) || defined(ZENOH_ARDUINO_ESP32) || defined (ZENOH_ESPIDF) || defined(ZENOH_EMSCRIPTEN)
 
 #define XXH_STATIC_LINKING_ONLY /* access advanced declarations */
 #define XXH_IMPLEMENTATION      /* access definitions */

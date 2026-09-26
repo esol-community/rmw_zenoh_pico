@@ -9,9 +9,11 @@
   <license>Apache License 2.0</license>
   <license>BSD</license>  <!-- for xxhash.h -->
 
-  <buildtool_depend>ament_cmake_ros</buildtool_depend>
+  <buildtool_depend>ament_cmake</buildtool_depend>
+  <buildtool_depend>ament_cmake_ros_core</buildtool_depend>
   <buildtool_depend>rosidl_cmake</buildtool_depend>
-  <buildtool_export_depend>ament_cmake_ros</buildtool_export_depend>
+  <buildtool_export_depend>ament_cmake</buildtool_export_depend>
+  <buildtool_export_depend>ament_cmake_ros_core</buildtool_export_depend>
   <buildtool_export_depend>rosidl_cmake</buildtool_export_depend>
 
   <depend>zenohpico</depend>

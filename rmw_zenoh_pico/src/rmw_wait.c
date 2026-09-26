@@ -137,10 +137,60 @@ rmw_wait(rmw_subscriptions_t * subscriptions,
     "waitset data struct is null",
     return RMW_RET_ERROR);
 
+#if Z_FEATURE_MULTI_THREAD == 0
+  // _check_and_attach_condition() below can find a guard condition/timer
+  // already ready (e.g. rclpy's executor attaches one whenever a periodic
+  // timer is pending) and return true *before* the network-pumping loop
+  // further down ever runs -- that loop lives entirely inside the
+  // `if(!skip_wait)` branch below, so on every rmw_wait() call where
+  // something is already ready, zp_read()/zp_send_keep_alive() never get
+  // called at all. With no background thread (Z_FEATURE_MULTI_THREAD==0)
+  // nothing else ever pumps the session, so a talker whose only waitable is
+  // a repeating timer (the common case -- confirmed via rclpy's talker,
+  // where this starved the session of any traffic until the router's
+  // 10-second lease expired and force-closed the transport) can go
+  // completely silent on the wire forever, well before any real timeout.
+  // Pumping once here, unconditionally, guarantees the network gets
+  // serviced on every single call regardless of skip_wait.
+  ZenohPicoSession *__pump_session = (ZenohPicoSession *)wait_set_data->context->impl;
+  const z_loaned_session_t *__pump_zsession = z_loan(__pump_session->session);
+  (void)zp_read(__pump_zsession, NULL);
+  (void)zp_send_keep_alive(__pump_zsession, NULL);
+#endif
+
   bool skip_wait = _check_and_attach_condition(
     subscriptions, guard_conditions, services, clients, events, wait_set_data);
 
   if(!skip_wait){
+#if Z_FEATURE_MULTI_THREAD == 0
+    // No background read thread exists to receive data and signal this
+    // wait-set (that's a real OS thread in the Z_FEATURE_MULTI_THREAD==1
+    // build, started automatically by zenoh-pico's session init) -- so
+    // nothing will ever make wait_set_data->triggered become true unless
+    // *we* pump the session ourselves. zp_read()/zp_send_keep_alive() are
+    // the documented single-threaded-mode replacement for that background
+    // thread (see zenoh-pico's "Single Thread helpers").
+    //
+    // A synchronous call on this platform can never usefully block longer
+    // than a single attempt: there's no way to cooperatively yield back to
+    // the browser's event loop from inside one call without Asyncify, so a
+    // "sleep between polls" loop for a nonzero requested timeout would
+    // just spin with no real delay and no yield -- freezing the whole
+    // page for up to that timeout, or forever if wait_timeout is NULL.
+    // So this always polls exactly once and returns immediately,
+    // regardless of what timeout was requested -- the caller is expected
+    // to retry across separate top-level calls, with a real yield in
+    // between (e.g. a JS-driven tick or Python's own `await
+    // asyncio.sleep()`), the same way session_connect() below already
+    // has to.
+    ZenohPicoSession *rmw_session = (ZenohPicoSession *)wait_set_data->context->impl;
+    const z_loaned_session_t *zsession = z_loan(rmw_session->session);
+
+    (void)zp_read(zsession, NULL);
+    (void)zp_send_keep_alive(zsession, NULL);
+
+    wait_set_data->triggered = false;
+#else
     z_loaned_mutex_t *lock = z_loan_mut(wait_set_data->condition_mutex);
     z_loaned_condvar_t *cv = z_loan_mut(wait_set_data->condition_variable);
 
@@ -167,6 +217,7 @@ rmw_wait(rmw_subscriptions_t * subscriptions,
     wait_set_data->triggered = false;
 
     z_mutex_unlock(lock);
+#endif  // Z_FEATURE_MULTI_THREAD == 0
   }
 
   bool wait_result = false;
