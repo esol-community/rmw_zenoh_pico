@@ -323,40 +323,62 @@ z_result_t convert_client_type(const message_type_support_callbacks_t *callbacks
 			       value);
 }
 
-static inline bool qos_append_value(int value, char **buf, size_t *left)
+// The QoS part of the liveliness key follows rmw_zenoh_cpp: a value that equals
+// its default there is left empty. rmw_zenoh_cpp parses the key it receives and
+// writes it again by that rule to derive the entity's GID, so that any other
+// spelling gives the entity a different GID in the graph than in its samples.
+#define QOS_DEFAULT_DEPTH		42
+#define QOS_DURATION_INFINITE_SEC	9223372036ULL
+#define QOS_DURATION_INFINITE_NSEC	854775807ULL
+
+static inline void qos_append_value(bool is_default, unsigned long long value, char **buf, size_t *left)
 {
-  if(*left <= 0)
-    return false;
+  if(is_default || *left == 0)
+    return;
 
-  if(value != 0){
-    // join value string
-    int ret = snprintf(*buf, *left, "%d", (int)value);
+  int ret = snprintf(*buf, *left + 1, "%llu", value);
+  if(ret < 0)
+    return;
+  if((size_t)ret > *left)
+    ret = (int)*left;
 
-    *buf += ret;
-    *left -= ret;
-  }
-
-  return true;
+  *buf += ret;
+  *left -= ret;
 }
 
-static inline bool qos_add_delimiter(char delimiter, char **buf, size_t *left)
+static inline void qos_add_delimiter(char delimiter, char **buf, size_t *left)
 {
-  if(*left <= 0)
-    return false;
+  if(*left == 0)
+    return;
 
   **buf = delimiter;
   *buf += 1;
   *left -= 1;
-
-  return true;
 }
 
-#define QOS_APPEND_VALUE(v) qos_append_value(v, &buf_ptr, &left_size)
+// an unspecified duration (0, 0) means the default, which is infinite
+static inline void qos_append_duration(const rmw_time_t *time, char **buf, size_t *left)
+{
+  unsigned long long sec  = (unsigned long long)time->sec;
+  unsigned long long nsec = (unsigned long long)time->nsec;
+
+  if(sec == 0 && nsec == 0){
+    sec  = QOS_DURATION_INFINITE_SEC;
+    nsec = QOS_DURATION_INFINITE_NSEC;
+  }
+
+  qos_append_value(sec == QOS_DURATION_INFINITE_SEC, sec, buf, left);
+  qos_add_delimiter(QOS_COMPONENT_DELIMITER, buf, left);
+  qos_append_value(nsec == QOS_DURATION_INFINITE_NSEC, nsec, buf, left);
+}
+
+#define QOS_APPEND_VALUE(d, v) qos_append_value(d, (unsigned long long)(v), &buf_ptr, &left_size)
+#define QOS_APPEND_DURATION(t) qos_append_duration(t, &buf_ptr, &left_size)
 #define QOS_APPEND_DELIMITER(v) qos_add_delimiter(v, &buf_ptr, &left_size)
 
 z_result_t qos_to_keyexpr(rmw_qos_profile_t *qos, z_owned_string_t *value)
 {
-  char qos_data[64];
+  char qos_data[128];
 
   memset(qos_data, 0, sizeof(qos_data));
   char *buf_ptr = qos_data;
@@ -364,37 +386,36 @@ z_result_t qos_to_keyexpr(rmw_qos_profile_t *qos, z_owned_string_t *value)
 
   if(qos != NULL){
 
-    QOS_APPEND_VALUE(qos->reliability);
+    QOS_APPEND_VALUE(qos->reliability == RMW_QOS_POLICY_RELIABILITY_SYSTEM_DEFAULT ||
+		     qos->reliability == RMW_QOS_POLICY_RELIABILITY_RELIABLE,
+		     qos->reliability);
     QOS_APPEND_DELIMITER(QOS_DELIMITER);
 
-    QOS_APPEND_VALUE(qos->durability);
+    QOS_APPEND_VALUE(qos->durability == RMW_QOS_POLICY_DURABILITY_SYSTEM_DEFAULT ||
+		     qos->durability == RMW_QOS_POLICY_DURABILITY_VOLATILE,
+		     qos->durability);
     QOS_APPEND_DELIMITER(QOS_DELIMITER);
 
-    QOS_APPEND_VALUE((int)qos->history);
+    QOS_APPEND_VALUE(qos->history == RMW_QOS_POLICY_HISTORY_SYSTEM_DEFAULT ||
+		     qos->history == RMW_QOS_POLICY_HISTORY_KEEP_LAST,
+		     qos->history);
     QOS_APPEND_DELIMITER(QOS_COMPONENT_DELIMITER);
 
-    QOS_APPEND_VALUE((int)qos->depth);
+    QOS_APPEND_VALUE(qos->depth == 0 || qos->depth == QOS_DEFAULT_DEPTH, qos->depth);
     QOS_APPEND_DELIMITER(QOS_DELIMITER);
 
-    QOS_APPEND_VALUE((int)qos->deadline.sec);
-    QOS_APPEND_DELIMITER(QOS_COMPONENT_DELIMITER);
-
-    QOS_APPEND_VALUE((int)qos->deadline.nsec);
+    QOS_APPEND_DURATION(&qos->deadline);
     QOS_APPEND_DELIMITER(QOS_DELIMITER);
 
-    QOS_APPEND_VALUE((int)qos->lifespan.sec);
-    QOS_APPEND_DELIMITER(QOS_COMPONENT_DELIMITER);
-
-    QOS_APPEND_VALUE((int)qos->lifespan.nsec);
+    QOS_APPEND_DURATION(&qos->lifespan);
     QOS_APPEND_DELIMITER(QOS_DELIMITER);
 
-    QOS_APPEND_VALUE(qos->liveliness);
+    QOS_APPEND_VALUE(qos->liveliness == RMW_QOS_POLICY_LIVELINESS_SYSTEM_DEFAULT ||
+		     qos->liveliness == RMW_QOS_POLICY_LIVELINESS_AUTOMATIC,
+		     qos->liveliness);
     QOS_APPEND_DELIMITER(QOS_COMPONENT_DELIMITER);
 
-    QOS_APPEND_VALUE((int)qos->liveliness_lease_duration.sec);
-    QOS_APPEND_DELIMITER(QOS_COMPONENT_DELIMITER);
-
-    QOS_APPEND_VALUE((int)qos->liveliness_lease_duration.nsec);
+    QOS_APPEND_DURATION(&qos->liveliness_lease_duration);
   }
 
   return z_string_copy_from_str(value, qos_data);
