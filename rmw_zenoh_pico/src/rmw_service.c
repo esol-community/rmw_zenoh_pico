@@ -279,23 +279,28 @@ bool declaration_service_data(ZenohPicoServiceData *data)
 
   ZenohPicoSession *session = data->node->session;
 
-  // declare queryable
-  z_view_keyexpr_t ke;
-  const z_loaned_string_t *keyexpr = z_loan(data->topic_key);
-  z_view_keyexpr_from_substr(&ke, z_string_data(keyexpr), z_string_len(keyexpr));
+  // Only a service answers queries. A client that declared a queryable on the
+  // service's key would be one more server for the router to send requests to,
+  // and it never answers them.
+  if(data->entity->type == Service){
+    z_view_keyexpr_t ke;
+    const z_loaned_string_t *keyexpr = z_loan(data->topic_key);
+    z_view_keyexpr_from_substr(&ke, z_string_data(keyexpr), z_string_len(keyexpr));
 
-  z_queryable_options_t options;
-  options.complete = true;
+    z_queryable_options_t options;
+    z_queryable_options_default(&options);
+    options.complete = true;
 
-  z_owned_closure_query_t callback;
-  z_closure(&callback, request_handler, NULL, data);
-  if (_Z_IS_ERR(z_declare_queryable(z_loan(session->session),
-				    &data->qable,
-				    z_loan(ke),
-				    z_move(callback),
-				    &options))) {
-    RMW_SET_ERROR_MSG("Unable to create queryable");
-    return false;
+    z_owned_closure_query_t callback;
+    z_closure(&callback, request_handler, NULL, data);
+    if (_Z_IS_ERR(z_declare_queryable(z_loan(session->session),
+				      &data->qable,
+				      z_loan(ke),
+				      z_move(callback),
+				      &options))) {
+      RMW_SET_ERROR_MSG("Unable to create queryable");
+      return false;
+    }
   }
 
   return declaration_liveliness(session, z_loan(data->liveliness_key), &data->liveliness);
@@ -305,7 +310,8 @@ bool undeclaration_service_data(ZenohPicoServiceData *data)
 {
   RMW_ZENOH_FUNC_ENTRY(NULL);
 
-  z_drop(z_move(data->qable));
+  if(data->entity->type == Service)
+    z_drop(z_move(data->qable));
 
   return z_liveliness_undeclare_token(z_move(data->liveliness));
 }
