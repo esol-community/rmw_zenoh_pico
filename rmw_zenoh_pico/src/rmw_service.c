@@ -127,9 +127,10 @@ ZenohPicoServiceData * zenoh_pico_generate_service_data(
   z_mutex_init(&data->condition_mutex);
   data->wait_set_data = NULL;
 
-  // generate gid
+  // generate gid from the liveliness key, which is unique to this service or client
+  // (the topic key is the same for every client of the service)
   uint8_t _gid[RMW_GID_STORAGE_SIZE];
-  zenoh_pico_gen_gid(z_loan(data->topic_key), _gid);
+  zenoh_pico_gen_gid(z_loan(data->liveliness_key), _gid);
 
   z_slice_copy_from_buf(&data->attachment.gid, _gid, sizeof(_gid));
   data->attachment.sequence_num = 0;
