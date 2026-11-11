@@ -86,9 +86,10 @@ static ZenohPicoPubData * zenoh_pico_generate_publisher_data(
   // generate mutex
   z_mutex_init(&pub_data->mutex);
 
-  // generate gid
+  // generate gid from the liveliness key, which is unique to this publisher
+  // (the topic key is the same for every publisher of the topic)
   uint8_t _gid[RMW_GID_STORAGE_SIZE];
-  zenoh_pico_gen_gid(z_loan(pub_data->topic_key), _gid);
+  zenoh_pico_gen_gid(z_loan(pub_data->liveliness_key), _gid);
 
   z_slice_copy_from_buf(&pub_data->attachment.gid, _gid, sizeof(_gid));
   pub_data->attachment.sequence_num = 0;
@@ -449,7 +450,21 @@ rmw_get_gid_for_publisher(
     publisher->implementation_identifier,
     return RMW_RET_INCORRECT_RMW_IMPLEMENTATION);
 
-  return RMW_RET_ERROR;
+  ZenohPicoPubData *pub_data = (ZenohPicoPubData *)publisher->data;
+  RMW_CHECK_ARGUMENT_FOR_NULL(pub_data, RMW_RET_INVALID_ARGUMENT);
+
+  const uint8_t *gid_ptr = z_slice_data(z_loan(pub_data->attachment.gid));
+  size_t gid_len = z_slice_len(z_loan(pub_data->attachment.gid));
+  if(gid_ptr == NULL)
+    return RMW_RET_ERROR;
+  if(gid_len > sizeof(gid->data))
+    gid_len = sizeof(gid->data);
+
+  memset(gid->data, 0, sizeof(gid->data));
+  memcpy(gid->data, gid_ptr, gid_len);
+  gid->implementation_identifier = rmw_get_implementation_identifier();
+
+  return RMW_RET_OK;
 }
 
 rmw_ret_t
