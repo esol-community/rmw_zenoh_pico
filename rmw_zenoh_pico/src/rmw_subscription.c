@@ -172,11 +172,27 @@ static void zenoh_pico_debug_subscription_data(ZenohPicoSubData *sub_data)
   zenoh_pico_debug_entity(sub_data->entity);
 }
 
+// Depth of a KEEP_LAST subscription that does not give one, as in rmw_zenoh_cpp
+#define RMW_ZENOH_PICO_DEFAULT_HISTORY_DEPTH 42
+
 static void add_new_subscription_message(ZenohPicoSubData *sub_data, ReceiveMessageData *recv_data)
 {
   // rmw_zenoh_pico_debug_recv_msg_data(recv_data);
 
-  (void)recv_msg_list_append(&sub_data->message_queue, recv_data);
+  // KEEP_LAST keeps the newest depth samples and discards the oldest one when a
+  // new one arrives, as rmw_zenoh_cpp does. KEEP_ALL has no limit.
+  size_t limit = 0;
+  if(sub_data->adapted_qos_profile.history != RMW_QOS_POLICY_HISTORY_KEEP_ALL){
+    limit = sub_data->adapted_qos_profile.depth;
+    if(limit == 0)
+      limit = RMW_ZENOH_PICO_DEFAULT_HISTORY_DEPTH;
+  }
+
+  ReceiveMessageData *oldest = recv_msg_list_append_limited(&sub_data->message_queue,
+							    recv_data,
+							    limit);
+  if(oldest != NULL)
+    (void)zenoh_pico_delete_recv_msg_data(oldest);
 
   (void)data_callback_trigger(&sub_data->data_event_mgr);
 

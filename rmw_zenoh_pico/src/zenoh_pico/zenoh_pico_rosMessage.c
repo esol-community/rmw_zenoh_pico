@@ -336,6 +336,42 @@ ReceiveMessageData *recv_msg_list_append(ReceiveMessageDataList *msg_list,
   return(recv_data);
 }
 
+// Appends recv_data. If the list then holds more than limit messages, the
+// oldest one is taken out and returned, for the caller to delete; otherwise
+// the return value is NULL. A limit of 0 means no limit.
+ReceiveMessageData *recv_msg_list_append_limited(ReceiveMessageDataList *msg_list,
+						 ReceiveMessageData *recv_data,
+						 size_t limit)
+{
+  if((msg_list == NULL) || (recv_data == NULL))
+    return NULL;
+
+  z_loaned_mutex_t *msg_mutex = z_loan_mut(msg_list->mutex);
+
+  z_mutex_lock(msg_mutex);
+
+  recv_data->next = NULL;
+
+  if(msg_list->que_bottom != NULL)
+    msg_list->que_bottom->next = recv_data;
+  else
+    msg_list->que_top = recv_data;
+  msg_list->que_bottom = recv_data;
+  msg_list->count += 1;
+
+  ReceiveMessageData *oldest = NULL;
+  if((limit > 0) && ((size_t)msg_list->count > limit)){
+    oldest = msg_list->que_top;
+    msg_list->que_top = oldest->next;
+    msg_list->count -= 1;
+    oldest->next = NULL;
+  }
+
+  z_mutex_unlock(msg_mutex);
+
+  return oldest;
+}
+
 ReceiveMessageData *recv_msg_list_pop(ReceiveMessageDataList *msg_list)
 {
 
