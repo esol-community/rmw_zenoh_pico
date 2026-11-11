@@ -295,7 +295,7 @@ void data_callback_init(DataEventManager *data_callback)
   data_callback->callback = NULL;
   data_callback->user_data = NULL;
   data_callback->unread_count = 0;
-  memset(data_callback->event_status, 0, sizeof(EventStatus));
+  memset(data_callback->event_status, 0, sizeof(data_callback->event_status));
 }
 
 void data_callback_set(DataEventManager *data_callback,
@@ -311,7 +311,7 @@ void data_callback_set(DataEventManager *data_callback,
       data_callback->callback(data_callback->user_data,
 			      data_callback->unread_count);
       data_callback->unread_count = 0;
-      memset(data_callback->event_status, 0, sizeof(EventStatus));
+      memset(data_callback->event_status, 0, sizeof(data_callback->event_status));
     }
     data_callback->user_data = user_data;
     data_callback->callback  = callback;
